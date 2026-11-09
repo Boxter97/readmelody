@@ -77,9 +77,13 @@ h1{margin:0;font-size:32px;font-weight:700;letter-spacing:-0.01em;line-height:1.
 .tempo{display:flex;align-items:center;gap:12px}
 .tempo input{width:170px;accent-color:var(--accent)}
 .tempo output{font-weight:700;font-variant-numeric:tabular-nums;min-width:72px}
-.checks{display:flex;gap:22px;flex-wrap:wrap}
-.check{display:flex;align-items:center;gap:8px;font-size:17px;cursor:pointer}
-.check input{width:22px;height:22px;accent-color:var(--accent)}
+.checks{display:flex;gap:10px;flex-wrap:wrap}
+.check{display:inline-flex;align-items:center;gap:10px;min-height:48px;padding:0 18px 0 10px;border:1.5px solid var(--line);border-radius:999px;background:var(--bg);font-size:16.5px;font-weight:500;color:var(--ink);cursor:pointer;user-select:none;-webkit-user-select:none}
+.check input{appearance:none;-webkit-appearance:none;flex:none;width:38px;height:24px;margin:0;border-radius:12px;background:var(--line);position:relative;cursor:pointer;transition:background .15s}
+.check input::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--bg);box-shadow:0 1px 3px rgba(24,32,46,.3);transition:left .15s}
+.check input:checked{background:var(--accent)}
+.check input:checked::after{left:17px}
+.check:has(input:checked){border-color:var(--accent);background:var(--accent-soft);font-weight:700}
 button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 
 /* 악보 */
