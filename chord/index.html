@@ -697,7 +697,11 @@ function render(){
     const e=sg.ev, inf=sysInfo[e.sys], g=el('g',{class:'chord'},svg); sg.ref=g;
     const x=e.x;
     const t=el('text',{x,y:inf.y0-S*2.3,'font-size':S*(narrow?1.75:1.95),'font-weight':700,'font-family':'IBM Plex Sans KR, sans-serif',fill:'currentColor'},g);
-    chordParts(sg.chord,key).forEach(([txt,kind])=>el('tspan',kind==='acc'?{'font-family':'Noto Music, serif','font-size':S*1.55}:kind==='q'?{'font-size':S*(narrow?1.3:1.45)}:{},t,txt));
+    let lift=0;                                                     // ♯·♭은 글자 높이에 맞게 조금 올림 (다음 글자는 원래 줄로)
+    chordParts(sg.chord,key).forEach(([txt,kind])=>{
+      const up=kind==='acc'?(txt.includes('♯')?S*0.42:S*0.12):0, a=kind==='acc'?{'font-family':'Noto Music, serif','font-size':S*1.55}:kind==='q'?{'font-size':S*(narrow?1.3:1.45)}:{};
+      if(up!==lift){ a.dy=lift-up; lift=up; }
+      el('tspan',a,t,txt); });
     let y=inf.y0+4*S+S*3.4;
     if(showDeg){ el('text',{x,y,'font-size':S*1.35,'font-weight':700,'font-family':'IBM Plex Sans KR, sans-serif',style:'fill:var(--muted)'},g,romanOf(sg.chord)); y+=S*2.2; }
     if(showTones){ const tn=toneNames(sg.chord,key);                  // 구성음: 근음부터 가로 한 줄
