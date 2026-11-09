@@ -514,8 +514,8 @@ function barSplits(M){              // 한 마디 안에서 코드가 시작하�
   if(mode!=='hard') return [0];                                     // Easy: 한 마디에 코드 1개
   if(M.beat===6) return [0,6];                                      // 6/8: 2개 (점4분음표마다)
   const three=Math.random()<0.4;
-  if(M.len===16) return three?rnd([[0,8,12],[0,4,8]]):[0,8];        // 4/4: 2~3개
-  return three?[0,4,8]:rnd([[0,8],[0,4]]);                          // 3/4: 2~3개
+  if(M.len===16) return three?[0,8,12]:[0,8];                       // 4/4: 2개는 1·3박, 3개는 1·3·4박
+  return three?[0,4,8]:[0,8];                                       // 3/4: 2개는 1·3박, 3개는 1·2·3박
 }
 function makeSong(){
   const M=METERS[meter], key=KEYS[keyName];
