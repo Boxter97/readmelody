@@ -41,12 +41,13 @@ h1{margin:0;font-size:32px;font-weight:700;letter-spacing:-0.01em;line-height:1.
 
 /* 단계 카드 */
 .stagewrap{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:stretch}
-#levels{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+#levels{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}   /* 6단계 + 랜덤 = 7칸 → 4칸씩 두 줄 */
 .stage{position:relative;text-align:left;border:2px solid var(--line);border-radius:18px;padding:14px 14px 12px;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;gap:4px;min-width:0;container:card/inline-size}
 .stage .top{display:flex;align-items:center;gap:7px;min-width:0}
 .stage .num{font-family:var(--f-disp);font-size:36px;line-height:1}
 .stage .sym{position:absolute;right:12px;top:10px;font-family:var(--f-music);font-size:32px;line-height:1;color:#B7BFCD}
 .stage .name{font-weight:700;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stage.rnd .stars{visibility:hidden}
 .stars{display:flex;gap:2px;margin-top:2px} .stars svg{width:15px;height:15px;fill:var(--star-off)} .stars svg.on{fill:var(--star)}
 .prog{display:flex;align-items:center;gap:8px;margin-top:4px}
 .prog .pbar{flex:1;margin-top:0}
@@ -171,8 +172,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 .stage .sym{font-family:var(--f-body);font-size:17px;font-weight:700;top:14px}
 #score .chord.on text{fill:var(--accent)}
 .hardtag{font-size:14px} @media (min-width:721px){ .stage .top{gap:6px} }          /* 코드 카드는 아이콘(sus4 등)이 넓어서 조금 작게 */
-@media (max-width:720px){ .hardtag{font-size:12px;margin-left:1px} #levels{grid-template-columns:repeat(3,minmax(0,1fr))} }   /* 단계가 6개라 휴대폰은 3칸씩 두 줄 */
-@media (min-width:721px) and (max-width:1000px){ #levels{grid-template-columns:repeat(3,minmax(0,1fr))} }   /* 태블릿도 3칸씩 */
+@media (max-width:720px){ .hardtag{font-size:12px;margin-left:1px} }
 </style>
 </head>
 <body class="ads-off">
@@ -310,8 +310,9 @@ const LEVELS=[
 /* ---------- 상태 ---------- */
 const store={get(k,d){try{const v=localStorage.getItem('ch-'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},
              set(k,v){try{localStorage.setItem('ch-'+k,JSON.stringify(v))}catch(e){}}};
-let level=store.get('level',1), bars=store.get('bars',4), meter=store.get('meter','4/4'), keyName=store.get('key','C');
-if(!LEVELS[level-1]) level=1;
+let sel=store.get('level',1), bars=store.get('bars',4), meter=store.get('meter','4/4'), keyName=store.get('key','C');
+if(sel!==0&&!LEVELS[sel-1]) sel=1;
+let level=sel||1;                                   // sel 0 = 랜덤 단계 (곡마다 단계를 골라서)
 if(!METERS[meter]) meter='4/4';
 if(!KEYS[keyName]) keyName='C';
 let mode=store.get('mode','easy'); if(mode!=='hard') mode='easy';
@@ -824,7 +825,7 @@ async function play(){
   audio(); playing=true;
   $('playTxt').textContent='멈춤'; $('playIcon').innerHTML='<path d="M3 2h4v12H3zM9 2h4v12H9z"/>';
   await ready(); if(!playing) return;
-  if(!song.counted){ song.counted=true; const d=done[mode]||(done[mode]={}); d[level]=(d[level]||0)+1; store.set('done2',done); syncCards(); }
+  if(!song.counted){ song.counted=true; const d=done[mode]||(done[mode]={}); d[sel===0?'R':level]=(d[sel===0?'R':level]||0)+1; store.set('done2',done); syncCards(); }
   const c=audio(), M=song.M;
   const u=60/tempo/4, ci=M.click*u, nClick=M.len/M.click;   // u = 16분음표 길이(초)
   let t=c.currentTime+0.15;
@@ -870,12 +871,13 @@ async function playRef(){
 /* ---------- 화면 ---------- */
 function updateMeta(){
   const kn=Object.keys(song.key.acc).length, ksh=kn&&song.key.acc[Object.keys(song.key.acc)[0]]>0;
-  $('meta').innerHTML=`<span>키 <b>${song.key.label}</b>${kn?' ('+(ksh?'♯':'♭')+kn+')':''}</span><span>박자 <b>${meter}</b></span><span>단계 <b>${level}</b></span><span>모드 <b>${mode==='hard'?'Hard':'Easy'}</b></span>`;
+  $('meta').innerHTML=`<span>키 <b>${song.key.label}</b>${kn?' ('+(ksh?'♯':'♭')+kn+')':''}</span><span>박자 <b>${meter}</b></span><span>단계 <b>${sel===0?'랜덤 ('+level+')':level}</b></span><span>모드 <b>${mode==='hard'?'Hard':'Easy'}</b></span>`;
 }
-function fresh(){ stop(); song=makeSong(); updateMeta(); render(); }
+function fresh(){ stop(); if(sel===0) level=1+Math.floor(Math.random()*LEVELS.length); song=makeSong(); updateMeta(); render(); updDesc(); }
 const STAR3=LEVELS.map(()=>'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.2 6.6.7-5 4.5 1.4 6.6L12 17.3 6.1 20.5l1.4-6.6-5-4.5 6.6-.7z"/></svg>').join('');
+function updDesc(){ const L=LEVELS[level-1]; $('lvdesc').textContent=(sel===0?'1~'+LEVELS.length+'단계가 섞여 나와요 · 이번 곡 '+level+'단계 ('+L.name+')':L.chords)+(mode==='hard'?' · 부속화음·차용화음 추가':''); }
 function levelInfo(n){
-  const c=(done[mode]||{})[n]||0;                 // 막대: 연습한 곡 수 (20곡이면 가득)
+  const c=(done[mode]||{})[n===0?'R':n]||0;                 // 막대: 연습한 곡 수 (20곡이면 가득)
   return {c,pct:Math.min(100,Math.round(c/20*100))};
 }
 function buildCards(){
@@ -885,17 +887,18 @@ function buildCards(){
     b.innerHTML='<span class="top"><span class="num">'+L.n+'</span><span class="hardtag" aria-hidden="true"><span class="full">+ 부속·차용</span><span class="short">+α</span></span></span><span class="sym" aria-hidden="true"></span><span class="name"></span><span class="stars" aria-hidden="true">'+STAR3+'</span><span class="prog"><span class="pbar"><i></i></span><span class="cnt"></span></span>';
     box.appendChild(b);
   });
+  const r=box.lastElementChild.cloneNode(true); r.dataset.v=0; r.classList.add('rnd'); r.querySelector('.num').textContent='R'; box.appendChild(r);   // 랜덤 단계 카드
 }
 function syncCards(){
   $('levels').querySelectorAll('.stage').forEach(b=>{
-    const n=+b.dataset.v, inf=levelInfo(n), Lv=LEVELS[n-1], name=Lv.name;
-    b.setAttribute('aria-pressed',n===level);
+    const n=+b.dataset.v, inf=levelInfo(n), Lv=n?LEVELS[n-1]:{sym:'1~'+LEVELS.length}, name=n?Lv.name:'랜덤';
+    b.setAttribute('aria-pressed',n===sel);
     b.querySelector('.sym').textContent=Lv.sym;
     b.querySelector('.name').textContent=name;
     b.querySelectorAll('.stars svg').forEach((s,k)=>s.classList.toggle('on',k<n));      // 별 = 난이도
     b.querySelector('.cnt').textContent=inf.c+'곡';
     b.querySelector('.pbar i').style.width=inf.pct+'%';
-    b.setAttribute('aria-label',n+'단계 '+name+(mode==='hard'?' + 부속·차용 코드':'')+', 난이도 별 '+n+'개, '+inf.c+'곡 연습');
+    b.setAttribute('aria-label',(n?n+'단계 ':'')+name+(mode==='hard'?' + 부속·차용 코드':'')+', 난이도 별 '+n+'개, '+inf.c+'곡 연습');
   });
 }
 function segButtons(id,items,label){
@@ -920,11 +923,10 @@ function buildUI(){
     $('meters').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===meter));
     $('keys').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===keyName));
     $('bars').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.v===bars));
-    const L=LEVELS[level-1];
-    $('lvdesc').textContent=L.chords+(mode==='hard'?' · 부속화음·차용화음 추가':'');
+    updDesc();
   };
   const on=(id,fn)=>$(id).addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;fn(b.dataset.v);sync();fresh();});
-  on('levels',v=>{level=+v;store.set('level',level)});
+  on('levels',v=>{sel=+v; if(sel) level=sel; store.set('level',sel)});
   on('modes',v=>{mode=v;store.set('mode',mode)});
   on('meters',v=>{meter=v;store.set('meter',meter)});
   on('keys',v=>{keyName=v;store.set('key',keyName)});
