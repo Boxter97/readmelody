@@ -42,7 +42,8 @@ h1{margin:0;font-size:32px;font-weight:700;letter-spacing:-0.01em;line-height:1.
 /* 단계 카드 */
 .stagewrap{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:stretch}
 #levels{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
-.stage{position:relative;text-align:left;border:2px solid var(--line);border-radius:18px;padding:14px 14px 12px;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;gap:4px;min-width:0}
+.stage{position:relative;text-align:left;border:2px solid var(--line);border-radius:18px;padding:14px 14px 12px;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;gap:4px;min-width:0;container:card/inline-size}
+.stage .top{display:flex;align-items:center;gap:7px;min-width:0}
 .stage .num{font-family:var(--f-disp);font-size:36px;line-height:1}
 .stage .sym{position:absolute;right:12px;top:10px;font-family:var(--f-music);font-size:32px;line-height:1;color:#B7BFCD}
 .stage .name{font-weight:700;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -53,9 +54,13 @@ h1{margin:0;font-size:32px;font-weight:700;letter-spacing:-0.01em;line-height:1.
 .pbar{height:6px;border-radius:3px;background:var(--line);margin-top:4px;overflow:hidden} .pbar i{display:block;height:100%;width:0;background:var(--accent)}
 .stage[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 8px 20px var(--accent-glow)}
 .stage[aria-pressed="true"] .num,.stage[aria-pressed="true"] .sym{color:var(--accent)}
-.hardtag{display:none;align-self:flex-start;padding:2px 9px;border-radius:999px;background:var(--hard-bg);color:var(--hard);font-size:13.5px;font-weight:700;line-height:1.5}
-.hardtag .short{display:none}
-.hard .hardtag{display:inline-flex}
+/* Hard 표시: 숫자 옆에 붙여서 카드 크기가 Easy와 같게. 카드가 좁으면 ♯♭로 짧게 */
+.hardtag{display:none;color:var(--hard);font-size:15px;font-weight:700;line-height:1;white-space:nowrap}
+.hardtag .full{display:none}
+.hardtag .short{font-family:var(--f-music);font-size:1.4em;font-weight:400}
+.hard .hardtag{display:inline}
+@container card (min-width:130px){ .hardtag .full{display:inline} .hardtag .short{display:none} }
+@media (min-width:721px){ @container card (max-width:85.98px){ .hard .hardtag{display:none} } }  /* 광고를 켜서 카드가 아주 좁아지면 아이콘과 겹치지 않게 숨김 */
 .hard .wrap{--accent:var(--hard);--accent-soft:var(--hard-bg);--accent-shadow:rgba(232,70,31,.28);--accent-glow:rgba(232,70,31,.16)}
 .modebox{display:flex;flex-direction:column;gap:8px;justify-content:center}
 #modes{display:flex;flex-direction:column;gap:8px}
@@ -63,7 +68,18 @@ h1{margin:0;font-size:32px;font-weight:700;letter-spacing:-0.01em;line-height:1.
 #modes button[aria-pressed="true"][data-v="easy"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
 #modes button[data-v="hard"]{color:var(--hard);border-color:var(--hard-soft)}
 #modes button[aria-pressed="true"][data-v="hard"]{background:var(--hard);border-color:var(--hard);color:var(--bg)}
-.lvdesc{font-size:16px;color:var(--muted);margin-top:-4px}
+.lvrow{display:flex;align-items:center;flex-wrap:wrap;gap:8px 16px;margin-top:-4px}
+.lvdesc{font-size:16px;color:var(--muted)}
+/* 연습 기록 초기화: 누르면 한 번 더 물어봄 */
+.reset{display:flex;align-items:center;flex-wrap:wrap;gap:8px 10px;margin-left:auto}
+.reset [hidden]{display:none!important}
+.rask{display:inline-flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:8px 10px}
+.rbtns{display:inline-flex;gap:8px}
+.rq{font-size:16px;font-weight:700;color:var(--ink)}
+.rmsg{font-size:16px;font-weight:700;color:var(--accent)}
+.rbtn{display:inline-flex;align-items:center;gap:7px;min-height:40px;padding:0 16px;border:1.5px solid var(--line);border-radius:999px;background:var(--bg);font-size:16px;font-weight:500;color:var(--muted)}
+.rbtn svg{width:16px;height:16px;overflow:visible;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.rbtn.danger{background:var(--hard);border-color:var(--hard);color:var(--bg);font-weight:700}
 
 /* 이어 붙인 버튼 묶음 */
 .seg{display:inline-flex;flex-wrap:wrap;border:1.5px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg)}
@@ -132,7 +148,9 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
   .stage .num{font-size:28px} .stage .sym{position:static;font-size:24px;height:26px} .stage .name{display:none}
   .stars{gap:1px} .stars svg{width:10px;height:10px} .prog{flex-direction:column;align-items:center;gap:3px;width:100%} .prog .pbar{flex:none;width:80%} .cnt{font-size:13px}
   .pbar{width:80%}
-  .hardtag{align-self:center;padding:1px 7px;font-size:12px} .hardtag .full{display:none} .hardtag .short{display:inline}
+  .stage .top{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:0;width:100%} .stage .top .num{grid-column:2}
+  .hardtag{grid-column:3;justify-self:start;margin-left:2px;font-size:13px}
+  .lvdesc{flex-basis:100%}
   .modebox{flex-direction:row;align-items:center} #modes{flex-direction:row;flex:1} #modes button{flex:1;min-width:0}
   .seg button{padding:8px 12px}
   #keys button{padding:6px 6px;min-width:36px}
@@ -173,7 +191,14 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
       <div id="levels" role="group" aria-label="단계"></div>
       <div class="modebox"><span class="label">모드</span><div id="modes"></div></div>
     </div>
-    <div class="lvdesc" id="lvdesc"></div>
+    <div class="lvrow">
+      <div class="lvdesc" id="lvdesc"></div>
+      <div class="reset">
+        <span class="rmsg" id="resetMsg" role="status" hidden>초기화했어요</span>
+        <button type="button" class="rbtn" id="resetBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>기록 초기화</button>
+        <span class="rask" id="resetAsk" hidden><span class="rq">모든 연습 기록을 초기화할까요?</span><span class="rbtns"><button type="button" class="rbtn danger" id="resetYes">초기화</button><button type="button" class="rbtn" id="resetNo">취소</button></span></span>
+      </div>
+    </div>
     <div class="row">
       <div class="field"><span class="label">박자</span><div class="seg" id="meters"></div></div>
       <div class="field"><span class="label">키</span><div class="seg" id="keys"></div></div>
@@ -763,7 +788,7 @@ function buildCards(){
   const box=$('levels');
   LEVELS.forEach(L=>{
     const b=document.createElement('button'); b.type='button'; b.className='stage'; b.dataset.v=L.n;
-    b.innerHTML='<span class="num">'+L.n+'</span><span class="sym" aria-hidden="true"></span><span class="name"></span><span class="hardtag" aria-hidden="true"><span class="full">+ 임시표</span><span class="short">♯♭</span></span><span class="stars" aria-hidden="true">'+STAR3+'</span><span class="prog"><span class="pbar"><i></i></span><span class="cnt"></span></span>';
+    b.innerHTML='<span class="top"><span class="num">'+L.n+'</span><span class="hardtag" aria-hidden="true"><span class="full">+ 임시표</span><span class="short">♯♭</span></span></span><span class="sym" aria-hidden="true"></span><span class="name"></span><span class="stars" aria-hidden="true">'+STAR3+'</span><span class="prog"><span class="pbar"><i></i></span><span class="cnt"></span></span>';
     box.appendChild(b);
   });
 }
@@ -815,6 +840,17 @@ function buildUI(){
   $('names').checked=showNames;
   $('names').addEventListener('change',e=>{showNames=e.target.checked;store.set('names',showNames);stop();render()});
   $('newBtn').onclick=fresh; $('playBtn').onclick=play; $('refBtn').onclick=playRef;
+  // 연습 기록 초기화: 한 번 더 물어본 뒤 Easy·Hard 모든 단계의 곡 수를 0으로
+  let resetT;
+  const showReset=(ask,msg)=>{ $('resetBtn').hidden=ask; $('resetAsk').hidden=!ask; $('resetMsg').hidden=!msg; };
+  $('resetBtn').onclick=()=>{ clearTimeout(resetT); showReset(true,false); $('resetNo').focus(); };
+  $('resetNo').onclick=()=>{ showReset(false,false); $('resetBtn').focus(); };
+  $('resetYes').onclick=()=>{
+    done={easy:{},hard:{}}; store.set('done2',done); try{ localStorage.removeItem('sr-done'); }catch(e){}
+    syncCards(); showReset(false,true); $('resetBtn').focus();
+    resetT=setTimeout(()=>{ $('resetMsg').hidden=true; },2500);
+  };
+  $('resetAsk').addEventListener('keydown',e=>{ if(e.key==='Escape') $('resetNo').click(); });
   let rt; window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{stop();render()},150)});
   sync();
 }
