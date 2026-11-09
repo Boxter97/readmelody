@@ -46,8 +46,9 @@ h1{margin:0;font-size:32px;font-weight:700;letter-spacing:-0.01em;line-height:1.
 .stage .num{font-family:var(--f-disp);font-size:36px;line-height:1}
 .stage .sym{position:absolute;right:12px;top:10px;font-family:var(--f-music);font-size:32px;line-height:1;color:#B7BFCD}
 .stage .name{font-weight:700;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.stage .foot{display:flex;align-items:center;justify-content:space-between;gap:6px}
-.stars{display:flex;gap:2px} .stars svg{width:18px;height:18px;fill:var(--star-off)} .stars svg.on{fill:var(--star)}
+.stars{display:flex;gap:2px;margin-top:2px} .stars svg{width:15px;height:15px;fill:var(--star-off)} .stars svg.on{fill:var(--star)}
+.prog{display:flex;align-items:center;gap:8px;margin-top:4px}
+.prog .pbar{flex:1;margin-top:0}
 .cnt{font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
 .pbar{height:6px;border-radius:3px;background:var(--line);margin-top:4px;overflow:hidden} .pbar i{display:block;height:100%;width:0;background:var(--accent)}
 .stage[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 8px 20px var(--accent-glow)}
@@ -125,7 +126,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
   #levels{gap:6px}
   .stage{padding:10px 4px 8px;border-radius:14px;align-items:center;text-align:center}
   .stage .num{font-size:28px} .stage .sym{position:static;font-size:24px;height:26px} .stage .name{display:none}
-  .stage .foot{flex-direction:column;gap:2px} .stars svg{width:13px;height:13px} .cnt{font-size:13px}
+  .stars{gap:1px} .stars svg{width:10px;height:10px} .prog{flex-direction:column;align-items:center;gap:3px;width:100%} .prog .pbar{flex:none;width:80%} .cnt{font-size:13px}
   .pbar{width:80%}
   .hardtag{align-self:center;padding:1px 7px;font-size:12px} .hardtag .full{display:none} .hardtag .short{display:inline}
   .modebox{flex-direction:row;align-items:center} #modes{flex-direction:row;flex:1} #modes button{flex:1;min-width:0}
@@ -748,17 +749,16 @@ function updateMeta(){
 function fresh(){ stop(); song=makeSong(); updateMeta(); render(); }
 const STAR_AT=[0,5,20,50];
 const SYM=['♩','♫','♩.','♬','♩‿♩'], LV_NAME=['4분음표','8분음표','점음표','16분음표','이음줄'];
-const STAR3=[0,1,2].map(()=>'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.2 6.6.7-5 4.5 1.4 6.6L12 17.3 6.1 20.5l1.4-6.6-5-4.5 6.6-.7z"/></svg>').join('');
+const STAR3=[0,1,2,3,4].map(()=>'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.2 6.6.7-5 4.5 1.4 6.6L12 17.3 6.1 20.5l1.4-6.6-5-4.5 6.6-.7z"/></svg>').join('');
 function levelInfo(n){
-  const c=(done[mode]||{})[n]||0, st=c>=STAR_AT[3]?3:c>=STAR_AT[2]?2:c>=STAR_AT[1]?1:0;
-  const pct=st>=3?100:Math.round((c-STAR_AT[st])/(STAR_AT[st+1]-STAR_AT[st])*100);
-  return {c,st,pct};
+  const c=(done[mode]||{})[n]||0;                 // 막대: 연습한 곡 수 (20곡이면 가득)
+  return {c,pct:Math.min(100,Math.round(c/20*100))};
 }
 function buildCards(){
   const box=$('levels');
   LEVELS.forEach(L=>{
     const b=document.createElement('button'); b.type='button'; b.className='stage'; b.dataset.v=L.n;
-    b.innerHTML='<span class="num">'+L.n+'</span><span class="sym" aria-hidden="true"></span><span class="name"></span><span class="hardtag" aria-hidden="true"><span class="full">+ 임시표</span><span class="short">♯♭</span></span><span class="foot"><span class="stars">'+STAR3+'</span><span class="cnt"></span></span><span class="pbar"><i></i></span>';
+    b.innerHTML='<span class="num">'+L.n+'</span><span class="sym" aria-hidden="true"></span><span class="name"></span><span class="hardtag" aria-hidden="true"><span class="full">+ 임시표</span><span class="short">♯♭</span></span><span class="stars" aria-hidden="true">'+STAR3+'</span><span class="prog"><span class="pbar"><i></i></span><span class="cnt"></span></span>';
     box.appendChild(b);
   });
 }
@@ -768,10 +768,10 @@ function syncCards(){
     b.setAttribute('aria-pressed',n===level);
     b.querySelector('.sym').textContent=six?'♩.':SYM[n-1];
     b.querySelector('.name').textContent=name;
-    b.querySelectorAll('.stars svg').forEach((s,k)=>s.classList.toggle('on',k<inf.st));
+    b.querySelectorAll('.stars svg').forEach((s,k)=>s.classList.toggle('on',k<n));      // 별 = 난이도
     b.querySelector('.cnt').textContent=inf.c+'곡';
     b.querySelector('.pbar i').style.width=inf.pct+'%';
-    b.setAttribute('aria-label',n+'단계 '+name+(mode==='hard'?' + 임시표':'')+', '+inf.c+'곡 연습, 별 '+inf.st+'개');
+    b.setAttribute('aria-label',n+'단계 '+name+(mode==='hard'?' + 임시표':'')+', 난이도 별 '+n+'개, '+inf.c+'곡 연습');
   });
 }
 function segButtons(id,items,label){
