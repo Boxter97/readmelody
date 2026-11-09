@@ -42,19 +42,24 @@ h1{margin:0;font-size:32px;font-weight:700;letter-spacing:-0.01em;line-height:1.
 /* 단계 카드 */
 .stagewrap{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:stretch}
 #levels{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
-.stage{position:relative;text-align:left;border:2px solid var(--line);border-radius:18px;padding:14px 14px 12px;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;gap:4px;min-width:0}
+.stage{position:relative;text-align:left;border:2px solid var(--line);border-radius:18px;padding:14px 14px 12px;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;gap:4px;min-width:0;container:card/inline-size}
+.stage .top{display:flex;align-items:center;gap:7px;min-width:0}
 .stage .num{font-family:var(--f-disp);font-size:36px;line-height:1}
 .stage .sym{position:absolute;right:12px;top:10px;font-family:var(--f-music);font-size:32px;line-height:1;color:#B7BFCD}
 .stage .name{font-weight:700;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.stage .foot{display:flex;align-items:center;justify-content:space-between;gap:6px}
-.stars{display:flex;gap:2px} .stars svg{width:18px;height:18px;fill:var(--star-off)} .stars svg.on{fill:var(--star)}
+.stars{display:flex;gap:2px;margin-top:2px} .stars svg{width:15px;height:15px;fill:var(--star-off)} .stars svg.on{fill:var(--star)}
+.prog{display:flex;align-items:center;gap:8px;margin-top:4px}
+.prog .pbar{flex:1;margin-top:0}
 .cnt{font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
 .pbar{height:6px;border-radius:3px;background:var(--line);margin-top:4px;overflow:hidden} .pbar i{display:block;height:100%;width:0;background:var(--accent)}
 .stage[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 8px 20px var(--accent-glow)}
 .stage[aria-pressed="true"] .num,.stage[aria-pressed="true"] .sym{color:var(--accent)}
-.hardtag{display:none;align-self:flex-start;padding:2px 9px;border-radius:999px;background:var(--hard-bg);color:var(--hard);font-size:13.5px;font-weight:700;line-height:1.5}
-.hardtag .short{display:none}
-.hard .hardtag{display:inline-flex}
+/* Hard 표시: 숫자 옆에 붙여서 카드 크기가 Easy와 같게. 카드가 좁으면 ♯♭로 짧게 */
+.hardtag{display:none;color:var(--hard);font-size:15px;font-weight:700;line-height:1;white-space:nowrap}
+.hardtag .full{display:none}
+.hard .hardtag{display:inline}
+@container card (min-width:130px){ .hardtag .full{display:inline} .hardtag .short{display:none} }
+@media (min-width:721px){ @container card (max-width:85.98px){ .hard .hardtag{display:none} } }  /* 광고를 켜서 카드가 아주 좁아지면 아이콘과 겹치지 않게 숨김 */
 .hard .wrap{--accent:var(--hard);--accent-soft:var(--hard-bg);--accent-shadow:rgba(232,70,31,.28);--accent-glow:rgba(232,70,31,.16)}
 .modebox{display:flex;flex-direction:column;gap:8px;justify-content:center}
 #modes{display:flex;flex-direction:column;gap:8px}
@@ -62,7 +67,19 @@ h1{margin:0;font-size:32px;font-weight:700;letter-spacing:-0.01em;line-height:1.
 #modes button[aria-pressed="true"][data-v="easy"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
 #modes button[data-v="hard"]{color:var(--hard);border-color:var(--hard-soft)}
 #modes button[aria-pressed="true"][data-v="hard"]{background:var(--hard);border-color:var(--hard);color:var(--bg)}
-.lvdesc{font-size:16px;color:var(--muted);margin-top:-4px}
+.lvrow{display:flex;align-items:center;flex-wrap:wrap;gap:8px 16px;margin-top:-4px}
+.lvdesc{font-size:16px;color:var(--muted)}
+/* 연습 기록 초기화: 누르면 한 번 더 물어봄 */
+.reset{display:flex;align-items:center;flex-wrap:wrap;gap:8px 10px;margin-left:auto}
+.reset [hidden]{display:none!important}
+.rask{display:inline-flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:8px 10px}
+.rbtns{display:inline-flex;gap:8px}
+.rq{font-size:16px;font-weight:700;color:var(--ink)}
+.rmsg{font-size:16px;font-weight:700;color:var(--accent)}
+.rbtn{display:inline-flex;align-items:center;gap:7px;min-height:40px;padding:0 16px;border:1.5px solid var(--line);border-radius:999px;background:var(--bg);font-size:16px;font-weight:500;color:var(--muted)}
+.rbtn svg{width:16px;height:16px;overflow:visible;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.rbtn.danger{background:var(--hard);border-color:var(--hard);color:var(--bg);font-weight:700}
+
 
 /* 이어 붙인 버튼 묶음 */
 .seg{display:inline-flex;flex-wrap:wrap;border:1.5px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg)}
@@ -129,9 +146,11 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
   #levels{gap:6px}
   .stage{padding:10px 4px 8px;border-radius:14px;align-items:center;text-align:center}
   .stage .num{font-size:28px} .stage .sym{position:static;font-size:24px;height:26px} .stage .name{display:none}
-  .stage .foot{flex-direction:column;gap:2px} .stars svg{width:13px;height:13px} .cnt{font-size:13px}
+  .stars{gap:1px} .stars svg{width:10px;height:10px} .prog{flex-direction:column;align-items:center;gap:3px;width:100%} .prog .pbar{flex:none;width:80%} .cnt{font-size:13px}
   .pbar{width:80%}
-  .hardtag{align-self:center;padding:1px 7px;font-size:12px} .hardtag .full{display:none} .hardtag .short{display:inline}
+  .stage .top{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:0;width:100%} .stage .top .num{grid-column:2}
+  .hardtag{grid-column:3;justify-self:start;margin-left:2px;font-size:13px}
+  .lvdesc{flex-basis:100%}
   .modebox{flex-direction:row;align-items:center} #modes{flex-direction:row;flex:1} #modes button{flex:1;min-width:0}
   .seg button{padding:8px 12px}
   #keys button{padding:6px 6px;min-width:36px}
@@ -151,6 +170,8 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 
 .stage .sym{font-family:var(--f-body);font-size:17px;font-weight:700;top:14px}
 #score .chord.on text{fill:var(--accent)}
+.hardtag{font-size:14px} @media (min-width:721px){ .stage .top{gap:6px} }          /* 코드 카드는 아이콘(sus4 등)이 넓어서 조금 작게 */
+@media (max-width:720px){ .hardtag{font-size:12px;margin-left:1px} }
 </style>
 </head>
 <body class="ads-off">
@@ -175,7 +196,14 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
       <div id="levels" role="group" aria-label="단계"></div>
       <div class="modebox"><span class="label">모드</span><div id="modes"></div></div>
     </div>
-    <div class="lvdesc" id="lvdesc"></div>
+    <div class="lvrow">
+      <div class="lvdesc" id="lvdesc"></div>
+      <div class="reset">
+        <span class="rmsg" id="resetMsg" role="status" hidden>초기화했어요</span>
+        <button type="button" class="rbtn" id="resetBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>기록 초기화</button>
+        <span class="rask" id="resetAsk" hidden><span class="rq">모든 연습 기록을 초기화할까요?</span><span class="rbtns"><button type="button" class="rbtn danger" id="resetYes">초기화</button><button type="button" class="rbtn" id="resetNo">취소</button></span></span>
+      </div>
+    </div>
     <div class="row">
       <div class="field"><span class="label">박자</span><div class="seg" id="meters"></div></div>
       <div class="field"><span class="label">키</span><div class="seg" id="keys"></div></div>
@@ -478,32 +506,29 @@ function chordFeature(seq){        // 그 단계에서 새로 배우는 코드�
   if(level===5) return seq.some(c=>['maj9','m9','9','m11','13'].includes(c.q));
   return true;
 }
+function barSplits(M){              // 한 마디 안에서 코드가 시작하는 자리 (16분음표 단위)
+  if(mode!=='hard') return [0];                                     // Easy: 한 마디에 코드 1개
+  if(M.beat===6) return [0,6];                                      // 6/8: 2개 (점4분음표마다)
+  const three=Math.random()<0.4;
+  if(M.len===16) return three?rnd([[0,8,12],[0,4,8]]):[0,8];        // 4/4: 2~3개
+  return three?[0,4,8]:rnd([[0,8],[0,4]]);                          // 3/4: 2~3개
+}
 function makeSong(){
-  const L=LEVELS[level-1], M=METERS[meter], key=KEYS[keyName];
-  const ms=makeRhythm(M,1);                                         // 리듬은 모든 단계에서 쉽게 (단계는 코드 종류로 나눔)
-  const half=M.beat===6?6:(M.num===4?8:-1);                        // 마디 가운데 (코드가 바뀔 수 있는 자리)
-  const segs=[];
-  ms.forEach((ev,b)=>{
-    segs.push({bar:b,pos:0,ev:ev[0]});
-    if(half>0&&b<bars-1&&Math.random()<L.split){
-      const e=ev.find(x=>x.pos===half&&x.cellStart);
-      if(e) segs.push({bar:b,pos:half,ev:e});
-    }
-  });
+  const M=METERS[meter], key=KEYS[keyName];
+  const segs=[], measures=[];
+  for(let b=0;b<bars;b++){
+    const ps=b===bars-1?[0]:barSplits(M), ev=[];                     // 마지막 마디는 으뜸화음 하나
+    ps.forEach((pos,i)=>{ const e={bar:b,pos,dur:(ps[i+1]??M.len)-pos,cellStart:true,chordOnly:true,deg:6}; ev.push(e); segs.push({bar:b,pos,ev:e}); });
+    measures.push(ev);
+  }
   let seq;
   for(let k=0;k<300;k++){
     seq=genDegrees(segs.length); decorate(seq,key);
     if(mode==='hard'&&addColor(seq)<1) continue;
     if(chordFeature(seq)) break;
   }
-  segs.forEach((s,i)=>{ s.chord=seq[i]; });
-  const flat=ms.flat(); let si=0;
-  flat.forEach((e,i)=>{
-    while(si+1<segs.length&&(segs[si+1].bar<e.bar||(segs[si+1].bar===e.bar&&segs[si+1].pos<=e.pos))) si++;
-    e.chord=segs[si].chord; e.deg=6;                                // 슬래시는 가운데 줄
-    if(i>0&&flat[i-1].tieNext) e.tiedFrom=true;
-  });
-  return {key,M,measures:ms,segs,tonicChord:{deg:0,q:'',inv:0}};
+  segs.forEach((sg,i)=>{ sg.chord=seq[i]; sg.ev.chord=seq[i]; });
+  return {key,M,measures,segs,tonicChord:{deg:0,q:'',inv:0}};
 }
 
 function pitchOf(deg,key,alt){
@@ -555,10 +580,12 @@ function render(){
   const sp=e=>S*Math.max((SPACE[e.dur]||3)*tight,minSp);
   const padL=S*0.6, padR=S*0.4;
   const lead=e=>e.sign?S*1.3:0;                                            // 임시표 자리
-  const natW=song.measures.map(ev=>padL+padR+ev.reduce((a,e)=>a+sp(e)+lead(e),0));
+  const nameW=e=>chordName(e.chord,key).length*S*(narrow?1.05:1.15)+S*1.6;   // 코드 이름이 들어갈 너비 (+ 여백)
+  const need=Math.max(...song.measures.map(ev=>padL+padR+Math.max(S*(narrow?8:10),...ev.map(e=>nameW(e)*M.len/e.dur))));
+  const natW=song.measures.map(()=>need);                                   // 마디 너비는 모두 같게 (코드 자리 = 박 자리)
   // 줄 나누기: 빽빽한 마디는 넓게
   const systems=packSystems(natW,x1-(x0+headW+tsW+4),x1-(x0+headW+4),maxPer,narrow?1.2:1);
-  const sysH=S*4+66+(showDeg?26:0)+(showTones?(level>=5?102:84):0), top=72;
+  const sysH=S*4+84+(showDeg?26:0)+(showTones?(level>=5?102:84):0), top=72;
   svg.setAttribute('viewBox',`0 0 ${W} ${top+systems.length*sysH}`);
   const sysInfo=[]; let prevF=1.6;
 
@@ -592,13 +619,12 @@ function render(){
         el('rect',{x:bx-4,y:y0,width:4,height:4*S,fill:'currentColor'},g);
       } else el('line',{x1:bx,x2:bx,y1:y0,y2:y0+4*S,stroke:'currentColor','stroke-width':1.2},g);
 
-      const tw=ev.reduce((a,e)=>a+sp(e)+lead(e),0), gs=(mw-padL-padR)/tw;   // 음표마다 자기 자리의 가운데에
-      let acc=0;
-      ev.forEach(e=>{ e.x=mx+padL+(acc+lead(e)+sp(e)/2)*gs; acc+=lead(e)+sp(e); e.sys=li; if(!e.rest) e.y=yOf(e.deg); });
+      ev.forEach(e=>{ e.x=mx+padL+e.pos/M.len*(mw-padL-padR); e.sys=li; e.y=yOf(e.deg); });   // 코드는 박 자리에 맞춰 (리듬은 안 그림)
 
       // 머리·쉼표·덧줄·점·음이름
       ev.forEach(e=>{
         const ng=el('g',{},g); e.ref=ng; noteEls.push(e);
+        if(e.chordOnly) return;
         if(e.rest){ drawRest(ng,e,y0); return; }
         const hollow=e.dur>=8, w=e.dur===16?S*0.95:S*0.72;           // 리듬 슬래시 머리
         el('path',{class:hollow?'nh hollow':'nh',d:`M${e.x-w} ${e.y+S*0.95} L${e.x-w+S*0.52} ${e.y+S*0.95} L${e.x+w} ${e.y-S*0.95} L${e.x+w-S*0.52} ${e.y-S*0.95}Z`,
@@ -618,6 +644,7 @@ function render(){
       // 기둥·꼬리·빔 (박 단위로 묶기)
       const groups=[]; let gc=[];
       ev.forEach(e=>{
+        if(e.chordOnly) return;
         const beamable=!e.rest&&e.dur<4;
         if(!beamable){ if(gc.length) groups.push(gc); gc=[]; if(!e.rest&&e.dur!==16) groups.push([e]); return; }
         const bi=Math.floor(e.pos/M.beat);
@@ -643,7 +670,7 @@ function render(){
   // 코드 이름(위) · 도수와 구성음(아래)
   song.segs.forEach(sg=>{
     const e=sg.ev, inf=sysInfo[e.sys], g=el('g',{class:'chord'},svg); sg.ref=g;
-    const x=e.x-S*0.62;
+    const x=e.x;
     const t=el('text',{x,y:inf.y0-S*2.3,'font-size':S*(narrow?1.75:1.95),'font-weight':700,'font-family':'IBM Plex Sans KR, sans-serif',fill:'currentColor'},g);
     chordParts(sg.chord,key).forEach(([txt,kind])=>el('tspan',kind==='acc'?{'font-family':'Noto Music, serif','font-size':S*1.55}:kind==='q'?{'font-size':S*(narrow?1.3:1.45)}:{},t,txt));
     let y=inf.y0+4*S+S*3.4;
@@ -817,19 +844,16 @@ function updateMeta(){
   $('meta').innerHTML=`<span>키 <b>${song.key.label}</b>${kn?' ('+(ksh?'♯':'♭')+kn+')':''}</span><span>박자 <b>${meter}</b></span><span>단계 <b>${level}</b></span><span>모드 <b>${mode==='hard'?'Hard':'Easy'}</b></span>`;
 }
 function fresh(){ stop(); song=makeSong(); updateMeta(); render(); }
-const STAR_AT=[0,5,20,50];
-const SYM=['♩','♫','♩.','♬','♩‿♩'], LV_NAME=['4분음표','8분음표','점음표','16분음표','이음줄'];
-const STAR3=[0,1,2].map(()=>'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.2 6.6.7-5 4.5 1.4 6.6L12 17.3 6.1 20.5l1.4-6.6-5-4.5 6.6-.7z"/></svg>').join('');
+const STAR3=[0,1,2,3,4].map(()=>'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.2 6.6.7-5 4.5 1.4 6.6L12 17.3 6.1 20.5l1.4-6.6-5-4.5 6.6-.7z"/></svg>').join('');
 function levelInfo(n){
-  const c=(done[mode]||{})[n]||0, st=c>=STAR_AT[3]?3:c>=STAR_AT[2]?2:c>=STAR_AT[1]?1:0;
-  const pct=st>=3?100:Math.round((c-STAR_AT[st])/(STAR_AT[st+1]-STAR_AT[st])*100);
-  return {c,st,pct};
+  const c=(done[mode]||{})[n]||0;                 // 막대: 연습한 곡 수 (20곡이면 가득)
+  return {c,pct:Math.min(100,Math.round(c/20*100))};
 }
 function buildCards(){
   const box=$('levels');
   LEVELS.forEach(L=>{
     const b=document.createElement('button'); b.type='button'; b.className='stage'; b.dataset.v=L.n;
-    b.innerHTML='<span class="num">'+L.n+'</span><span class="sym" aria-hidden="true"></span><span class="name"></span><span class="hardtag" aria-hidden="true"><span class="full">+ 부속·차용</span><span class="short">+α</span></span><span class="foot"><span class="stars">'+STAR3+'</span><span class="cnt"></span></span><span class="pbar"><i></i></span>';
+    b.innerHTML='<span class="top"><span class="num">'+L.n+'</span><span class="hardtag" aria-hidden="true"><span class="full">+ 부속·차용</span><span class="short">+α</span></span></span><span class="sym" aria-hidden="true"></span><span class="name"></span><span class="stars" aria-hidden="true">'+STAR3+'</span><span class="prog"><span class="pbar"><i></i></span><span class="cnt"></span></span>';
     box.appendChild(b);
   });
 }
@@ -839,10 +863,10 @@ function syncCards(){
     b.setAttribute('aria-pressed',n===level);
     b.querySelector('.sym').textContent=Lv.sym;
     b.querySelector('.name').textContent=name;
-    b.querySelectorAll('.stars svg').forEach((s,k)=>s.classList.toggle('on',k<inf.st));
+    b.querySelectorAll('.stars svg').forEach((s,k)=>s.classList.toggle('on',k<n));      // 별 = 난이도
     b.querySelector('.cnt').textContent=inf.c+'곡';
     b.querySelector('.pbar i').style.width=inf.pct+'%';
-    b.setAttribute('aria-label',n+'단계 '+name+(mode==='hard'?' + 부속·차용 코드':'')+', '+inf.c+'곡 연습, 별 '+inf.st+'개');
+    b.setAttribute('aria-label',n+'단계 '+name+(mode==='hard'?' + 부속·차용 코드':'')+', 난이도 별 '+n+'개, '+inf.c+'곡 연습');
   });
 }
 function segButtons(id,items,label){
@@ -882,6 +906,17 @@ function buildUI(){
   $('deg').addEventListener('change',e=>{showDeg=e.target.checked;store.set('deg',showDeg);stop();render()});
   $('tones').addEventListener('change',e=>{showTones=e.target.checked;store.set('tones',showTones);stop();render()});
   $('newBtn').onclick=fresh; $('playBtn').onclick=play; $('refBtn').onclick=playRef;
+  // 연습 기록 초기화: 한 번 더 물어본 뒤 Easy·Hard 모든 단계의 곡 수를 0으로
+  let resetT;
+  const showReset=(ask,msg)=>{ $('resetBtn').hidden=ask; $('resetAsk').hidden=!ask; $('resetMsg').hidden=!msg; };
+  $('resetBtn').onclick=()=>{ clearTimeout(resetT); showReset(true,false); $('resetNo').focus(); };
+  $('resetNo').onclick=()=>{ showReset(false,false); $('resetBtn').focus(); };
+  $('resetYes').onclick=()=>{
+    done={easy:{},hard:{}}; store.set('done2',done); try{ localStorage.removeItem('sr-done'); }catch(e){}
+    syncCards(); showReset(false,true); $('resetBtn').focus();
+    resetT=setTimeout(()=>{ $('resetMsg').hidden=true; },2500);
+  };
+  $('resetAsk').addEventListener('keydown',e=>{ if(e.key==='Escape') $('resetNo').click(); });
   let rt; window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{stop();render()},150)});
   sync();
 }
