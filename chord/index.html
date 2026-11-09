@@ -461,7 +461,7 @@ function decorate(seq,key){
     const c=seq[i], nx=seq[i+1], cad=i===n-2;
     // 2단계: sus4
     if(c.deg===4&&Math.random()<P(2,0.45)){ c.q=Math.random()<0.5?'7sus4':'sus4'; continue; }
-    if((c.deg===0||(c.deg===1&&mode==='hard'))&&!cad&&Math.random()<P(2,0.25)){ c.q=c.deg===1?'7sus4':'sus4'; continue; }   // Ⅱ7sus4는 Hard에서만
+    if(c.deg===1&&mode==='hard'&&!cad&&Math.random()<P(2,0.25)){ c.q='7sus4'; continue; }   // Ⅱ7sus4는 Hard에서만 (Ⅰsus4는 안 씀)
     // 3단계: aug7 (Ⅴ → Ⅰ), dim7 (다음 코드로 반음 올라가며 이어짐)
     if(c.deg===4&&nx.deg===0&&Math.random()<P(3,0.45)){ c.q='aug7'; continue; }
     if(i<n-2&&i>0&&[0,1,4,5].includes(nx.deg)&&seq[i-1].q!=='dim7'&&Math.random()<P(3,0.4)){ seq[i]=dimTo(nx.deg,key); continue; }
