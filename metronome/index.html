@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="빠르기·박자·첫 박 강세·탭 템포가 있는 간단한 온라인 메트로놈">
+<title>메트로놈 | 초견&amp;청음 Master</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=Black+Han+Sans&family=Noto+Music&display=swap">
+<style>body{margin:0}[hidden]{display:none!important}
+
+/* 레이아웃: 머리 띠 → 연습 설정판(단계 카드·모드·박자·키) → 흰 악보 → 재생 버튼 */
+:root{
+  --bg:#FFFFFF; --ink:#18202E; --muted:#5B6372; --line:#DCE1E8; --tile:#F3F5F8;
+  --accent:#2B55C9; --accent-soft:#E9EEFB; --accent-shadow:rgba(43,85,201,.25); --accent-glow:rgba(43,85,201,.16);
+  --hard:#E8461F; --hard-soft:#FFD2C6; --hard-bg:#FFF1EC; --star:#FFB400; --star-off:#DDE2EA;
+  --f-body:'IBM Plex Sans KR',system-ui,sans-serif;
+  --f-disp:'Black Han Sans','IBM Plex Sans KR',sans-serif;
+  --f-music:'Noto Music','Bravura',serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:18px;line-height:1.55}
+button{font:inherit;cursor:pointer}
+.band{border-bottom:1.5px solid var(--line);background:linear-gradient(180deg,var(--accent-soft),var(--bg))}
+.band .in{max-width:1080px;margin:0 auto;padding-block:26px 22px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;align-items:center;gap:16px}
+.mark{width:56px;height:56px;border-radius:16px;background:var(--accent);display:grid;place-items:center;flex:none}
+.mark span{font-family:var(--f-music);font-size:40px;line-height:1;color:#fff;margin-top:6px}
+h1{margin:0;font-size:32px;font-weight:700;letter-spacing:-0.01em;line-height:1.15;text-wrap:balance}
+.how{margin:4px 0 0;color:var(--muted);font-size:17px}
+.wrap{max-width:1080px;margin:0 auto;padding-block:22px 44px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:18px}
+
+.panel{display:flex;flex-direction:column;gap:14px;padding:18px 20px;border-radius:18px;background:var(--tile)}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:12px 32px}
+.field{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.label{font-size:15px;font-weight:700;color:var(--muted);min-width:44px}
+
+/* 단계 카드 */
+.stagewrap{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:stretch}
+#levels{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.stage{position:relative;text-align:left;border:2px solid var(--line);border-radius:18px;padding:14px 14px 12px;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;gap:4px;min-width:0}
+.stage .num{font-family:var(--f-disp);font-size:36px;line-height:1}
+.stage .sym{position:absolute;right:12px;top:10px;font-family:var(--f-music);font-size:32px;line-height:1;color:#B7BFCD}
+.stage .name{font-weight:700;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stage .foot{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.stars{display:flex;gap:2px} .stars svg{width:18px;height:18px;fill:var(--star-off)} .stars svg.on{fill:var(--star)}
+.cnt{font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.pbar{height:6px;border-radius:3px;background:var(--line);margin-top:4px;overflow:hidden} .pbar i{display:block;height:100%;width:0;background:var(--accent)}
+.stage[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 8px 20px var(--accent-glow)}
+.stage[aria-pressed="true"] .num,.stage[aria-pressed="true"] .sym{color:var(--accent)}
+.hardtag{display:none;align-self:flex-start;padding:2px 9px;border-radius:999px;background:var(--hard-bg);color:var(--hard);font-size:13.5px;font-weight:700;line-height:1.5}
+.hardtag .short{display:none}
+.hard .hardtag{display:inline-flex}
+.hard .wrap{--accent:var(--hard);--accent-soft:var(--hard-bg);--accent-shadow:rgba(232,70,31,.28);--accent-glow:rgba(232,70,31,.16)}
+.modebox{display:flex;flex-direction:column;gap:8px;justify-content:center}
+#modes{display:flex;flex-direction:column;gap:8px}
+#modes button{min-width:118px;min-height:50px;border-radius:14px;border:2px solid var(--line);background:var(--bg);font-weight:700;font-size:18px;color:var(--ink)}
+#modes button[aria-pressed="true"][data-v="easy"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+#modes button[data-v="hard"]{color:var(--hard);border-color:var(--hard-soft)}
+#modes button[aria-pressed="true"][data-v="hard"]{background:var(--hard);border-color:var(--hard);color:var(--bg)}
+.lvdesc{font-size:16px;color:var(--muted);margin-top:-4px}
+
+/* 이어 붙인 버튼 묶음 */
+.seg{display:inline-flex;flex-wrap:wrap;border:1.5px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg)}
+.seg button{min-height:46px;padding:8px 16px;border:0;border-right:1.5px solid var(--line);background:var(--bg);font-size:17px;font-weight:500;color:var(--ink)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--bg);font-weight:700}
+#keys button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;min-height:56px;padding:6px 13px;line-height:1.15}
+#keys .kl{font-size:18px;font-weight:700}
+#keys .ks{font-size:13px;font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums}
+#keys button[aria-pressed="true"] .ks{color:var(--bg)}
+.tempo{display:flex;align-items:center;gap:12px}
+.tempo input{width:170px;accent-color:var(--accent)}
+.tempo output{font-weight:700;font-variant-numeric:tabular-nums;min-width:72px}
+.checks{display:flex;gap:22px;flex-wrap:wrap}
+.check{display:flex;align-items:center;gap:8px;font-size:17px;cursor:pointer}
+.check input{width:22px;height:22px;accent-color:var(--accent)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* 악보 */
+.sheet{background:var(--bg);border:1.5px solid var(--line);border-radius:18px;padding:20px 14px 14px;box-shadow:0 10px 30px rgba(24,32,46,.07);overflow:hidden}
+.meta{display:flex;flex-wrap:wrap;gap:6px 18px;padding:0 10px 6px;font-size:16px;color:var(--muted)}
+.meta b{color:var(--ink)}
+#score{display:block;width:100%;height:auto;color:var(--ink)}
+#score .on .nh,#score .on .st{fill:var(--accent);stroke:var(--accent)}
+#score .on text{fill:var(--accent)}
+#score .on .hollow{fill:none}
+
+.actions{display:flex;flex-wrap:wrap;gap:12px}
+.btn{display:inline-flex;align-items:center;gap:10px;min-height:58px;padding:0 24px;border-radius:14px;border:1.5px solid var(--line);background:var(--bg);font-size:18px;font-weight:700;color:var(--ink)}
+.btn svg{width:18px;height:18px;fill:currentColor}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--bg);box-shadow:0 8px 18px var(--accent-shadow)}
+.btn.new{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.status{font-size:16px;color:var(--muted);min-height:1.5em}
+.credit{margin:8px 0 0;font-size:14px;color:var(--muted)}
+
+/* 광고 자리: 컴퓨터는 양옆 세로(160×600), 휴대폰·태블릿은 버튼 아래 가로(320×100). ads-off면 숨김 */
+.layout{max-width:1448px;margin:0 auto}
+.wrap{container-type:inline-size}
+.ad{display:none;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:1.5px dashed var(--line);border-radius:12px;background:var(--tile);color:var(--muted);font-size:15px;font-weight:700}
+.ad small{font-size:13px;font-weight:500;font-variant-numeric:tabular-nums}
+.ad-side{width:160px;height:600px}
+.ad-bottom{width:100%;max-width:320px;height:100px;margin:0 auto}
+@media (min-width:1024px){
+  body:not(.ads-off) .layout{display:grid;grid-template-columns:160px minmax(0,1fr) 160px;gap:24px;align-items:start;
+    padding-block:22px 0;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  body:not(.ads-off) .layout .wrap{max-width:none;margin:0;width:auto;padding-left:0;padding-right:0;padding-top:0}
+  body:not(.ads-off) .ad-side{display:flex}
+  body:not(.ads-off) .band .in{max-width:1448px;padding-left:calc(max(16px,env(safe-area-inset-left,0px)) + 184px);padding-right:calc(max(16px,env(safe-area-inset-right,0px)) + 184px)}
+}
+@media (max-width:1023.98px){ body:not(.ads-off) .ad-bottom{display:flex} }
+@container (max-width:760px){
+  .stagewrap{grid-template-columns:1fr}
+  .modebox{flex-direction:row;align-items:center} #modes{flex-direction:row;flex:1} #modes button{flex:1;min-width:0}
+}
+
+@media (max-width:720px){
+  .band .in{padding-block:18px 16px} h1{font-size:25px} .mark{width:46px;height:46px} .mark span{font-size:33px}
+  .panel{padding:14px 12px}
+  .stagewrap{grid-template-columns:1fr}
+  #levels{gap:6px}
+  .stage{padding:10px 4px 8px;border-radius:14px;align-items:center;text-align:center}
+  .stage .num{font-size:28px} .stage .sym{position:static;font-size:24px;height:26px} .stage .name{display:none}
+  .stage .foot{flex-direction:column;gap:2px} .stars svg{width:13px;height:13px} .cnt{font-size:13px}
+  .pbar{width:80%}
+  .hardtag{align-self:center;padding:1px 7px;font-size:12px} .hardtag .full{display:none} .hardtag .short{display:inline}
+  .modebox{flex-direction:row;align-items:center} #modes{flex-direction:row;flex:1} #modes button{flex:1;min-width:0}
+  .seg button{padding:8px 12px}
+  #keys button{padding:6px 6px;min-width:36px}
+  .tempo input{width:140px}
+  .btn{flex:1 1 46%;justify-content:center}
+}
+@media (prefers-reduced-motion:reduce){ *{transition:none!important} }
+
+/* 맨 위 메뉴 (세 페이지 공통) */
+.band .in{flex-wrap:wrap;row-gap:14px}
+.brand{display:flex;align-items:center;gap:16px;color:inherit;text-decoration:none;margin-right:auto;min-width:0}
+.nav{display:flex;gap:4px;background:var(--bg);border:1.5px solid var(--line);border-radius:14px;padding:4px}
+.nav a{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 18px;border-radius:10px;font-weight:700;font-size:17px;color:var(--muted);text-decoration:none;white-space:nowrap}
+.nav a[aria-current="page"]{background:var(--ink);color:var(--bg)}
+.nav a:focus-visible,.brand:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+@media (max-width:720px){ .nav{width:100%} .nav a{flex:1;padding:0 6px;font-size:16px} }
+
+/* 메트로놈 */
+.metro{background:var(--bg);border:1.5px solid var(--line);border-radius:22px;padding:28px 24px 26px;box-shadow:0 10px 30px rgba(24,32,46,.07);max-width:640px;width:100%;margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:18px}
+.term{display:flex;flex-direction:column;align-items:center;gap:2px}
+.term b{font-size:24px;font-weight:700;font-style:italic;color:var(--accent)}
+.term span{font-size:16px;color:var(--muted)}
+.bpmbox{display:flex;flex-direction:column;align-items:center}
+#bpm{font-family:var(--f-disp);font-size:clamp(104px,24vw,156px);line-height:.95;color:var(--ink);font-variant-numeric:tabular-nums}
+#bpm.pulse{animation:pulse .18s ease-out}
+@keyframes pulse{0%{transform:scale(1.04)}100%{transform:scale(1)}}
+.unit{margin-top:10px;font-size:15px;font-weight:700;color:var(--muted);letter-spacing:.04em}
+.slide{display:flex;align-items:center;gap:14px;width:100%;max-width:520px}
+.slide input{flex:1;min-width:0;accent-color:var(--accent);height:30px}
+.round{width:54px;height:54px;border-radius:50%;border:1.5px solid var(--line);background:var(--bg);font-size:30px;line-height:1;color:var(--ink);display:grid;place-items:center;flex:none}
+.presets{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.presets button{min-width:66px;min-height:48px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);font-size:18px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.presets button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+.beats{display:flex;gap:16px;justify-content:center;align-items:center;min-height:40px}
+.beats i{width:22px;height:22px;border-radius:50%;background:var(--line);transition:transform .08s}
+.beats i.first{width:30px;height:30px}
+.beats i.mid{width:26px;height:26px}
+.beats i.on{background:var(--accent);transform:scale(1.15)}
+.beats i.first.on{background:var(--hard)}
+.ctrl{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:18px;width:100%;max-width:520px}
+.side{display:flex;flex-direction:column;align-items:center;gap:6px;border:0;background:transparent;color:var(--ink);font-weight:700;font-size:16px;cursor:pointer}
+.side .ic{width:58px;height:58px;border-radius:50%;background:var(--tile);border:1.5px solid var(--line);display:grid;place-items:center}
+.side svg{width:28px;height:28px;fill:var(--ink)}
+#tap.hit .ic{background:var(--accent-soft);border-color:var(--accent)}
+.sw input{appearance:none;-webkit-appearance:none;width:58px;height:34px;border-radius:17px;background:var(--line);position:relative;margin:12px 0;cursor:pointer}
+.sw input::after{content:"";position:absolute;top:4px;left:4px;width:26px;height:26px;border-radius:50%;background:var(--bg);box-shadow:0 1px 3px rgba(24,32,46,.3);transition:left .15s}
+.sw input:checked{background:var(--accent)} .sw input:checked::after{left:28px}
+.bigplay{width:100px;height:100px;border-radius:50%;border:0;background:var(--accent);display:grid;place-items:center;box-shadow:0 12px 26px var(--accent-shadow)}
+.bigplay svg{width:38px;height:38px;fill:var(--bg)}
+.meterrow{display:flex;align-items:center;gap:12px}
+@media (max-width:720px){ .metro{padding:22px 14px;gap:16px} .round{width:48px;height:48px} .bigplay{width:88px;height:88px} .presets button{min-width:56px} }
+@media (prefers-reduced-motion:reduce){ #bpm.pulse{animation:none} }
+</style>
+</head>
+<body class="ads-off">
+<div class="band"><div class="in">
+  <a class="brand" href="../">
+    <div class="mark" aria-hidden="true"><span>&#x1D11E;</span></div>
+    <div><h1>초견&amp;청음 Master</h1><p class="how">빠르기를 정하고 시작을 누르세요. 탭을 박자에 맞춰 누르면 빠르기를 맞춰 줘요.</p></div>
+  </a>
+  <nav class="nav" aria-label="메뉴">
+    <a href="../">멜로디 초견</a>
+    <a href="../chord/">코드 초견</a>
+    <a href="./" aria-current="page">메트로놈</a>
+  </nav>
+</div></div>
+
+<div class="layout">
+<aside class="ad ad-side" aria-label="광고">광고<small>160×600</small></aside>
+<div class="wrap">
+  <section class="metro" aria-label="메트로놈">
+    <div class="term"><b id="termIt">Largo</b><span id="termKo">아주 느리고 폭넓게</span></div>
+    <div class="bpmbox"><output id="bpm" aria-live="polite">60</output><span class="unit" id="unit">BPM · ♩ 기준</span></div>
+    <div class="slide">
+      <button type="button" class="round" id="minus" aria-label="1 느리게">−</button>
+      <input type="range" id="bpmRange" min="30" max="250" step="1" value="60" aria-label="빠르기">
+      <button type="button" class="round" id="plus" aria-label="1 빠르게">+</button>
+    </div>
+    <div class="presets" id="presets"></div>
+    <div class="beats" id="beats" aria-hidden="true"></div>
+    <div class="ctrl">
+      <button type="button" class="side" id="tap"><span class="ic"><svg viewBox="0 0 24 24"><path d="M9 11V5.5a2 2 0 1 1 4 0V10l4.6 1.2a2.4 2.4 0 0 1 1.8 2.6l-.7 5.4A3 3 0 0 1 15.7 22h-4.2a3 3 0 0 1-2.4-1.2L5.4 16a1.8 1.8 0 0 1 2.7-2.4L9 14.6z"/></svg></span>탭</button>
+      <button type="button" class="bigplay" id="startBtn" aria-label="시작"><svg viewBox="0 0 16 16" id="startIcon"><path d="M4 2l10 6-10 6z"/></svg></button>
+      <label class="side sw"><input type="checkbox" id="accent" checked>첫 박 강세</label>
+    </div>
+    <div class="meterrow"><span class="label">박자</span><div class="seg" id="meters"></div></div>
+  </section>
+  <aside class="ad ad-bottom" aria-label="광고">광고<small>320×100</small></aside>
+</div>
+<aside class="ad ad-side" aria-label="광고">광고<small>160×600</small></aside>
+</div>
+
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const METERS={'2/4':{n:2,acc:[2,0],note:'♩'},'3/4':{n:3,acc:[2,0,0],note:'♩'},'4/4':{n:4,acc:[2,0,0,0],note:'♩'},'6/8':{n:6,acc:[2,0,0,1,0,0],note:'♪'}};
+const TERMS=[[0,'Grave','아주 느리고 무겁게'],[40,'Largo','아주 느리고 폭넓게'],[60,'Larghetto','라르고보다 조금 빠르게'],[66,'Adagio','아주 느리게'],
+  [76,'Andante','느리게'],[108,'Moderato','보통 빠르게'],[120,'Allegro','빠르게'],[156,'Vivace','빠르고 경쾌하게'],[176,'Presto','매우 빠르게'],[200,'Prestissimo','가장 빠르게']];
+const PRESETS=[60,80,100,120,160];
+let bpm=60, meter='4/4', running=false, ctx=null, timer=null, nextT=0, beat=0, queue=[], raf=0, lock=null;
+
+function setBpm(v){
+  bpm=Math.max(30,Math.min(250,Math.round(v)));
+  $('bpm').textContent=bpm; $('bpmRange').value=bpm;
+  const t=TERMS.filter(x=>bpm>=x[0]).pop(); $('termIt').textContent=t[1]; $('termKo').textContent=t[2];
+  $('presets').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.v===bpm));
+}
+function drawBeats(){
+  const M=METERS[meter], box=$('beats'); box.innerHTML='';
+  for(let i=0;i<M.n;i++){ const d=document.createElement('i'); if(M.acc[i]===2) d.className='first'; else if(M.acc[i]===1) d.className='mid'; box.appendChild(d); }
+  $('unit').textContent='BPM · '+M.note+' 기준';
+}
+function audio(){ if(!ctx) ctx=new (window.AudioContext||window.webkitAudioContext)(); if(ctx.state==='suspended') ctx.resume(); return ctx; }
+function clickAt(t,lv){                         // 나무 블록 같은 짧은 소리 (첫 박은 더 높게)
+  const c=ctx, o=c.createOscillator(), g=c.createGain(), f=c.createBiquadFilter();
+  o.type='triangle'; o.frequency.setValueAtTime(lv===2?1760:lv===1?1480:1180,t); o.frequency.exponentialRampToValueAtTime(lv===2?1320:lv===1?1100:880,t+0.05);
+  f.type='bandpass'; f.frequency.value=lv===2?1700:1200; f.Q.value=1.2;
+  g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(lv===2?0.9:lv===1?0.65:0.5,t+0.002); g.gain.exponentialRampToValueAtTime(0.0001,t+0.07);
+  o.connect(f); f.connect(g); g.connect(c.destination); o.start(t); o.stop(t+0.08);
+}
+function schedule(){
+  const M=METERS[meter];
+  while(nextT<ctx.currentTime+0.12){
+    const lv=$('accent').checked?M.acc[beat%M.n]:0;
+    clickAt(nextT,lv); queue.push({t:nextT,b:beat%M.n});
+    nextT+=60/bpm; beat=(beat+1)%M.n;
+  }
+}
+function paint(){                                // 소리 나는 순간에 맞춰 박 표시
+  const dots=$('beats').children;
+  while(queue.length&&queue[0].t<=ctx.currentTime){
+    const q=queue.shift();
+    [...dots].forEach((d,i)=>d.classList.toggle('on',i===q.b));
+    $('bpm').classList.remove('pulse'); void $('bpm').offsetWidth; $('bpm').classList.add('pulse');
+  }
+  raf=requestAnimationFrame(paint);
+}
+async function start(){
+  audio(); running=true; beat=0; queue=[]; nextT=ctx.currentTime+0.08;
+  schedule(); timer=setInterval(schedule,25); raf=requestAnimationFrame(paint);
+  $('startBtn').setAttribute('aria-label','멈춤'); $('startIcon').innerHTML='<path d="M3 2h4v12H3zM9 2h4v12H9z"/>';
+  try{ if('wakeLock' in navigator) lock=await navigator.wakeLock.request('screen'); }catch(e){}
+}
+function stop(){
+  running=false; clearInterval(timer); cancelAnimationFrame(raf); queue=[];
+  [...$('beats').children].forEach(d=>d.classList.remove('on'));
+  $('startBtn').setAttribute('aria-label','시작'); $('startIcon').innerHTML='<path d="M4 2l10 6-10 6z"/>';
+  try{ if(lock){ lock.release(); lock=null; } }catch(e){}
+}
+let taps=[];
+function tap(){
+  const now=performance.now(); taps=taps.filter(t=>now-t<2500); taps.push(now);
+  if(taps.length>=2){ const iv=[]; for(let i=1;i<taps.length;i++) iv.push(taps[i]-taps[i-1]); const last=iv.slice(-4); setBpm(60000/(last.reduce((a,b)=>a+b,0)/last.length)); }
+  $('tap').classList.remove('hit'); void $('tap').offsetWidth; $('tap').classList.add('hit');
+}
+
+PRESETS.forEach(v=>{ const b=document.createElement('button'); b.type='button'; b.dataset.v=v; b.textContent=v; $('presets').appendChild(b); });
+Object.keys(METERS).forEach(m=>{ const b=document.createElement('button'); b.type='button'; b.dataset.v=m; b.textContent=m; $('meters').appendChild(b); });
+const syncMeter=()=>$('meters').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===meter));
+$('presets').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b) setBpm(+b.dataset.v); });
+$('meters').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; meter=b.dataset.v; syncMeter(); drawBeats(); beat=0; });
+$('bpmRange').addEventListener('input',e=>setBpm(+e.target.value));
+$('minus').onclick=()=>setBpm(bpm-1); $('plus').onclick=()=>setBpm(bpm+1);
+$('startBtn').onclick=()=>running?stop():start();
+$('tap').onclick=tap;
+document.addEventListener('keydown',e=>{
+  if(e.target.closest('input,button')&&e.code==='Space') return;
+  if(e.code==='Space'){ e.preventDefault(); running?stop():start(); }
+  if(e.code==='ArrowUp'){ e.preventDefault(); setBpm(bpm+1); }
+  if(e.code==='ArrowDown'){ e.preventDefault(); setBpm(bpm-1); }
+});
+document.addEventListener('visibilitychange',async()=>{ if(running&&document.visibilityState==='visible'&&!lock){ try{ lock=await navigator.wakeLock.request('screen'); }catch(e){} } });
+setBpm(60); syncMeter(); drawBeats();
+})();
+</script>
+
+</body>
+</html>
