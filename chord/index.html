@@ -41,7 +41,7 @@ h1{margin:0;font-size:32px;font-weight:700;letter-spacing:-0.01em;line-height:1.
 
 /* 단계 카드 */
 .stagewrap{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:stretch}
-#levels{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}   /* 6단계 + 랜덤 = 7칸 → 4칸씩 두 줄 */
+#levels{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}   /* 6단계 + 랜덤 = 7칸: 좁은 화면은 4칸씩 두 줄 */
 .stage{position:relative;text-align:left;border:2px solid var(--line);border-radius:18px;padding:14px 14px 12px;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;gap:4px;min-width:0;container:card/inline-size}
 .stage .top{display:flex;align-items:center;gap:7px;min-width:0}
 .stage .num{font-family:var(--f-disp);font-size:36px;line-height:1}
@@ -171,6 +171,15 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 
 .stage .sym{font-family:var(--f-body);font-size:17px;font-weight:700;top:14px}
 #score .chord.on text{fill:var(--accent)}
+/* 넓은 화면: 카드를 조금 작게 해서 7칸 한 줄 */
+@media (min-width:1000px){
+  #levels{grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+  .stage{padding:12px 10px 10px;border-radius:16px}
+  .stage .num{font-size:30px} .stage .name{font-size:15px}
+  .stage .sym{font-size:14px;top:12px;right:9px}
+  .stars svg{width:12px;height:12px} .cnt{font-size:13px}
+  .hardtag{font-size:13px} .hard .stage .hardtag{display:inline}
+}
 .hardtag{font-size:14px} @media (min-width:721px){ .stage .top{gap:6px} }          /* 코드 카드는 아이콘(sus4 등)이 넓어서 조금 작게 */
 @media (max-width:720px){ .hardtag{font-size:12px;margin-left:1px} }
 </style>
