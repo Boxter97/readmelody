@@ -470,7 +470,9 @@ function decorate(seq,key){
       if(c.deg===0&&(nx.deg===3||nx.deg===1)){ c.q=''; c.inv=1; continue; }            // C/E → F, Dm
       if(c.deg===0&&i===n-3){ c.q=''; c.inv=2; continue; }                               // C/G → G7
       if(c.deg===4&&(nx.deg===5||nx.deg===0)){ c.q=''; c.inv=1; continue; }            // G/B → Am, C
-      if(c.deg===5&&nx.deg===3){ c.q='m7'; c.inv=3; continue; }                          // Am7/G → F
+      if(c.deg===3&&nx.deg===4){ c.q=''; c.inv=1; continue; }                            // F/A → G
+      if(c.deg===1&&nx.deg===4&&Math.random()<0.5){ c.q='m'; c.inv=1; continue; }                           // Dm/F → G
+      if(c.deg===5&&nx.deg===1){ c.q='m'; c.inv=2; continue; }                           // Am/E → Dm
     }
     // 5단계: 텐션코드
     if(Math.random()<P(5,0.55)){
