@@ -125,6 +125,10 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 .optlist .check{flex-direction:row-reverse;justify-content:space-between;gap:12px;min-height:46px;padding:0;border:0;border-top:1.5px solid var(--line);border-radius:0;background:transparent;font-size:17px}
 .optlist .check:first-child{border-top:0}
 .optlist .check:has(input:checked){background:transparent;border-color:var(--line)}
+.optlist .pair{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);border-top:1.5px solid var(--line)}   /* 도수·구성음 보기는 한 줄에 둘 */
+.optlist .pair .check{border-top:0;min-width:0;white-space:nowrap}
+.optlist .pair .check+.check{border-left:1.5px solid var(--line);padding-left:12px}
+.optlist .pair .check:first-child{padding-right:12px}
 
 /* 악보 */
 .sheet{background:var(--bg);border:1.5px solid var(--line);border-radius:18px;padding:20px 14px 14px;box-shadow:0 10px 30px rgba(24,32,46,.07);overflow:hidden}
@@ -257,8 +261,10 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
         <div class="optlist">
           <label class="check"><input type="checkbox" id="countin" checked> 한 마디 세고 시작</label>
           <label class="check"><input type="checkbox" id="metro"> 메트로놈</label>
-          <label class="check"><input type="checkbox" id="deg"> 도수 보기 (Ⅰ Ⅳ Ⅴ)</label>
-          <label class="check"><input type="checkbox" id="tones"> 구성음 보기</label>
+          <div class="pair">
+            <label class="check"><input type="checkbox" id="deg"> 도수 보기</label>
+            <label class="check"><input type="checkbox" id="tones"> 구성음 보기</label>
+          </div>
         </div>
       </div>
     </div>
