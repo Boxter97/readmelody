@@ -107,6 +107,23 @@ h1.logo{font-family:var(--f-disp);font-weight:400;font-size:36px;letter-spacing:
 .check:has(input:checked){border-color:var(--accent);background:var(--accent-soft);font-weight:700}
 button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 
+/* 설정: 악보 상자 · 연주 상자 */
+.setgrid{display:grid;grid-template-columns:1.45fr 1fr;gap:12px;align-items:stretch}
+.setbox{display:flex;flex-direction:column;gap:12px;padding:14px 16px 16px;border:1.5px solid var(--line);border-radius:14px;background:var(--bg)}
+.setbox h3{margin:0;font-size:15px;font-weight:700;color:var(--muted)}
+.setbox .label{min-width:48px}
+.keyfield{align-items:stretch}
+.keyfield .label{align-self:center}
+.keys{display:flex;gap:8px;align-items:stretch;min-width:0}
+.keys .kc{display:flex} .keys .kc button{flex:1;height:auto}
+.krows{display:flex;flex-direction:column;gap:8px;min-width:0}
+.krows .seg{display:flex;flex-wrap:nowrap} .krows .seg button{flex:1;min-width:0;padding-left:8px;padding-right:8px}
+.setbox .tempo{flex-wrap:nowrap} .setbox .tempo input{flex:1;width:auto;min-width:80px}
+.optlist{display:flex;flex-direction:column}
+.optlist .check{flex-direction:row-reverse;justify-content:space-between;gap:12px;min-height:52px;padding:0;border:0;border-top:1.5px solid var(--line);border-radius:0;background:transparent;font-size:17px}
+.optlist .check:first-child{border-top:0}
+.optlist .check:has(input:checked){background:transparent;border-color:var(--line)}
+
 /* 악보 */
 .sheet{background:var(--bg);border:1.5px solid var(--line);border-radius:18px;padding:20px 14px 14px;box-shadow:0 10px 30px rgba(24,32,46,.07);overflow:hidden}
 .meta{display:flex;flex-wrap:wrap;gap:6px 18px;padding:0 10px 6px;font-size:16px;color:var(--muted)}
@@ -140,6 +157,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 }
 @media (max-width:1023.98px){ body:not(.ads-off) .ad-bottom{display:flex} }
 @container (max-width:760px){
+  .setgrid{grid-template-columns:1fr}
   .stagewrap{grid-template-columns:1fr}
   .modebox{flex-direction:row;align-items:center;flex-wrap:wrap;gap:8px 12px;padding:8px 12px;border-radius:14px} .reset{margin-top:0;flex:none} .rask{flex-direction:row;flex-wrap:wrap;justify-content:center} #modes{flex-direction:row;flex:1} #modes button{flex:1;min-width:0;border-bottom:0;border-right:1.5px solid var(--line)} #modes button:last-child{border-right:0}
 }
@@ -158,6 +176,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
   .lvdesc{flex-basis:100%}
   .modebox{flex-direction:row;align-items:center;flex-wrap:wrap;gap:8px 12px;padding:8px 12px;border-radius:14px} .reset{margin-top:0;flex:none} .rask{flex-direction:row;flex-wrap:wrap;justify-content:center} #modes{flex-direction:row;flex:1} #modes button{flex:1;min-width:0;border-bottom:0;border-right:1.5px solid var(--line)} #modes button:last-child{border-right:0}
   .seg button{padding:8px 12px}
+  .setgrid{grid-template-columns:1fr} .setbox{padding:12px 12px 14px} .setbox .label{min-width:40px}
   #keys button{padding:6px 6px;min-width:36px}
   .tempo input{width:140px}
   .btn{flex:1 1 46%;justify-content:center}
@@ -216,25 +235,27 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
     <div class="lvrow">
       <div class="lvdesc" id="lvdesc"></div>
     </div>
-    <div class="row">
-      <div class="field"><span class="label">박자</span><div class="seg" id="meters"></div></div>
-      <div class="field"><span class="label">키</span><div class="seg" id="keys"></div></div>
-    </div>
-    <div class="row">
-      <div class="field"><span class="label">마디</span><div class="seg" id="bars">
-        <button type="button" data-v="4">4마디</button>
-        <button type="button" data-v="8">8마디</button>
-      </div></div>
-      <label class="tempo"><span class="label">빠르기</span>
-        <input type="range" id="tempo" min="40" max="140" step="2" value="60">
-        <output id="tempoOut">♩ = 60</output>
-      </label>
-    </div>
-    <div class="checks">
-      <label class="check"><input type="checkbox" id="countin" checked> 한 마디 세고 시작</label>
-      <label class="check"><input type="checkbox" id="metro"> 메트로놈</label>
-      <label class="check"><input type="checkbox" id="deg"> 도수 보기 (Ⅰ Ⅳ Ⅴ)</label>
-      <label class="check"><input type="checkbox" id="tones"> 구성음 보기</label>
+    <div class="setgrid">
+      <div class="setbox" aria-label="악보 설정"><h3>악보</h3>
+        <div class="field"><span class="label">박자</span><div class="seg" id="meters"></div></div>
+        <div class="field"><span class="label">마디</span><div class="seg" id="bars">
+          <button type="button" data-v="4">4마디</button>
+          <button type="button" data-v="8">8마디</button>
+        </div></div>
+        <div class="field keyfield"><span class="label">키</span><div class="keys" id="keys"><div class="krows"></div></div></div>
+      </div>
+      <div class="setbox" aria-label="연주 설정"><h3>연주</h3>
+        <label class="tempo"><span class="label">빠르기</span>
+          <input type="range" id="tempo" min="40" max="140" step="2" value="60">
+          <output id="tempoOut">♩ = 60</output>
+        </label>
+        <div class="optlist">
+          <label class="check"><input type="checkbox" id="countin" checked> 한 마디 세고 시작</label>
+          <label class="check"><input type="checkbox" id="metro"> 메트로놈</label>
+          <label class="check"><input type="checkbox" id="deg"> 도수 보기 (Ⅰ Ⅳ Ⅴ)</label>
+          <label class="check"><input type="checkbox" id="tones"> 구성음 보기</label>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -270,14 +291,17 @@ const KEYS={
   D:{label:'D',letter:1,acc:{F:1,C:1}},
   A:{label:'A',letter:5,acc:{F:1,C:1,G:1}},
   E:{label:'E',letter:2,acc:{F:1,C:1,G:1,D:1}},
+  B:{label:'B',letter:6,acc:{F:1,C:1,G:1,D:1,A:1}},
   F:{label:'F',letter:3,acc:{B:-1}},
   Bb:{label:'B♭',letter:6,acc:{B:-1,E:-1}},
   Eb:{label:'E♭',letter:2,acc:{B:-1,E:-1,A:-1}},
   Ab:{label:'A♭',letter:5,acc:{B:-1,E:-1,A:-1,D:-1}},
+  Db:{label:'D♭',letter:1,acc:{B:-1,E:-1,A:-1,D:-1,G:-1}},
 };
-const KEY_ORDER=['C','G','D','A','E','F','Bb','Eb','Ab'];
+const KEY_ORDER=['C','G','D','A','E','B','F','Bb','Eb','Ab','Db'];
+const KEY_GROUPS=[['C'],['G','D','A','E','B'],['F','Bb','Eb','Ab','Db']];   // 키 버튼: C 하나 · ♯줄 · ♭줄
 const SHARP_POS={F:10,C:7,G:11,D:8,A:5};      // 높은음자리표 조표 자리 (가온 도 = 0)
-const FLAT_POS={B:6,E:9,A:5,D:8};
+const FLAT_POS={B:6,E:9,A:5,D:8,G:4};
 
 /* 박자 — 길이 단위: 16분음표 = 1 */
 const METERS={
@@ -920,7 +944,7 @@ function buildUI(){
   buildCards();
   segButtons('modes',['easy','hard'],v=>v==='easy'?'Easy':'Hard');
   segButtons('meters',METER_ORDER,v=>v);
-  segButtons('keys',KEY_ORDER,v=>KEYS[v].label);
+  KEY_GROUPS.forEach((g,i)=>{ const box=document.createElement('div'); box.className='seg'+(i?' krow':' kc'); box.id='keys'+i; (i?$('keys').querySelector('.krows'):$('keys')).insertAdjacentElement(i?'beforeend':'afterbegin',box); segButtons('keys'+i,g,v=>KEYS[v].label); });
   $('keys').querySelectorAll('button').forEach(b=>{                 // 글자 아래에 조표 개수
     const k=KEYS[b.dataset.v], n=Object.keys(k.acc).length, sh=n&&k.acc[Object.keys(k.acc)[0]]>0;
     const sub=n?(sh?'♯':'♭')+n:'없음';
