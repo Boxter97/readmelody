@@ -771,8 +771,7 @@ function render(){
     chordParts(sg.chord,key).forEach(([txt,kind])=>{
       const up=kind==='acc'?(txt.includes('♯')?S*0.42:S*0.12):kind==='tacc'?(txt.includes('♯')?S*0.3:S*0.08):0, a=kind==='acc'?{'font-family':'Noto Music, serif','font-size':S*1.55}:kind==='tacc'?{'font-family':'Noto Music, serif','font-size':S*(narrow?1.05:1.15)}:kind==='q'?{'font-size':S*(narrow?1.3:1.45)}:{};
       if(up!==lift){ a.dy=lift-up; lift=up; }
-      if(prevFlat) a.dx=-S*0.3;                                     // 괄호 안 ♭ 앞뒤 빈칸 줄이기
-      if(kind==='tacc'&&txt==='♭') a.dx=-S*0.2;
+      if(prevFlat) a.dx=-S*0.12;                                    // 괄호 안 ♭ 뒤 빈칸만 조금 줄이기 (앞은 그대로: 줄이면 괄호와 겹침)
       prevFlat=kind==='tacc'&&txt==='♭';
       el('tspan',a,t,txt); });
     let y=inf.y0+4*S+S*3.4;
