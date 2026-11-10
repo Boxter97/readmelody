@@ -358,7 +358,7 @@ const LEVELS=[
   {n:3,name:'aug7·dim7',sym:'°7',chords:'aug7 · dim7 추가',split:0.35},
   {n:4,name:'분수코드',sym:'C/E',chords:'분수코드 추가',split:0.35},
   {n:5,name:'6코드',sym:'6',chords:'6코드 (6 · m6) 추가',split:0.35},
-  {n:6,name:'텐션코드',sym:'(9)',chords:'텐션코드 (9 · 11 · 13) 추가',split:0.35},
+  {n:6,name:'텐션코드',sym:'(9)',chords:'모든 코드가 텐션코드 (9 · 11 · 13)',split:0.35},
 ];
 
 /* ---------- 상태 ---------- */
@@ -447,11 +447,12 @@ const QUAL={'':[[0,0],[2,4],[4,7]],'m':[[0,0],[2,3],[4,7]],'dim':[[0,0],[2,3],[4
   'm7♭5':[[0,0],[2,3],[4,6],[6,10]],'sus4':[[0,0],[3,5],[4,7]],'add9':[[0,0],[2,4],[4,7],[1,14]],
   '7sus4':[[0,0],[3,5],[4,7],[6,10]],'aug7':[[0,0],[2,4],[4,8],[6,10]],'dim7':[[0,0],[2,3],[4,6],[6,9]],
   'maj9':[[0,0],[2,4],[4,7],[6,11],[1,14]],'m9':[[0,0],[2,3],[4,7],[6,10],[1,14]],'9':[[0,0],[2,4],[4,7],[6,10],[1,14]],
-  'm11':[[0,0],[2,3],[6,10],[1,14],[3,17]],'6':[[0,0],[2,4],[4,7],[5,9]],'m6':[[0,0],[2,3],[4,7],[5,9]],'13':[[0,0],[2,4],[6,10],[5,21]]};
+  'm11':[[0,0],[2,3],[6,10],[1,14],[3,17]],'6':[[0,0],[2,4],[4,7],[5,9]],'m6':[[0,0],[2,3],[4,7],[5,9]],'13':[[0,0],[2,4],[6,10],[5,21]],
+  'm7♭5(11)':[[0,0],[2,3],[4,6],[6,10],[3,17]],'7♭9':[[0,0],[2,4],[4,7],[6,10],[1,13]]};
 const TRIAD_Q=['','m','m','','','m','dim'], SEV_Q=['maj7','m7','m7','maj7','7','m7','m7♭5'];
 const ROMAN=['Ⅰ','Ⅱ','Ⅲ','Ⅳ','Ⅴ','Ⅵ','Ⅶ'];
-const ROMAN_Q={'':'','m':'m','dim':'°','7':'7','maj7':'M7','m7':'m7','m7♭5':'ø7','sus4':'sus4','add9':'add9','7sus4':'7sus4','aug7':'aug7','dim7':'°7','maj9':'M7(9)','m9':'m7(9)','9':'7(9)','m11':'m7(11)','13':'7(13)','6':'6','m6':'m6'};
-const Q_SHOW={'maj9':'maj7(9)','m9':'m7(9)','9':'7(9)','m11':'m7(11)','13':'7(13)'};   // 텐션은 7th 뒤에 괄호로
+const ROMAN_Q={'':'','m':'m','dim':'°','7':'7','maj7':'M7','m7':'m7','m7♭5':'ø7','sus4':'sus4','add9':'add9','7sus4':'7sus4','aug7':'aug7','dim7':'°7','maj9':'M7(9)','m9':'m7(9)','9':'7(9)','m11':'m7(11)','13':'7(13)','6':'6','m6':'m6','m7♭5(11)':'ø7(11)','7♭9':'7(♭9)'};
+const Q_SHOW={'maj9':'maj7(9)','m9':'m7(9)','9':'7(9)','m11':'m7(11)','13':'7(13)','7♭9':'7(♭9)'};   // 텐션은 7th 뒤에 괄호로
 // 다음 코드로 가기 쉬운 곳 (도수: 0=Ⅰ … 5=Ⅵ), [도수, 비중]
 const PROG={0:[[5,4],[1,3],[3,2],[2,1],[6,1]],1:[[4,4],[6,2],[5,1],[3,1]],2:[[5,4],[1,2],[3,1]],3:[[6,3],[1,3],[4,2],[0,1]],
   4:[[0,3],[5,3]],5:[[1,4],[6,2],[3,2],[2,1]],6:[[2,4],[0,2],[5,1]]};   // Ⅱ·Ⅵ·Ⅶ로 가는 길을 넉넉하게 (Ⅰ Ⅳ Ⅴ만 돌지 않게)
@@ -481,9 +482,9 @@ function chordParts(c,key){        // 표시 조각: [글자, 종류(r 근음 ·
 }
 function chordName(c,key){ return chordParts(c,key).map(p=>p[0]).join(''); }
 function romanOf(c){
-  if(c.sec!=null) return 'Ⅴ7/'+ROMAN[c.sec];
+  if(c.sec!=null) return 'Ⅴ'+ROMAN_Q[c.q]+'/'+ROMAN[c.sec];
   if(c.rom) return c.rom;
-  if(c.borrowed) return ROMAN[c.deg]+'m7';
+  if(c.borrowed) return ROMAN[c.deg]+ROMAN_Q[c.q];
   let s=(c.alt?accTxt(c.alt):'')+ROMAN[c.deg]+ROMAN_Q[c.q];
   if(c.inv) s+='/'+ROMAN[(c.deg+QUAL[c.q][c.inv][0])%7];
   return s;
@@ -519,7 +520,10 @@ function dimTo(t,key){             // 다음 코드 근음보다 반음 아래�
   const a=opt((t+6)%7), b=opt(t), acc=c=>Math.abs(rootOf(c,key).acc);   // 읽기 쉬운 이름으로 (E♯dim7 대신 Fdim7)
   const c=acc(b)<acc(a)?b:a; c.rom=accTxt(a.alt)+ROMAN[a.deg]+'°7'; return c;    // 도수는 ♯Ⅳ°7처럼 (다음 코드로 반음 올라감)
 }
+const tensionOf=d=>[ 'maj9', Math.random()<0.5?'m9':'m11', 'm11', 'maj9', Math.random()<0.5?'9':'13', Math.random()<0.6?'m9':'m11', 'm7♭5(11)' ][d];
+const allTension=()=>level===6&&sel!==0;        // 6단계: 모든 코드가 텐션코드 (K 요청 2026-11-11)
 function decorate(seq,key){
+  if(allTension()){ seq.forEach(c=>{ c.q=tensionOf(c.deg); c.inv=0; }); return; }
   const n=seq.length, P=(lv,p)=>sel===0?p*0.4:level<lv?0:(level===lv?p:p*0.5);   // 새로 배우는 코드는 자주, 앞 단계 코드는 가끔 (랜덤은 모든 단계 고루)
   for(let i=1;i<n-1;i++){
     const c=seq[i], nx=seq[i+1], cad=i===n-2;
@@ -565,9 +569,9 @@ function addColor(seq){            // Hard: 부속화음(Ⅴ7/x)과 차용화음
   for(const i of cands){
     if(cnt>=want) break;
     if(used.has(i-1)||used.has(i+1)) continue;
-    const t=seq[i+1].deg; seq[i]={deg:(t+4)%7,q:'7',inv:0,sec:t}; used.add(i); cnt++;
+    const t=seq[i+1].deg; seq[i]={deg:(t+4)%7,q:allTension()?([1,5].includes(t)?'7♭9':'9'):'7',inv:0,sec:t}; used.add(i); cnt++;
   }
-  for(let i=1;i<n-1;i++) if(seq[i].deg===3&&seq[i].sec==null&&!seq[i].feat&&!used.has(i)&&seq[i+1].deg===0&&Math.random()<0.5){ seq[i]={deg:3,q:'m7',inv:0,borrowed:true}; cnt++; }
+  for(let i=1;i<n-1;i++) if(seq[i].deg===3&&seq[i].sec==null&&!seq[i].feat&&!used.has(i)&&seq[i+1].deg===0&&Math.random()<0.5){ seq[i]={deg:3,q:allTension()?'m9':'m7',inv:0,borrowed:true}; cnt++; }
   return cnt;
 }
 function mixCount(seq){            // 랜덤: 몇 개 단계의 코드가 섞였는지 (2~6단계)
