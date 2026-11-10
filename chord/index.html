@@ -121,6 +121,14 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 .krows{display:flex;flex-direction:column;gap:8px;min-width:0;flex:1}
 .krows .seg{display:flex;flex-wrap:nowrap} .krows .seg button{flex:1;min-width:0;padding-left:4px;padding-right:4px}
 .setbox .tempo{flex-wrap:nowrap} .setbox .tempo input{flex:1;width:auto;min-width:80px}
+@container (min-width:760.02px){   /* 컴퓨터: 악보 상자 빈 곳이 많아 버튼·글씨를 키움 */
+  .scorebody{gap:14px 24px} .scoreleft{gap:14px}
+  .scorebody .label{font-size:17px}
+  .scorebody .seg button{min-height:64px;padding:8px 22px;font-size:20px}
+  .krows{gap:12px} #keys .krows .seg button{min-height:70px;padding-left:4px;padding-right:4px}
+  .keys{gap:10px} #keys .kc button{padding-left:14px;padding-right:14px}
+  #keys .kl{font-size:21px} #keys .ks{font-size:14.5px}
+}
 .optlist{display:flex;flex-direction:column}
 .optlist .check{flex-direction:row-reverse;justify-content:space-between;gap:12px;min-height:46px;padding:0;border:0;border-top:1.5px solid var(--line);border-radius:0;background:transparent;font-size:17px}
 .optlist .check:first-child{border-top:0}
