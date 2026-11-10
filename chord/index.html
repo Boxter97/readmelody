@@ -366,7 +366,7 @@ const store={get(k,d){try{const v=localStorage.getItem('ch-'+k);return v==null?d
              set(k,v){try{localStorage.setItem('ch-'+k,JSON.stringify(v))}catch(e){}}};
 let sel=store.get('level',1), bars=store.get('bars',4), meter=store.get('meter','4/4'), keyName=store.get('key','C');
 if(sel!==0&&!LEVELS[sel-1]) sel=1;
-let level=sel||1;                                   // sel 0 = 랜덤 단계 (곡마다 단계를 골라서)
+let level=sel||LEVELS.length;                       // sel 0 = 랜덤 (한 곡 안에 1~6단계를 섞어서)
 if(!METERS[meter]) meter='4/4';
 if(!KEYS[keyName]) keyName='C';
 let mode=store.get('mode','easy'); if(mode!=='hard') mode='easy';
@@ -520,7 +520,7 @@ function dimTo(t,key){             // 다음 코드 근음보다 반음 아래�
   const c=acc(b)<acc(a)?b:a; c.rom=accTxt(a.alt)+ROMAN[a.deg]+'°7'; return c;    // 도수는 ♯Ⅳ°7처럼 (다음 코드로 반음 올라감)
 }
 function decorate(seq,key){
-  const n=seq.length, P=(lv,p)=>level<lv?0:(level===lv?p:p*0.5);   // 새로 배우는 코드는 자주, 앞 단계 코드는 가끔
+  const n=seq.length, P=(lv,p)=>sel===0?p*0.4:level<lv?0:(level===lv?p:p*0.5);   // 새로 배우는 코드는 자주, 앞 단계 코드는 가끔 (랜덤은 모든 단계 고루)
   for(let i=1;i<n-1;i++){
     const c=seq[i], nx=seq[i+1], cad=i===n-2;
     // 2단계: sus4
@@ -552,10 +552,10 @@ function decorate(seq,key){
   seq.forEach(c=>{ if(c.inv||c.q==='dim7'||!(c.q===SEV_Q[c.deg]||(c.deg===4&&c.q==='7'))) c.feat=true; });
   // 그 단계 코드가 한 번도 안 나왔으면 알맞은 자리에 하나 넣기
   const has=q=>seq.some(c=>c.q===q);
-  if(level===3&&!has('aug7')){ const i=seq.findIndex((c,j)=>c.deg===4&&c.q!=='dim7'&&seq[j+1]&&seq[j+1].deg===0); if(i>=0){ seq[i].q='aug7'; seq[i].feat=true; } }
-  if(level===3&&!has('dim7')){ const c=[]; for(let i=1;i<n-1;i++) if([0,1,4,5].includes(seq[i+1].deg)&&seq[i+1].q!=='dim7'&&seq[i-1].q!=='dim7') c.push(i); if(c.length){ const i=rnd(c); seq[i]=dimTo(seq[i+1].deg,key); } }
-  if(level===5&&!seq.some(c=>c.q==='6'||c.q==='m6')){ const c=seq.filter(x=>[0,1,3].includes(x.deg)&&!x.feat); if(c.length){ const x=rnd(c); x.q=x.deg===1?'m6':'6'; x.feat=true; } }
-  if(level===4&&!seq.some(c=>c.inv)){ const i=1+Math.floor(Math.random()*(n-2)); if(seq[i].q!=='dim7'){ seq[i].q=TRIAD_Q[seq[i].deg]; seq[i].inv=1; seq[i].feat=true; } }
+  if((level===3||sel===0&&Math.random()<0.5)&&!has('aug7')){ const i=seq.findIndex((c,j)=>c.deg===4&&c.q!=='dim7'&&seq[j+1]&&seq[j+1].deg===0); if(i>=0){ seq[i].q='aug7'; seq[i].feat=true; } }
+  if((level===3||sel===0&&Math.random()<0.5)&&!has('dim7')){ const c=[]; for(let i=1;i<n-1;i++) if([0,1,4,5].includes(seq[i+1].deg)&&seq[i+1].q!=='dim7'&&seq[i-1].q!=='dim7') c.push(i); if(c.length){ const i=rnd(c); seq[i]=dimTo(seq[i+1].deg,key); } }
+  if((level===5||sel===0&&Math.random()<0.5)&&!seq.some(c=>c.q==='6'||c.q==='m6')){ const c=seq.filter(x=>[0,1,3].includes(x.deg)&&!x.feat); if(c.length){ const x=rnd(c); x.q=x.deg===1?'m6':'6'; x.feat=true; } }
+  if((level===4||sel===0&&Math.random()<0.5)&&!seq.some(c=>c.inv)&&n>2){ const i=1+Math.floor(Math.random()*(n-2)); if(seq[i].q!=='dim7'&&!(sel===0&&seq[i].feat)){ seq[i].q=TRIAD_Q[seq[i].deg]; seq[i].inv=1; seq[i].feat=true; } }
 }
 function addColor(seq){            // Hard: 부속화음(Ⅴ7/x)과 차용화음(Ⅳm)
   const n=seq.length, cands=[];
@@ -569,6 +569,10 @@ function addColor(seq){            // Hard: 부속화음(Ⅴ7/x)과 차용화음
   }
   for(let i=1;i<n-1;i++) if(seq[i].deg===3&&seq[i].sec==null&&!seq[i].feat&&!used.has(i)&&seq[i+1].deg===0&&Math.random()<0.5){ seq[i]={deg:3,q:'m7',inv:0,borrowed:true}; cnt++; }
   return cnt;
+}
+function mixCount(seq){            // 랜덤: 몇 개 단계의 코드가 섞였는지 (2~6단계)
+  return [seq.some(c=>c.q==='sus4'||c.q==='7sus4'), seq.some(c=>c.q==='aug7'||c.q==='dim7'), seq.some(c=>c.inv),
+          seq.some(c=>c.q==='6'||c.q==='m6'), seq.some(c=>['maj9','m9','9','m11','13'].includes(c.q))].filter(Boolean).length;
 }
 function chordFeature(seq){        // 그 단계에서 새로 배우는 코드가 꼭 한 번은 나오게
   if(level===2) return seq.some(c=>c.q==='sus4'||c.q==='7sus4');
@@ -593,12 +597,15 @@ function makeSong(){
     ps.forEach((pos,i)=>{ const e={bar:b,pos,dur:(ps[i+1]??M.len)-pos,cellStart:true,chordOnly:true,deg:6}; ev.push(e); segs.push({bar:b,pos,ev:e}); });
     measures.push(ev);
   }
-  let seq;
+  let seq, best=null, bestN=-1;
+  const need=Math.min(5,Math.max(2,segs.length-2));                 // 랜덤: 코드 수에 맞게 여러 단계가 섞이도록
   for(let k=0;k<300;k++){
     seq=genDegrees(segs.length); decorate(seq,key);
     if(mode==='hard'&&addColor(seq)<1) continue;
+    if(sel===0){ const m=mixCount(seq); if(m>bestN){ best=seq; bestN=m; } if(m>=need) break; continue; }
     if(chordFeature(seq)) break;
   }
+  if(sel===0&&best) seq=best;
   segs.forEach((sg,i)=>{ sg.chord=seq[i]; sg.ev.chord=seq[i]; });
   return {key,M,measures,segs,tonicChord:{deg:0,q:'',inv:0}};
 }
@@ -925,11 +932,11 @@ async function playRef(){
 /* ---------- 화면 ---------- */
 function updateMeta(){
   const kn=Object.keys(song.key.acc).length, ksh=kn&&song.key.acc[Object.keys(song.key.acc)[0]]>0;
-  $('meta').innerHTML=`<span>키 <b>${song.key.label}</b>${kn?' ('+(ksh?'♯':'♭')+kn+')':''}</span><span>박자 <b>${meter}</b></span><span>단계 <b>${sel===0?'랜덤 ('+level+')':level}</b></span><span>모드 <b>${mode==='hard'?'Hard':'Easy'}</b></span>`;
+  $('meta').innerHTML=`<span>키 <b>${song.key.label}</b>${kn?' ('+(ksh?'♯':'♭')+kn+')':''}</span><span>박자 <b>${meter}</b></span><span>단계 <b>${sel===0?'랜덤':level}</b></span><span>모드 <b>${mode==='hard'?'Hard':'Easy'}</b></span>`;
 }
-function fresh(){ stop(); if(sel===0) level=1+Math.floor(Math.random()*LEVELS.length); song=makeSong(); updateMeta(); render(); updDesc(); }
+function fresh(){ stop(); if(sel===0) level=LEVELS.length; song=makeSong(); updateMeta(); render(); updDesc(); }
 const STAR3=LEVELS.map(()=>'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.2 6.6.7-5 4.5 1.4 6.6L12 17.3 6.1 20.5l1.4-6.6-5-4.5 6.6-.7z"/></svg>').join('');
-function updDesc(){ const L=LEVELS[level-1]; $('lvdesc').textContent=(sel===0?'1~'+LEVELS.length+'단계가 섞여 나와요 · 이번 곡 '+level+'단계 ('+L.name+')':L.chords)+(mode==='hard'?' · 부속화음·차용화음 추가':''); }
+function updDesc(){ const L=LEVELS[level-1]; $('lvdesc').textContent=(sel===0?'1~'+LEVELS.length+'단계 코드가 한 곡에 섞여 나와요':L.chords)+(mode==='hard'?' · 부속화음·차용화음 추가':''); }
 function levelInfo(n){
   const c=(done[mode]||{})[n===0?'R':n]||0;                 // 막대: 연습한 곡 수 (20곡이면 가득)
   return {c,pct:Math.min(100,Math.round(c/20*100))};

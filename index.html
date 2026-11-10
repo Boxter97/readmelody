@@ -347,7 +347,7 @@ const store={get(k,d){try{const v=localStorage.getItem('sr-'+k);return v==null?d
              set(k,v){try{localStorage.setItem('sr-'+k,JSON.stringify(v))}catch(e){}}};
 let sel=store.get('level',1), bars=store.get('bars',4), meter=store.get('meter','4/4'), keyName=store.get('key','C');
 if(sel!==0&&!LEVELS[sel-1]) sel=1;
-let level=sel||1;                                   // sel 0 = 랜덤 단계 (곡마다 단계를 골라서)
+let level=sel||LEVELS.length;                       // sel 0 = 랜덤 (한 곡 안에 1~5단계를 섞어서)
 if(!METERS[meter]) meter='4/4';
 if(!KEYS[keyName]) keyName='C';
 let mode=store.get('mode','easy'); if(mode!=='hard') mode='easy';
@@ -382,9 +382,18 @@ function fillCells(M,L,from,to,st){
   }
   return out;
 }
-function makeRhythm(M,L){
+function mixLevels(){                       // 랜덤: 마디마다 다른 단계 (1~5단계를 고루 섞음)
+  const out=[]; let bag=[];
+  for(let m=0;m<bars;m++){
+    if(!bag.length){ bag=LEVELS.map(x=>x.n); for(let i=bag.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [bag[i],bag[j]]=[bag[j],bag[i]]; } }
+    out.push(bag.pop());
+  }
+  return out;
+}
+function makeRhythm(M,L0,lvs){             // lvs: 마디별 단계 (랜덤일 때)
   const ms=[];
   for(let m=0;m<bars;m++){
+    const L=lvs?lvs[m]:L0;
     let ev, tries=0;
     do{
       const st={rest:false};
@@ -398,12 +407,13 @@ function makeRhythm(M,L){
     ms.push(ev);
   }
   ms.forEach((ev,mi)=>ev.forEach(e=>{e.bar=mi}));
-  if(L>=5){                                   // 붙임줄: 마디를 넘거나, 박을 넘는 당김음
+  const barLv=b=>lvs?lvs[b]:L0;
+  if(lvs?lvs.includes(5):L0>=5){              // 붙임줄: 마디를 넘거나, 박을 넘는 당김음 (붙임줄 단계 마디에서만)
     const flat=ms.flat();
     const used=new Set();
     for(let i=0;i<flat.length-1;i++){
       const a=flat[i], b=flat[i+1];
-      if(a.rest||b.rest||b.final||!b.cellStart||used.has(a.bar)) continue;
+      if(a.rest||b.rest||b.final||!b.cellStart||used.has(a.bar)||barLv(a.bar)<5) continue;
       const cross=a.bar!==b.bar;
       const ok=cross||a.dur<M.beat||(M.num===4&&b.pos===8&&a.pos>=4);
       if(ok&&Math.random()<(cross?0.3:0.22)){ a.tieNext=true; used.add(a.bar); }
@@ -475,7 +485,8 @@ function markSigns(ms,key){                 // 마디 안에서 필요한 곳에
 function makeSong(){
   const L=levelOf(level), M=METERS[meter], key=KEYS[keyName];
   const P=placeTonic(key.letter,L), tonic=P.t, lo=P.lo, hi=P.hi;
-  let ms; for(let k=0;k<40;k++){ ms=makeRhythm(M,level); if(hasFeature(ms,level,M)) break; }
+  const lvs=sel===0?mixLevels():null;        // 랜덤: 리듬은 마디마다 다른 단계, 음 도약·음역은 5단계 기준
+  let ms; for(let k=0;k<40;k++){ ms=makeRhythm(M,level,lvs); if(lvs?lvs.every((v,b)=>hasFeature([ms[b]],v,M)):hasFeature(ms,level,M)) break; }
   const notes=ms.flat().filter(e=>!e.rest);
   const isTriad=d=>{const r=((d-tonic)%7+7)%7;return r===0||r===2||r===4};
   const tonics=[tonic,tonic+7,tonic-7].filter(x=>x>=lo&&x<=hi);
@@ -819,13 +830,13 @@ async function playRef(){
 /* ---------- 화면 ---------- */
 function updateMeta(){
   const kn=Object.keys(song.key.acc).length, ksh=kn&&song.key.acc[Object.keys(song.key.acc)[0]]>0;
-  $('meta').innerHTML=`<span>키 <b>${song.key.label}</b>${kn?' ('+(ksh?'♯':'♭')+kn+')':''}</span><span>박자 <b>${meter}</b></span><span>단계 <b>${sel===0?'랜덤 ('+level+')':level}</b></span><span>모드 <b>${mode==='hard'?'Hard':'Easy'}</b></span>`;
+  $('meta').innerHTML=`<span>키 <b>${song.key.label}</b>${kn?' ('+(ksh?'♯':'♭')+kn+')':''}</span><span>박자 <b>${meter}</b></span><span>단계 <b>${sel===0?'랜덤':level}</b></span><span>모드 <b>${mode==='hard'?'Hard':'Easy'}</b></span>`;
 }
-function fresh(){ stop(); if(sel===0) level=1+Math.floor(Math.random()*LEVELS.length); song=makeSong(); updateMeta(); render(); updDesc(); }
+function fresh(){ stop(); if(sel===0) level=LEVELS.length; song=makeSong(); updateMeta(); render(); updDesc(); }
 const STAR_AT=[0,5,20,50];
 const SYM=['♩','♫','♩.','♬','♩‿♩'], LV_NAME=['4분음표','8분음표','점음표','16분음표','이음줄'];
 const STAR3=[0,1,2,3,4].map(()=>'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.2 6.6.7-5 4.5 1.4 6.6L12 17.3 6.1 20.5l1.4-6.6-5-4.5 6.6-.7z"/></svg>').join('');
-function updDesc(){ const L=levelOf(level); $('lvdesc').textContent=(sel===0?'1~'+LEVELS.length+'단계가 섞여 나와요 · 이번 곡 '+level+'단계':L.rhythm[meter==='6/8'?1:0]+' · '+L.pitch)+(mode==='hard'?' · 임시표 추가':''); }
+function updDesc(){ const L=levelOf(level); $('lvdesc').textContent=(sel===0?'1~'+LEVELS.length+'단계가 한 곡에 섞여 나와요 · '+L.pitch:L.rhythm[meter==='6/8'?1:0]+' · '+L.pitch)+(mode==='hard'?' · 임시표 추가':''); }
 function levelInfo(n){
   const c=(done[mode]||{})[n===0?'R':n]||0;                 // 막대: 연습한 곡 수 (20곡이면 가득)
   return {c,pct:Math.min(100,Math.round(c/20*100))};
