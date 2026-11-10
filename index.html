@@ -135,11 +135,10 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 #score .on text{fill:var(--accent)}
 #score .on .hollow{fill:none}
 
-.actions{display:flex;flex-wrap:wrap;gap:12px}
-.btn{display:inline-flex;align-items:center;gap:10px;min-height:58px;padding:0 24px;border-radius:14px;border:1.5px solid var(--line);background:var(--bg);font-size:18px;font-weight:700;color:var(--ink)}
-.btn svg{width:18px;height:18px;fill:currentColor}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--bg);box-shadow:0 8px 18px var(--accent-shadow)}
-.btn.new{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:10px -14px -14px;padding:14px;border-top:1.5px solid var(--line);background:var(--tile)}   /* 악보 카드 아래쪽에 붙은 버튼 줄 */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:56px;padding:0 16px;border-radius:14px;border:1.5px solid var(--line);background:var(--bg);font-size:18px;font-weight:700;color:var(--ink);white-space:nowrap}
+.btn svg{width:18px;height:18px;fill:currentColor;flex:none}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--bg)}
 .status{font-size:16px;color:var(--muted);min-height:1.5em}
 .credit{margin:8px 0 0;font-size:14px;color:var(--muted)}
 
@@ -181,7 +180,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
   .setgrid{grid-template-columns:1fr} .setbox{padding:12px 12px 14px} .setbox .label{min-width:40px}
   #keys button{padding:6px 6px;min-width:36px}
   .tempo input{width:140px}
-  .btn{flex:1 1 46%;justify-content:center}
+  .actions{gap:6px;margin:8px -14px -14px;padding:10px} .btn{min-height:50px;padding:0 6px;font-size:16px;gap:6px} .btn svg{width:15px;height:15px}
 }
 @media (prefers-reduced-motion:reduce){ *{transition:none!important} }
 
@@ -249,13 +248,13 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
   <section class="sheet" aria-label="악보">
     <div class="meta" id="meta"></div>
     <svg id="score" role="img" aria-label="초견 멜로디 악보"></svg>
+    <div class="actions">
+      <button type="button" class="btn new" id="newBtn">새 멜로디</button>
+      <button type="button" class="btn" id="refBtn"><svg viewBox="0 0 16 16"><path d="M3 2h2v12H3zM7 4h2v10H7zM11 6h2v8h-2z"/></svg>기준음 듣기</button>
+      <button type="button" class="btn primary" id="playBtn"><svg viewBox="0 0 16 16" id="playIcon"><path d="M4 2l10 6-10 6z"/></svg><span id="playTxt">정답 듣기</span></button>
+    </div>
   </section>
 
-  <div class="actions">
-    <button type="button" class="btn new" id="newBtn">새 멜로디</button>
-    <button type="button" class="btn" id="refBtn"><svg viewBox="0 0 16 16"><path d="M3 2h2v12H3zM7 4h2v10H7zM11 6h2v8h-2z"/></svg>기준음 듣기</button>
-    <button type="button" class="btn primary" id="playBtn"><svg viewBox="0 0 16 16" id="playIcon"><path d="M4 2l10 6-10 6z"/></svg><span id="playTxt">정답 듣기</span></button>
-  </div>
   <div class="status" id="status" aria-live="polite"></div>
   <aside class="ad ad-bottom" aria-label="광고">광고<small>320×100</small></aside>
   <p class="credit">피아노 소리: Salamander Grand Piano (Alexander Holm, CC BY 3.0)</p>
