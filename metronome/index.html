@@ -335,7 +335,7 @@ $('presets').addEventListener('click',e=>{ const b=e.target.closest('button'); i
 $('beats').addEventListener('click',e=>{          // 큰 점: 보통 → 강박 → 보통 (중간 강박은 누르면 강박)
   const b=e.target.closest('.bt'); if(!b) return; const A=accOf(), i=+b.dataset.i;
   A[i]=A[i]===2?0:2; if(!$('accent').checked){ $('accent').checked=true; syncAcc(); }
-  drawBeats(); $('beats').querySelector('.bt[data-i="'+i+'"]').focus();
+  drawBeats();
 });
 const syncAcc=()=>document.body.classList.toggle('noacc',!$('accent').checked);
 $('accent').addEventListener('change',syncAcc);
@@ -345,7 +345,7 @@ $('minus').onclick=()=>setBpm(bpm-1); $('plus').onclick=()=>setBpm(bpm+1);
 $('startBtn').onclick=()=>running?stop():start();
 $('tap').onclick=tap;
 document.addEventListener('keydown',e=>{
-  if(e.target.closest('input,button')&&e.code==='Space') return;
+  if(e.target.closest('input,button')&&!e.target.closest('.bt')&&e.code==='Space') return;   // 점에 포커스가 있어도 스페이스는 시작/멈춤 (강박이 바뀌지 않게)
   if(e.code==='Space'){ e.preventDefault(); running?stop():start(); }
   if(e.code==='ArrowUp'){ e.preventDefault(); setBpm(bpm+1); }
   if(e.code==='ArrowDown'){ e.preventDefault(); setBpm(bpm-1); }
