@@ -9,7 +9,7 @@
 @media (min-width:1400px){ html{zoom:1.1} }
 @media (min-width:1800px){ html{zoom:1.2} }
 </style>
-<title>청음 | 기타 MasTer</title>
+<title>멜로디 청음 | 기타 MasTer</title>
 <link rel="icon" href="../favicon.ico" sizes="any">
 <link rel="icon" type="image/png" href="../favicon.png">
 <link rel="apple-touch-icon" href="../apple-touch-icon.png">
@@ -257,7 +257,8 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
   <nav class="nav" aria-label="메뉴">
     <a href="../">멜로디 초견</a>
     <a href="../chord/">코드 초견</a>
-    <a href="./" aria-current="page">청음</a>
+    <a href="./" aria-current="page">멜로디 청음</a>
+    <a href="../chordear/">코드 청음</a>
     <a href="../improv/">즉흥<wbr>연주</a>
     <a href="../harmony/">화성학</a>
     <a href="../metronome/">메트로<wbr>놈</a>
@@ -291,9 +292,8 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
           <output id="tempoOut">♩ = 60</output>
         </label>
         <div class="optlist">
-          <label class="check"><input type="checkbox" id="countin" checked> 한 마디 세고 시작</label>
-          <label class="check"><input type="checkbox" id="metro"> 메트로놈</label>
-          <label class="check"><input type="checkbox" id="hint"> 첫 음 알려주기</label>
+          <label class="check"><input type="checkbox" id="hint" checked> 첫 음 알려주기</label>
+          <label class="check"><input type="checkbox" id="countin"> 한 마디 세고 시작</label>
         </div>
       </div>
     </div>
@@ -367,7 +367,7 @@ const store={get(k,d){try{const v=localStorage.getItem('ear-'+k);return v==null?
 let sel=store.get('level',1); if(sel!==0&&!LEVELS[sel-1]) sel=1;     // sel 0 = 랜덤
 let keyName=store.get('key','C'); if(!KEYS[keyName]) keyName='C';
 let mode=store.get('mode','easy'); if(mode!=='hard') mode='easy';
-let hint=store.get('hint',false);
+let hint=store.get('hint',true);                  // 처음엔 첫 음 알려주기 켜짐 (K 요청)
 let tempo=60;
 let done=store.get('done',null); if(!done||typeof done!=='object'||!done.easy) done={easy:{},hard:{}};
 let song=null, ans=[], cur=0, checked=false;
@@ -572,7 +572,6 @@ async function play(){
     timers.push(setTimeout(()=>n.ref&&n.ref.classList.remove('on'),on+beat*1000-15));
     t+=beat;
   });
-  if($('metro').checked) for(let b=0;b<4;b++) click(startT+b*beat,ACCENT[b]);
   timers.push(setTimeout(stop,(t-c.currentTime)*1000+300));
 }
 async function playRef(){
