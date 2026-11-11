@@ -680,6 +680,7 @@ function packSystems(natW,availFirst,availRest,maxPer,tol){
 let noteEls=[];
 function render(){
   const svg=$('score'); svg.innerHTML=''; noteEls=[];
+  { const s0=svg.closest('.sheet'); s0.style.width=''; s0.style.alignSelf=''; }   // 넓혔던 악보 칸을 원래대로 (다시 재기 전에)
   const box=svg.parentElement.clientWidth;                      // 악보 상자 안쪽 너비
   const narrow=box<520;
   const M=song.M, key=song.key;
@@ -716,7 +717,19 @@ function render(){
   else { natW=strictM.map((v,i)=>Math.min(v,flexM[i])); flexAt=strictM.map((v,i)=>flexM[i]<v); }
   const lineW=[]; for(let m=0;m<natW.length;m+=per) lineW.push(natW.slice(m,m+per).reduce((a,b)=>a+b,0));
   const W=Math.max(Wref,head+Math.max(...lineW)), x1=W-6;
-  svg.style.width=W>Wref+1?(W*box/Wref)+'px':''; $('scrollHint').hidden=!(W>Wref+1);
+  // 안 들어가면: 글씨는 그대로 두고 악보 칸을 화면 양옆 여백까지 넓힘 (K 요청 2026-11-11). 그래도 모자라면 그때만 옆으로 밀기
+  // 넓은 화면은 페이지 전체를 1.1~1.2배 키워 두었으니, 악보만은 키우기 전 크기(원래 Easy 크기)까지 줄여도 됨 (K 요청: "다 같이 커져서 여전히 밀어서 봐야 한다")
+  let over=W>Wref+1, sW=W*box/Wref; const shEl=svg.closest('.sheet');
+  if(over){
+    const zz=parseFloat(getComputedStyle(document.documentElement).zoom)||1, minW=sW/zz;   // 악보가 가장 작아질 수 있는 너비
+    let room=box;
+    if(document.body.classList.contains('ads-off')){                    // 화면 양옆 여백까지 악보 칸을 넓힘
+      const vz=(shEl.getBoundingClientRect().width/shEl.offsetWidth)||1, maxW=innerWidth/vz-32, needW=shEl.offsetWidth+(sW-box);   // 먼저 칸을 넓혀서 글씨를 최대한 크게
+      const w0=shEl.offsetWidth; if(needW>w0){ const w=Math.min(needW,maxW); shEl.style.width=w+'px'; shEl.style.alignSelf='center'; room=box+(w-w0); }
+    }
+    if(minW<=room+1){ over=false; } else sW=minW;
+  }
+  svg.style.width=over?sW+'px':''; $('scrollHint').hidden=!over;
   const systems=[]; for(let m=0;m<song.measures.length;m+=per) systems.push(song.measures.slice(m,m+per).map((_,i)=>m+i));
   ms.remove();
   const sysH=S*4+84+(showDeg?26:0)+(showTones?26:0), top=72;
