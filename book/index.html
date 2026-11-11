@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="통기타 교재 페이지 (준비 중)">
+<title>통기타 교재 | 기타 MasTer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=Black+Han+Sans&family=Noto+Music&display=swap">
+<style>body{margin:0}[hidden]{display:none!important}
+
+/* 레이아웃: 머리 띠 → 연습 설정판(단계 카드·모드·박자·키) → 흰 악보 → 재생 버튼 */
+:root{
+  --bg:#FFFFFF; --ink:#18202E; --muted:#5B6372; --line:#DCE1E8; --tile:#F3F5F8;
+  --accent:#2B55C9; --accent-soft:#E9EEFB; --accent-shadow:rgba(43,85,201,.25); --accent-glow:rgba(43,85,201,.16);
+  --hard:#E8461F; --hard-soft:#FFD2C6; --hard-bg:#FFF1EC; --star:#FFB400; --star-off:#DDE2EA;
+  --f-body:'IBM Plex Sans KR',system-ui,sans-serif;
+  --f-disp:'Black Han Sans','IBM Plex Sans KR',sans-serif;
+  --f-music:'Noto Music','Bravura',serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:18px;line-height:1.55}
+button{font:inherit;cursor:pointer}
+.band{border-bottom:1.5px solid var(--line);background:linear-gradient(180deg,var(--accent-soft),var(--bg))}
+.band .in{max-width:1080px;margin:0 auto;padding-block:26px 22px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;align-items:center;gap:16px}
+.mark{width:56px;height:56px;border-radius:16px;background:var(--accent);display:grid;place-items:center;flex:none}
+.mark span{font-family:var(--f-music);font-size:40px;line-height:1;color:#fff;margin-top:6px}
+.mark svg{width:48px;height:48px;fill:#fff} .mark svg .h{fill:var(--accent)}
+h1{margin:0;font-size:32px;font-weight:700;letter-spacing:-0.01em;line-height:1.15;text-wrap:balance}
+h1.logo{font-family:var(--f-disp);font-weight:400;font-size:36px;letter-spacing:.01em;line-height:1.1} h1.logo img{display:block;height:92px;width:auto;margin:-6px 0 -6px -5px}
+.how{margin:4px 0 0;color:var(--muted);font-size:17px}
+.wrap{max-width:1080px;margin:0 auto;padding-block:22px 44px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:18px}
+
+.panel{display:flex;flex-direction:column;gap:14px;padding:18px 20px;border-radius:18px;background:var(--tile)}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:12px 32px}
+.field{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.label{font-size:15px;font-weight:700;color:var(--muted);min-width:44px}
+
+/* 단계 카드 */
+.stagewrap{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:stretch}
+#levels{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.stage{position:relative;text-align:left;border:2px solid var(--line);border-radius:18px;padding:14px 14px 12px;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;gap:4px;min-width:0}
+.stage .num{font-family:var(--f-disp);font-size:36px;line-height:1}
+.stage .sym{position:absolute;right:12px;top:10px;font-family:var(--f-music);font-size:32px;line-height:1;color:#B7BFCD}
+.stage .name{font-weight:700;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stars{display:flex;gap:2px;margin-top:2px} .stars svg{width:15px;height:15px;fill:var(--star-off)} .stars svg.on{fill:var(--star)}
+.prog{display:flex;align-items:center;gap:8px;margin-top:4px}
+.prog .pbar{flex:1;margin-top:0}
+.cnt{font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.pbar{height:6px;border-radius:3px;background:var(--line);margin-top:4px;overflow:hidden} .pbar i{display:block;height:100%;width:0;background:var(--accent)}
+.stage[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 8px 20px var(--accent-glow)}
+.stage[aria-pressed="true"] .num,.stage[aria-pressed="true"] .sym{color:var(--accent)}
+.hardtag{display:none;align-self:flex-start;padding:2px 9px;border-radius:999px;background:var(--hard-bg);color:var(--hard);font-size:13.5px;font-weight:700;line-height:1.5}
+.hardtag .short{display:none}
+.hard .hardtag{display:inline-flex}
+.hard .wrap{--accent:var(--hard);--accent-soft:var(--hard-bg);--accent-shadow:rgba(232,70,31,.28);--accent-glow:rgba(232,70,31,.16)}
+/* 모드: 단계 카드와 같은 테두리 카드 안에 Easy/Hard를 하나의 이어 붙인 버튼으로 */
+.modebox{display:flex;flex-direction:column;gap:8px;padding:12px 12px 12px;border:2px solid var(--line);border-radius:18px;background:var(--bg)}
+.modebox .label{min-width:0}
+#modes{display:flex;flex-direction:column;flex:1;min-width:112px;border:1.5px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg)}
+#modes button{flex:1;min-height:46px;padding:0 16px;border:0;border-bottom:1.5px solid var(--line);background:var(--bg);font-weight:700;font-size:18px;color:var(--muted)}
+#modes button:last-child{border-bottom:0}
+#modes button[aria-pressed="true"][data-v="easy"]{background:var(--accent);color:var(--bg)}
+#modes button[aria-pressed="true"][data-v="hard"]{background:var(--hard);color:var(--bg)}
+.lvdesc{font-size:16px;color:var(--muted);margin-top:-4px}
+
+/* 이어 붙인 버튼 묶음 */
+.seg{display:inline-flex;flex-wrap:wrap;border:1.5px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg)}
+.seg button{min-height:46px;padding:8px 16px;border:0;border-right:1.5px solid var(--line);background:var(--bg);font-size:17px;font-weight:500;color:var(--ink)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--bg);font-weight:700}
+#keys button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;min-height:56px;padding:6px 13px;line-height:1.15}
+#keys .kl{font-size:18px;font-weight:700}
+#keys .ks{font-size:13px;font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums}
+#keys button[aria-pressed="true"] .ks{color:var(--bg)}
+.tempo{display:flex;align-items:center;gap:12px}
+.tempo input{width:170px;accent-color:var(--accent)}
+.tempo output{font-weight:700;font-variant-numeric:tabular-nums;min-width:72px}
+.checks{display:flex;gap:10px;flex-wrap:wrap}
+.check{display:inline-flex;align-items:center;gap:10px;min-height:48px;padding:0 18px 0 10px;border:1.5px solid var(--line);border-radius:999px;background:var(--bg);font-size:16.5px;font-weight:500;color:var(--ink);cursor:pointer;user-select:none;-webkit-user-select:none}
+.check input{appearance:none;-webkit-appearance:none;flex:none;width:38px;height:24px;margin:0;border-radius:12px;background:var(--line);position:relative;cursor:pointer;transition:background .15s}
+.check input::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--bg);box-shadow:0 1px 3px rgba(24,32,46,.3);transition:left .15s}
+.check input:checked{background:var(--accent)}
+.check input:checked::after{left:17px}
+.check:has(input:checked){border-color:var(--accent);background:var(--accent-soft);font-weight:700}
+button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* 악보 */
+.sheet{background:var(--bg);border:1.5px solid var(--line);border-radius:18px;padding:20px 14px 14px;box-shadow:0 10px 30px rgba(24,32,46,.07);overflow:hidden}
+.meta{display:flex;flex-wrap:wrap;gap:6px 18px;padding:0 10px 6px;font-size:16px;color:var(--muted)}
+.meta b{color:var(--ink)}
+#score{display:block;width:100%;height:auto;color:var(--ink)}
+#score .on .nh,#score .on .st{fill:var(--accent);stroke:var(--accent)}
+#score .on text{fill:var(--accent)}
+#score .on .hollow{fill:none}
+
+.actions{display:flex;flex-wrap:wrap;gap:12px}
+.btn{display:inline-flex;align-items:center;gap:10px;min-height:58px;padding:0 24px;border-radius:14px;border:1.5px solid var(--line);background:var(--bg);font-size:18px;font-weight:700;color:var(--ink)}
+.btn svg{width:18px;height:18px;fill:currentColor}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--bg);box-shadow:0 8px 18px var(--accent-shadow)}
+.btn.new{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.status{font-size:16px;color:var(--muted);min-height:1.5em}
+.credit{margin:8px 0 0;font-size:14px;color:var(--muted)}
+
+/* 광고 자리: 컴퓨터는 양옆 세로(160×600), 휴대폰·태블릿은 버튼 아래 가로(320×100). ads-off면 숨김 */
+.layout{max-width:1448px;margin:0 auto}
+.wrap{container-type:inline-size}
+.ad{display:none;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:1.5px dashed var(--line);border-radius:12px;background:var(--tile);color:var(--muted);font-size:15px;font-weight:700}
+.ad small{font-size:13px;font-weight:500;font-variant-numeric:tabular-nums}
+.ad-side{width:160px;height:600px}
+.ad-bottom{width:100%;max-width:320px;height:100px;margin:0 auto}
+@media (min-width:1024px){
+  body:not(.ads-off) .layout{display:grid;grid-template-columns:160px minmax(0,1fr) 160px;gap:24px;align-items:start;
+    padding-block:22px 0;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  body:not(.ads-off) .layout .wrap{max-width:none;margin:0;width:auto;padding-left:0;padding-right:0;padding-top:0}
+  body:not(.ads-off) .ad-side{display:flex}
+  body:not(.ads-off) .band .in{max-width:1448px;padding-left:calc(max(16px,env(safe-area-inset-left,0px)) + 184px);padding-right:calc(max(16px,env(safe-area-inset-right,0px)) + 184px)}
+}
+@media (max-width:1023.98px){ body:not(.ads-off) .ad-bottom{display:flex} }
+@container (max-width:760px){
+  .stagewrap{grid-template-columns:1fr}
+  .modebox{flex-direction:row;align-items:center;gap:12px;padding:8px 12px;border-radius:14px} #modes{flex-direction:row;flex:1} #modes button{flex:1;min-width:0;border-bottom:0;border-right:1.5px solid var(--line)} #modes button:last-child{border-right:0}
+}
+
+@media (max-width:720px){
+  .band .in{padding-block:18px 16px} h1{font-size:25px} h1.logo img{height:72px} .mark{width:46px;height:46px} .mark span{font-size:33px} .mark svg{width:40px;height:40px}
+  .panel{padding:14px 12px}
+  .stagewrap{grid-template-columns:1fr}
+  #levels{gap:6px}
+  .stage{padding:10px 4px 8px;border-radius:14px;align-items:center;text-align:center}
+  .stage .num{font-size:28px} .stage .sym{position:static;font-size:24px;height:26px} .stage .name{display:none}
+  .stars{gap:1px} .stars svg{width:10px;height:10px} .prog{flex-direction:column;align-items:center;gap:3px;width:100%} .prog .pbar{flex:none;width:80%} .cnt{font-size:13px}
+  .pbar{width:80%}
+  .hardtag{align-self:center;padding:1px 7px;font-size:12px} .hardtag .full{display:none} .hardtag .short{display:inline}
+  .modebox{flex-direction:row;align-items:center;gap:12px;padding:8px 12px;border-radius:14px} #modes{flex-direction:row;flex:1} #modes button{flex:1;min-width:0;border-bottom:0;border-right:1.5px solid var(--line)} #modes button:last-child{border-right:0}
+  .seg button{padding:8px 12px}
+  #keys button{padding:6px 6px;min-width:36px}
+  .tempo input{width:140px}
+  .btn{flex:1 1 46%;justify-content:center}
+}
+@media (prefers-reduced-motion:reduce){ *{transition:none!important} }
+
+/* 맨 위 메뉴 (세 페이지 공통) */
+.band .in{flex-wrap:wrap;row-gap:14px}
+.brand{display:flex;align-items:center;gap:16px;color:inherit;text-decoration:none;margin-right:auto;min-width:0}
+.nav{display:flex;gap:4px;background:var(--bg);border:1.5px solid var(--line);border-radius:14px;padding:4px}
+.nav a{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 18px;border-radius:10px;font-weight:700;font-size:17px;color:var(--muted);text-decoration:none;white-space:nowrap}
+.nav a[aria-current="page"]{background:var(--ink);color:var(--bg)}
+.nav a:focus-visible,.brand:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+@media (max-width:720px){ .nav{width:100%;box-sizing:border-box;gap:2px} .nav a{flex:1 1 0;min-width:0;padding:4px 2px;font-size:15px;line-height:1.2;white-space:normal;text-align:center;word-break:keep-all} }   /* 메뉴 5칸: 휴대폰은 두 줄 글씨 허용 */
+
+.soon{background:var(--bg);border:1.5px dashed var(--line);border-radius:22px;padding:56px 24px;text-align:center;color:var(--muted);font-size:18px}
+.soon b{display:block;margin-bottom:6px;color:var(--ink);font-size:22px}
+</style>
+</head>
+<body class="ads-off">
+<div class="band"><div class="in">
+  <a class="brand" href="../">
+    <div><h1 class="logo"><img src="../logo.png" alt="기타 MasTer (Guitar MasTer)" width="190" height="100"></h1></div>
+  </a>
+  <nav class="nav" aria-label="메뉴">
+    <a href="../">멜로디 초견</a>
+    <a href="../chord/">코드 초견</a>
+    <a href="./" aria-current="page">통기타 교재</a>
+    <a href="../harmony/">화성학</a>
+    <a href="../metronome/">메트로놈</a>
+  </nav>
+</div></div>
+
+<div class="layout">
+<aside class="ad ad-side" aria-label="광고">광고<small>160×600</small></aside>
+<div class="wrap">
+  <section class="soon"><b>준비 중이에요</b>곧 통기타 교재를 이곳에서 볼 수 있어요.</section>
+  <aside class="ad ad-bottom" aria-label="광고">광고<small>320×100</small></aside>
+</div>
+<aside class="ad ad-side" aria-label="광고">광고<small>160×600</small></aside>
+</div>
+</body>
+</html>
