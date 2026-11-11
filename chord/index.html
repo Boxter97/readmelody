@@ -117,7 +117,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 .keyfield{align-items:stretch;flex:1 1 300px;min-width:0}
 .keyfield .label{align-self:center;min-width:0}
 .keys{display:flex;gap:8px;align-items:stretch;min-width:0;flex:1}
-.keys .kc{display:flex} .keys .kc button{flex:1;height:auto;padding-left:8px;padding-right:8px}
+.keys .kc{display:flex;flex-direction:column} .keys .kc button{flex:1;height:auto;padding-left:8px;padding-right:8px;border-right:0;border-bottom:1.5px solid var(--line)} .keys .kc button:last-child{border-bottom:0}   /* 왼쪽 세로 칸: C · 랜덤 */
 .krows{display:flex;flex-direction:column;gap:8px;min-width:0;flex:1}
 .krows .seg{display:flex;flex-wrap:nowrap} .krows .seg button{flex:1;min-width:0;padding-left:4px;padding-right:4px}
 .setbox .tempo{flex-wrap:nowrap} .setbox .tempo input{flex:1;width:auto;min-width:80px}
@@ -318,7 +318,7 @@ const KEYS={
   Db:{label:'D♭',letter:1,acc:{B:-1,E:-1,A:-1,D:-1,G:-1}},
 };
 const KEY_ORDER=['C','G','D','A','E','B','F','Bb','Eb','Ab','Db'];
-const KEY_GROUPS=[['C'],['G','D','A','E','B'],['F','Bb','Eb','Ab','Db']];   // 키 버튼: C 하나 · ♯줄 · ♭줄
+const KEY_GROUPS=[['C','rand'],['G','D','A','E','B'],['F','Bb','Eb','Ab','Db']];   // 키 버튼: C·랜덤 세로 · ♯줄 · ♭줄 ('rand' = 새 진행마다 키가 바뀜)
 const SHARP_POS={F:10,C:7,G:11,D:8,A:5};      // 높은음자리표 조표 자리 (가온 도 = 0)
 const FLAT_POS={B:6,E:9,A:5,D:8,G:4};
 
@@ -368,7 +368,8 @@ let sel=store.get('level',1), bars=store.get('bars',4), meter=store.get('meter',
 if(sel!==0&&!LEVELS[sel-1]) sel=1;
 let level=sel||LEVELS.length;                       // sel 0 = 랜덤 (한 곡 안에 1~6단계를 섞어서)
 if(!METERS[meter]) meter='4/4';
-if(!KEYS[keyName]) keyName='C';
+if(!KEYS[keyName]&&keyName!=='rand') keyName='C';
+let lastRandKey=null;
 let mode=store.get('mode','easy'); if(mode!=='hard') mode='easy';
 let tempo=60;
 let showDeg=store.get('deg',false), showTones=store.get('tones',false);
@@ -598,7 +599,10 @@ function barSplits(M){              // 한 마디 안에서 코드가 시작하�
   return three?[0,4,8]:[0,8];                                       // 3/4: 2개는 1·3박, 3개는 1·2·3박
 }
 function makeSong(){
-  const M=METERS[meter], key=KEYS[keyName];
+  const M=METERS[meter];
+  let key;
+  if(keyName==='rand'){ const k=rnd(KEY_ORDER.filter(x=>x!==lastRandKey)); lastRandKey=k; key=KEYS[k]; }   // 키 랜덤: 앞 곡과 다른 키로
+  else key=KEYS[keyName];
   const segs=[], measures=[];
   for(let b=0;b<bars;b++){
     const ps=b===bars-1?[0]:barSplits(M), ev=[];                     // 마지막 마디는 으뜸화음 하나
@@ -980,8 +984,9 @@ function buildUI(){
   buildCards();
   segButtons('modes',['easy','hard'],v=>v==='easy'?'Easy':'Hard');
   segButtons('meters',METER_ORDER,v=>v);
-  KEY_GROUPS.forEach((g,i)=>{ const box=document.createElement('div'); box.className='seg'+(i?' krow':' kc'); box.id='keys'+i; (i?$('keys').querySelector('.krows'):$('keys')).insertAdjacentElement(i?'beforeend':'afterbegin',box); segButtons('keys'+i,g,v=>KEYS[v].label); });
+  KEY_GROUPS.forEach((g,i)=>{ const box=document.createElement('div'); box.className='seg'+(i?' krow':' kc'); box.id='keys'+i; (i?$('keys').querySelector('.krows'):$('keys')).insertAdjacentElement(i?'beforeend':'afterbegin',box); segButtons('keys'+i,g,v=>v==='rand'?'랜덤':KEYS[v].label); });
   $('keys').querySelectorAll('button').forEach(b=>{                 // 글자 아래에 조표 개수
+    if(b.dataset.v==='rand'){ b.innerHTML='<span class="kl">랜덤</span><span class="ks">모든 키</span>'; b.setAttribute('aria-label','키 랜덤, 새 진행마다 키가 바뀜'); return; }
     const k=KEYS[b.dataset.v], n=Object.keys(k.acc).length, sh=n&&k.acc[Object.keys(k.acc)[0]]>0;
     const sub=n?(sh?'♯':'♭')+n:'없음';
     b.innerHTML='<span class="kl">'+k.label+'</span><span class="ks">'+sub+'</span>';
