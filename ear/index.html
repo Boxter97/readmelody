@@ -459,7 +459,9 @@ function render(){
   const box=svg.parentElement.clientWidth-28, narrow=box<520, W=Math.max(box,300);
   const key=song.key, ks=Object.keys(key.acc), sharp=ks.length>0&&key.acc[ks[0]]>0;
   const accs=(sharp?['F','C','G','D','A']:['B','E','A','D','G']).filter(l=>key.acc[l]);
-  const x0=6, top=30, y0=top, mid=y0+2*S, clefW=narrow?42:46;
+  const clefW=narrow?42:46, headW=clefW+accs.length*S*0.95+6+S*2.4+4;
+  const barW=narrow?W-12-headW:Math.min(S*46,W-12-headW);          // 한 마디: 컴퓨터는 너무 늘어나지 않게
+  const x0=narrow?6:Math.max(6,(W-headW-barW)/2), top=30, y0=top, mid=y0+2*S;   // 오선을 가운데로 (K 요청 2026-11-12, 코드 청음과 같게)
   const yOf=d=>y0+4*S-(d-2)*S/2;
   svg.setAttribute('viewBox',`0 0 ${W} ${top+S*4+S*6.4}`);
   const g=el('g',{},svg);
@@ -474,7 +476,7 @@ function render(){
   x+=6;
   ['4','4'].forEach((t,i)=>el('text',{x:x+S*0.9,y:y0+S*(i===0?2:4)-2,'font-size':S*2.35,'font-weight':700,'text-anchor':'middle','font-family':'IBM Plex Sans KR, sans-serif',fill:'currentColor'},g,t));
   x+=S*2.4+4;
-  const start=x, endX=Math.min(W-6,start+(narrow?9999:S*46));        // 한 마디: 컴퓨터는 너무 늘어나지 않게
+  const start=x, endX=start+barW;
   for(let i=0;i<5;i++) el('line',{x1:x0,x2:endX,y1:y0+i*S,y2:y0+i*S,stroke:'currentColor','stroke-width':1.1},g);
   el('line',{x1:endX-7,x2:endX-7,y1:y0,y2:y0+4*S,stroke:'currentColor','stroke-width':1.2},g);
   el('rect',{x:endX-4,y:y0,width:4,height:4*S,fill:'currentColor'},g);
