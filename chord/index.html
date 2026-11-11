@@ -695,17 +695,20 @@ function render(){
   const nw=new Map(); song.measures.flat().forEach(e=>nw.set(e,nameW(e)));
   const minW=S*(narrow?8:10);
   const strictM=song.measures.map(ev=>padL+padR+Math.max(minW,...ev.map(e=>nw.get(e)*M.len/e.dur)));   // 마디마다: 코드를 박 자리에 딱 맞출 때
-  const flexM=song.measures.map(ev=>padL+padR+Math.max(minW,ev.reduce((a,e)=>a+nw.get(e),0)));       // 마디마다: 코드 이름끼리만 안 겹치게
+  const flexM=song.measures.map(ev=>padL+padR+Math.max(minW,ev.reduce((a,e)=>a+nw.get(e)-S*0.6,0)));   // 마디마다: 코드 이름끼리만 안 겹치게 (사이 여백은 조금 좁게)
   // 한 줄에 늘 4마디 (종이 악보처럼, K 확정). 글씨는 Easy 크기보다 절대 작게 안 함 (K 요청 2026-11-11)
   // Easy 크기 = 간단한 코드 4마디가 이 화면에 들어가는 크기. 그보다 넓어야 하면 1) 코드 간격을 이름 길이에 맞추고 2) 그래도 넘치면 옆으로 밀어서 보기
   const per=4, base=Math.max(box,300)/(narrow?0.84:1), head=x0+headW+tsW+4+6;
   const Wref=Math.max(base,head+(padL+padR+minW)*per);                   // Easy 크기 기준 너비
-  // 마디 너비는 마디마다 따로 (코드가 많은 마디는 넓게, 1개인 마디는 좁게) → 한 줄 4마디가 최대한 들어가게
-  const flexAt=song.measures.map(()=>false), natW=strictM.slice();
-  for(let m=0;m<song.measures.length;m+=per){
-    const ids=[...Array(per).keys()].map(i=>m+i).filter(i=>i<song.measures.length);
-    if(head+ids.reduce((a,i)=>a+strictM[i],0)>Wref+1) ids.forEach(i=>{ if(flexM[i]<strictM[i]){ natW[i]=flexM[i]; flexAt[i]=true; } });
-  }
+  // 마디 너비는 모두 같게 (종이 악보처럼). 박 자리에 딱 맞춰 4마디가 들어가면 그대로,
+  // 안 들어가면 너비를 '이름이 안 겹치는 만큼'으로 잡고, 그보다 빽빽한 마디만 코드 간격을 이름 길이에 맞춤
+  // 1) 마디 너비가 모두 같게 들어가면 그렇게 (박 자리에 딱 맞춰서, 안 되면 이름이 안 겹치게)
+  // 2) 같게는 안 들어가면 마디마다 필요한 만큼 + 남는 칸은 똑같이 나눠 줌 (한 마디만 길어지지 않게)
+  let natW, flexAt;
+  const eqS=Math.max(...strictM), eqF=Math.max(...flexM);
+  if(head+eqS*per<=Wref+1){ natW=strictM.map(()=>eqS); flexAt=strictM.map(()=>false); }
+  else if(head+eqF*per<=Wref+1){ natW=strictM.map(()=>eqF); flexAt=strictM.map(v=>v>eqF+0.5); }
+  else { natW=strictM.map((v,i)=>Math.min(v,flexM[i])); flexAt=strictM.map((v,i)=>flexM[i]<v); }
   const lineW=[]; for(let m=0;m<natW.length;m+=per) lineW.push(natW.slice(m,m+per).reduce((a,b)=>a+b,0));
   const W=Math.max(Wref,head+Math.max(...lineW)), x1=W-6;
   svg.style.width=W>Wref+1?(W*box/Wref)+'px':''; $('scrollHint').hidden=!(W>Wref+1);
@@ -734,12 +737,13 @@ function render(){
     }
     const start=x+4, tot=ms.reduce((a,m)=>a+natW[m],0), fullF=(x1-start)/tot;
     const f=(li===systems.length-1&&li>0)?Math.min(fullF,Math.max(1.6,prevF*1.1)):fullF;   // 마지막 줄만 마디가 적을 때 너무 늘이지 않기
+    const addW=Math.max(0,(tot*f-tot)/ms.length);                         // 남는 칸은 마디마다 똑같이 더함 (비율로 늘리면 긴 마디만 더 길어짐)
     const endX=start+tot*f; prevF=f;
     sysInfo[li]={start,end:endX,y0};
     for(let i=0;i<5;i++) el('line',{x1:x0,x2:endX,y1:y0+i*S,y2:y0+i*S,stroke:'currentColor','stroke-width':1.1},staff);
     let mx=start;
     ms.forEach(m=>{
-      const ev=song.measures[m], mw=natW[m]*f, bx=mx+mw;
+      const ev=song.measures[m], mw=f>=1?natW[m]+addW:natW[m]*f, bx=mx+mw;
       if(m===bars-1){
         el('line',{x1:bx-7,x2:bx-7,y1:y0,y2:y0+4*S,stroke:'currentColor','stroke-width':1.2},g);
         el('rect',{x:bx-4,y:y0,width:4,height:4*S,fill:'currentColor'},g);
@@ -748,8 +752,8 @@ function render(){
       const inner=mw-padL-padR;
       if(!flexAt[m]) ev.forEach(e=>{ e.x=mx+padL+e.pos/M.len*inner; });          // 코드는 박 자리에 맞춰 (리듬은 안 그림)
       else {                                                               // 좁을 때: 박 길이만큼 주되, 이름이 긴 코드는 자리를 더 줌
-        const w=ev.map(e=>Math.max(nw.get(e),inner*e.dur/M.len)); let ex=w.reduce((a,b)=>a+b,0)-inner;
-        const slack=w.map((v,i)=>v-nw.get(ev[i])), ts=slack.reduce((a,b)=>a+b,0);
+        const w=ev.map(e=>Math.max(nw.get(e)-S*0.6,inner*e.dur/M.len)); let ex=w.reduce((a,b)=>a+b,0)-inner;
+        const slack=w.map((v,i)=>v-(nw.get(ev[i])-S*0.6)), ts=slack.reduce((a,b)=>a+b,0);
         if(ex>0&&ts>0) w.forEach((v,i)=>w[i]=v-ex*slack[i]/ts);
         let xx=mx+padL; ev.forEach((e,i)=>{ e.x=xx; xx+=w[i]; });
       }
