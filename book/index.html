@@ -214,19 +214,20 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
   const S=(n,t,a,k,pages)=>({id:'song-'+n,no:'SONG '+n,title:t,artist:a,key:k,pages});
   const ITEMS=[
     S('01','산토끼','동요','A',[3,4]),
-    S('02','연가','뉴질랜드 민요','A',[6]),
-    S('03','여행을 떠나요','조용필','E',[8]),
-    S('04','Lemon Tree','박혜경','Am',[10]),
-    S('05','첫사랑','백아','C',[12]),
-    S('06','결혼','문문','C · 카포 2',[14]),
-    S('07','너에게 난, 나에게 넌','자전거 탄 풍경','G',[16]),
-    S('08','옛사랑','이문세','G',[18]),
-    S('09','0310','백예린','D',[21,22]),
-    S('10','Falling Slowly','Glen Hansard','C',[24]),
+    S('02','연가','뉴질랜드 민요','A',[5,6]),
+    S('03','여행을 떠나요','조용필','E',[7,8]),
+    S('04','Lemon Tree','박혜경','Am',[9,10]),
+    S('05','첫사랑','백아','C',[11,12]),
+    S('06','결혼','문문','C · 카포 2',[13,14]),
+    S('07','너에게 난, 나에게 넌','자전거 탄 풍경','G',[15,16]),
+    S('08','옛사랑','이문세','G',[17,18]),
+    S('09','0310','백예린','D',[19,20,21,22]),
+    S('10','Falling Slowly','Glen Hansard','C',[23,24]),
     {id:'curriculum',no:'12주',title:'커리큘럼',artist:'주차별 과정',pages:[2],extra:true},
     {id:'review',no:'복습',title:'스트로크 · 아르페지오',artist:'배운 패턴 모아 보기',pages:[25,26],extra:true},
     {id:'chords',no:'부록',title:'코드표',artist:'기본 · 하이 · 7th 코드',pages:[28,29,30,31,32,33],extra:true}
   ];
+  const EXT=['webp','jpg','png'];   // K가 올린 그림은 p05.jpg 처럼 쪽 번호 이름이면 자동으로 나옴
   const list=document.getElementById('list'), view=document.getElementById('view');
   ITEMS.forEach(it=>{
     const b=document.createElement('button'); b.type='button'; b.className='bk-card'+(it.extra?' extra':''); b.dataset.id=it.id;
@@ -237,8 +238,12 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
     const i=Math.max(0,ITEMS.findIndex(x=>x.id===id)), it=ITEMS[i];
     list.querySelectorAll('.bk-card').forEach(b=>b.setAttribute('aria-pressed',b.dataset.id===it.id));
     view.innerHTML='<div class="bk-title"><h3>'+(it.extra?it.title:it.no.replace('SONG ','')+'. '+it.title)+'</h3><span>'+it.artist+(it.key?' · KEY '+it.key:'')+'</span></div>'
-      +'<div class="bk-pages">'+it.pages.map((p,k)=>'<img src="img/p'+String(p).padStart(2,'0')+'.webp" width="1242" height="1756" alt="'+it.title+' '+(k+1)+'쪽"'+(k?' loading="lazy"':'')+'>').join('')+'</div>'
+      +'<div class="bk-pages">'+it.pages.map((p,k)=>'<img data-p="p'+String(p).padStart(2,'0')+'" data-t="0" src="img/p'+String(p).padStart(2,'0')+'.webp" alt="'+it.title+' '+(k+1)+'쪽"'+(k?' loading="lazy"':'')+'>').join('')+'</div>'
       +'<div class="bk-step"><button type="button" data-go="'+(i-1)+'"'+(i===0?' disabled':'')+'>← 이전</button><button type="button" data-go="'+(i+1)+'"'+(i===ITEMS.length-1?' disabled':'')+'>다음 →</button></div>';
+    view.querySelectorAll('.bk-pages img').forEach(im=>im.addEventListener('error',()=>{   // 그림 파일: webp → jpg → png 순서로 찾고, 없으면 그 쪽은 숨김
+      const t=+im.dataset.t+1; im.dataset.t=t;
+      if(t<EXT.length) im.src='img/'+im.dataset.p+'.'+EXT[t]; else im.remove();
+    }));
     if(scroll) view.scrollIntoView({behavior:'smooth',block:'start'});
   }
   list.addEventListener('click',e=>{ const b=e.target.closest('.bk-card'); if(!b) return; history.replaceState(null,'','#'+b.dataset.id); show(b.dataset.id,true); });
