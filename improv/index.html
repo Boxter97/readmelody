@@ -335,8 +335,11 @@ function render(){
   const ms=el('text',{x:0,y:-999,'font-family':'IBM Plex Sans KR, sans-serif'},svg);
   const wOf=(txt,fs,fw)=>{ ms.textContent=txt; ms.setAttribute('font-size',fs); ms.setAttribute('font-weight',fw); return ms.getComputedTextLength(); };
   const TF=S*1.55, CH=S*2.6, CG=S*0.4, PER=narrow?2:4;                   // 구성음 칸: 글씨 · 칸 높이 · 칸 사이 · 한 줄 칸 수 (휴대폰은 2개씩 두 줄이라 악보가 덜 작아짐)
-  const chipW=n=>Math.max(wOf(n,TF,700)+S*1.5,S*2.9);
-  const chipsW=c=>{ const ws=toneNames(c,key).map(chipW), cw=Math.max(...ws); return PER===4?ws.reduce((a,w)=>a+w,0)+CG*3:cw*2+CG; };
+  const noteParts=n=>{ const i=n.search(/[♯♭]/); return i<0?[[n,'']]:[[n.slice(0,i),''],[n.slice(i),'acc']]; };   // 음이름 · ♯♭ (♯♭은 악보 글꼴로)
+  const noteSpans=(t,n)=>noteParts(n).forEach(([txt,k])=>el('tspan',k?{'font-family':'Noto Music, serif','font-size':TF*0.95,dx:S*0.05}:{},t,txt));
+  const noteW=n=>{ ms.textContent=''; ms.setAttribute('font-size',TF); ms.setAttribute('font-weight',700); noteSpans(ms,n); return ms.getComputedTextLength(); };
+  const CW=Math.max(S*2.9,...song.bars.flatMap(c=>toneNames(c,key)).map(n=>noteW(n)+S*1.3));   // 칸 너비는 모두 같게 (♯ 들어간 음 기준)
+  const chipsW=()=>PER===4?CW*4+CG*3:CW*2+CG;
   const nameW=c=>Math.max(wOf(chordName(c,key),S*(narrow?1.75:1.95),700), showDeg?wOf(c.rom,S*1.35,700):0, showTones?chipsW(c):0)+S*1.6;
   const need=Math.max(S*(narrow?8:10),...song.bars.map(nameW));
   ms.remove();
@@ -377,12 +380,12 @@ function render(){
       let y=y0+4*S+S*1.2;                                                   // 오선 바로 아래부터
       if(showDeg){ el('text',{x:cx,y:y+S*1.35,'font-size':S*1.35,'font-weight':700,'font-family':'IBM Plex Sans KR, sans-serif',style:'fill:var(--muted)'},g,c.rom); y+=S*2.2; }
       if(showTones){                                                       // 구성음: 음마다 작은 칸 (아래 스케일 상자와 같은 모양, 근음 칸은 회색)
-        const tn=toneNames(c,key), same=Math.max(...tn.map(chipW));      // 두 줄일 때는 칸 너비를 맞춤
+        const tn=toneNames(c,key);
         let x=cx;
-        tn.forEach((n,i)=>{ const w=PER===4?chipW(n):same;
+        tn.forEach((n,i)=>{ const w=CW;
           if(PER===2&&i===2){ x=cx; y+=CH+CG; }
           el('rect',{x,y,width:w,height:CH,rx:S*0.6,style:'fill:var('+(i===0?'--tile':'--bg')+');stroke:var(--line)','stroke-width':1.3},g);
-          el('text',{x:x+w/2,y:y+CH/2+TF*0.36,'font-size':TF,'font-weight':700,'text-anchor':'middle','font-family':'IBM Plex Sans KR, sans-serif',fill:'currentColor'},g,n);
+          noteSpans(el('text',{x:x+w/2,y:y+CH/2+TF*0.36,'font-size':TF,'font-weight':700,'text-anchor':'middle','font-family':'IBM Plex Sans KR, sans-serif',fill:'currentColor'},g),n);   // 가운데 정렬
           x+=w+CG; });
       }
       barEls[m]=g;
