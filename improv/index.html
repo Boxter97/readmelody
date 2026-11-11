@@ -334,12 +334,16 @@ function render(){
   const x0=6, clefW=narrow?42:46, headW=clefW+accs.length*S*0.95+6, tsW=S*2.4;
   const ms=el('text',{x:0,y:-999,'font-family':'IBM Plex Sans KR, sans-serif'},svg);
   const wOf=(txt,fs,fw)=>{ ms.textContent=txt; ms.setAttribute('font-size',fs); ms.setAttribute('font-weight',fw); return ms.getComputedTextLength(); };
-  const nameW=c=>Math.max(wOf(chordName(c,key),S*(narrow?1.75:1.95),700), showDeg?wOf(c.rom,S*1.35,700):0, showTones?wOf(toneNames(c,key).join(' '),S*1.18,500)*1.06:0)+S*1.6;
+  const TF=S*1.55, CH=S*2.6, CG=S*0.4, PER=narrow?2:4;                   // 구성음 칸: 글씨 · 칸 높이 · 칸 사이 · 한 줄 칸 수 (휴대폰은 2개씩 두 줄이라 악보가 덜 작아짐)
+  const chipW=n=>Math.max(wOf(n,TF,700)+S*1.5,S*2.9);
+  const chipsW=c=>{ const ws=toneNames(c,key).map(chipW), cw=Math.max(...ws); return PER===4?ws.reduce((a,w)=>a+w,0)+CG*3:cw*2+CG; };
+  const nameW=c=>Math.max(wOf(chordName(c,key),S*(narrow?1.75:1.95),700), showDeg?wOf(c.rom,S*1.35,700):0, showTones?chipsW(c):0)+S*1.6;
   const need=Math.max(S*(narrow?8:10),...song.bars.map(nameW));
   ms.remove();
   const W=Math.max(Math.max(box,300)/(narrow?0.84:1),x0+headW+tsW+S*1.5+need*4+6), x1=W-6;
-  const sysH=S*4+84+(showDeg?26:0)+(showTones?26:0), top=72, nSys=Math.ceil(song.bars.length/4);
-  svg.setAttribute('viewBox',`0 0 ${W} ${top+(nSys-1)*sysH+4*S+S*2.6+(showDeg?S*2.2:0)+(showTones?S*2.2:0)}`);   // 마지막 줄 아래 빈칸은 줄임
+  const extra=(showDeg?S*2.2:0)+(showTones?(narrow?CH*2+CG+S*0.6:CH+S*0.6):0);                     // 오선 아래 줄 (도수 · 구성음)
+  const sysH=S*4+84+extra, top=72, nSys=Math.ceil(song.bars.length/4);
+  svg.setAttribute('viewBox',`0 0 ${W} ${top+(nSys-1)*sysH+4*S+S*1.6+extra}`);   // 마지막 줄 아래 빈칸은 줄임
   const thick=(x,y0)=>el('rect',{x,y:y0,width:4,height:4*S,fill:'currentColor'},svg);
   const thin=(x,y0)=>el('line',{x1:x,x2:x,y1:y0,y2:y0+4*S,stroke:'currentColor','stroke-width':1.2},svg);
   const dots=(x,y0)=>[1.5,2.5].forEach(d=>el('circle',{cx:x,cy:y0+d*S,r:S*0.22,fill:'currentColor'},svg));
@@ -357,7 +361,7 @@ function render(){
     for(let j=0;j<4;j++){
       const m=li*4+j; if(m>=song.bars.length) break;
       const bx=startX+j*bw, ex=bx+bw, c=song.bars[m], g=el('g',{class:'bar'},svg);
-      el('rect',{class:'barhl',x:bx+1,y:y0-S*4.3,width:bw-2,height:4*S+S*4.3+S*(2+(showDeg?2.2:0)+(showTones?2.2:0)),rx:8},g);   // 지금 마디 강조
+      el('rect',{class:'barhl',x:bx+1,y:y0-S*4.3,width:bw-2,height:4*S+S*4.3+S*1.2+extra,rx:8},g);   // 지금 마디 강조
       let pad=S*0.9;
       if(m===0){ thick(bx-2,y0); thin(bx+5,y0); dots(bx+10,y0); pad+=S*1.1; }               // 반복 시작
       if(m===song.bars.length-1){ dots(ex-14,y0); thin(ex-9,y0); thick(ex-4,y0); }          // 반복 끝
@@ -370,9 +374,17 @@ function render(){
         const a=kind==='acc'?{'font-family':'Noto Music, serif','font-size':S*1.55}:kind==='q'?{'font-size':S*(narrow?1.3:1.45)}:{};
         if(up!==lift){ a.dy=lift-up; lift=up; }
         el('tspan',a,t,txt); });
-      let y=y0+4*S+S*3.4;
-      if(showDeg){ el('text',{x:cx,y,'font-size':S*1.35,'font-weight':700,'font-family':'IBM Plex Sans KR, sans-serif',style:'fill:var(--muted)'},g,c.rom); y+=S*2.2; }
-      if(showTones) el('text',{x:cx,y,'font-size':S*1.18,'font-weight':500,'font-family':'IBM Plex Sans KR, sans-serif',style:'fill:var(--muted)','word-spacing':S*0.15},g,toneNames(c,key).join(' '));
+      let y=y0+4*S+S*1.2;                                                   // 오선 바로 아래부터
+      if(showDeg){ el('text',{x:cx,y:y+S*1.35,'font-size':S*1.35,'font-weight':700,'font-family':'IBM Plex Sans KR, sans-serif',style:'fill:var(--muted)'},g,c.rom); y+=S*2.2; }
+      if(showTones){                                                       // 구성음: 음마다 작은 칸 (아래 스케일 상자와 같은 모양, 근음 칸은 회색)
+        const tn=toneNames(c,key), same=Math.max(...tn.map(chipW));      // 두 줄일 때는 칸 너비를 맞춤
+        let x=cx;
+        tn.forEach((n,i)=>{ const w=PER===4?chipW(n):same;
+          if(PER===2&&i===2){ x=cx; y+=CH+CG; }
+          el('rect',{x,y,width:w,height:CH,rx:S*0.6,style:'fill:var('+(i===0?'--tile':'--bg')+');stroke:var(--line)','stroke-width':1.3},g);
+          el('text',{x:x+w/2,y:y+CH/2+TF*0.36,'font-size':TF,'font-weight':700,'text-anchor':'middle','font-family':'IBM Plex Sans KR, sans-serif',fill:'currentColor'},g,n);
+          x+=w+CG; });
+      }
       barEls[m]=g;
     }
     el('text',{x:x0,y:y0-12,'font-size':S*1.1,style:'fill:var(--muted)','font-family':'IBM Plex Sans KR, sans-serif'},svg,String(li*4+1));
