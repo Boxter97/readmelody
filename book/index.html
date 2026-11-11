@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="통기타 교재 페이지 (준비 중)">
+<meta name="description" content="통기타 초급 과정 교재 — 10곡의 코드·스트로크·아르페지오를 곡별로 봐요">
 <title>통기타 교재 | 기타 MasTer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=Black+Han+Sans&family=Noto+Music&display=swap">
@@ -154,8 +154,31 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 .nav a:focus-visible,.brand:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 @media (max-width:720px){ .nav{width:100%;box-sizing:border-box;gap:2px} .nav a{flex:1 1 0;min-width:0;padding:4px 2px;font-size:15px;line-height:1.2;white-space:normal;text-align:center;word-break:keep-all} }   /* 메뉴 5칸: 휴대폰은 두 줄 글씨 허용 */
 
-.soon{background:var(--bg);border:1.5px dashed var(--line);border-radius:22px;padding:56px 24px;text-align:center;color:var(--muted);font-size:18px}
-.soon b{display:block;margin-bottom:6px;color:var(--ink);font-size:22px}
+/* 통기타 교재: 곡 카드 + 악보 보기 */
+.bk-head{margin-bottom:16px}
+.bk-vol{display:inline-block;font-weight:700;font-size:14px;letter-spacing:.08em;color:var(--accent);background:var(--accent-soft);border-radius:8px;padding:3px 9px}
+.bk-head h2{margin:8px 0 4px;font-size:30px;color:var(--ink)}
+.bk-head p{margin:0;color:var(--muted);font-size:17px}
+.bk-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.bk-card{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;font:inherit;color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;cursor:pointer;min-height:96px}
+.bk-card .no{font-weight:700;font-size:15px;color:var(--accent)}
+.bk-card .tt{font-weight:700;font-size:18px;line-height:1.25;word-break:keep-all}
+.bk-card .ar{font-size:15px;color:var(--muted)}
+.bk-card .ky{margin-top:auto;font-size:14px;font-weight:700;color:var(--muted)}
+.bk-card.extra .no{color:var(--muted)}
+.bk-card[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 1.5px var(--accent) inset}
+.bk-card:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.bk-view{margin-top:22px;scroll-margin-top:12px}
+.bk-title{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 12px;margin-bottom:12px}
+.bk-title h3{margin:0;font-size:26px;color:var(--ink)}
+.bk-title span{font-size:17px;color:var(--muted)}
+.bk-pages{display:flex;flex-direction:column;align-items:center;gap:16px}
+.bk-pages img{display:block;width:100%;max-width:860px;height:auto;border:1.5px solid var(--line);border-radius:12px;background:#fff}
+.bk-step{display:flex;justify-content:space-between;gap:10px;max-width:860px;margin:18px auto 0}
+.bk-step button{flex:1;font:inherit;font-weight:700;font-size:17px;min-height:50px;border:1.5px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);cursor:pointer}
+.bk-step button:disabled{color:var(--line);cursor:default}
+@media (max-width:900px){ .bk-grid{grid-template-columns:repeat(3,1fr)} }
+@media (max-width:620px){ .bk-grid{grid-template-columns:repeat(2,1fr)} .bk-head h2{font-size:26px} .bk-pages img{border-radius:8px} }
 </style>
 </head>
 <body class="ads-off">
@@ -175,10 +198,54 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 <div class="layout">
 <aside class="ad ad-side" aria-label="광고">광고<small>160×600</small></aside>
 <div class="wrap">
-  <section class="soon"><b>준비 중이에요</b>곧 통기타 교재를 이곳에서 볼 수 있어요.</section>
+  <section class="bk-head">
+    <span class="bk-vol">VOL.01</span>
+    <h2>통기타 초급 과정</h2>
+    <p>10곡 · 코드 &amp; 스트로크 · 아르페지오. 곡을 누르면 아래에 악보가 나와요.</p>
+  </section>
+  <div class="bk-grid" id="list"></div>
+  <section class="bk-view" id="view" aria-live="polite"></section>
   <aside class="ad ad-bottom" aria-label="광고">광고<small>320×100</small></aside>
 </div>
 <aside class="ad ad-side" aria-label="광고">광고<small>160×600</small></aside>
 </div>
+<script>
+(function(){
+  const S=(n,t,a,k,pages)=>({id:'song-'+n,no:'SONG '+n,title:t,artist:a,key:k,pages});
+  const ITEMS=[
+    S('01','산토끼','동요','A',[3,4]),
+    S('02','연가','뉴질랜드 민요','A',[6]),
+    S('03','여행을 떠나요','조용필','E',[8]),
+    S('04','Lemon Tree','박혜경','Am',[10]),
+    S('05','첫사랑','백아','C',[12]),
+    S('06','결혼','문문','C · 카포 2',[14]),
+    S('07','너에게 난, 나에게 넌','자전거 탄 풍경','G',[16]),
+    S('08','옛사랑','이문세','G',[18]),
+    S('09','0310','백예린','D',[21,22]),
+    S('10','Falling Slowly','Glen Hansard','C',[24]),
+    {id:'curriculum',no:'12주',title:'커리큘럼',artist:'주차별 과정',pages:[2],extra:true},
+    {id:'review',no:'복습',title:'스트로크 · 아르페지오',artist:'배운 패턴 모아 보기',pages:[25,26],extra:true},
+    {id:'chords',no:'부록',title:'코드표',artist:'기본 · 하이 · 7th 코드',pages:[28,29,30,31,32,33],extra:true}
+  ];
+  const list=document.getElementById('list'), view=document.getElementById('view');
+  ITEMS.forEach(it=>{
+    const b=document.createElement('button'); b.type='button'; b.className='bk-card'+(it.extra?' extra':''); b.dataset.id=it.id;
+    b.innerHTML='<span class="no">'+it.no+'</span><span class="tt">'+it.title+'</span><span class="ar">'+it.artist+'</span>'+(it.key?'<span class="ky">KEY '+it.key+'</span>':'');
+    list.appendChild(b);
+  });
+  function show(id,scroll){
+    const i=Math.max(0,ITEMS.findIndex(x=>x.id===id)), it=ITEMS[i];
+    list.querySelectorAll('.bk-card').forEach(b=>b.setAttribute('aria-pressed',b.dataset.id===it.id));
+    view.innerHTML='<div class="bk-title"><h3>'+(it.extra?it.title:it.no.replace('SONG ','')+'. '+it.title)+'</h3><span>'+it.artist+(it.key?' · KEY '+it.key:'')+'</span></div>'
+      +'<div class="bk-pages">'+it.pages.map((p,k)=>'<img src="img/p'+String(p).padStart(2,'0')+'.webp" width="1242" height="1756" alt="'+it.title+' '+(k+1)+'쪽"'+(k?' loading="lazy"':'')+'>').join('')+'</div>'
+      +'<div class="bk-step"><button type="button" data-go="'+(i-1)+'"'+(i===0?' disabled':'')+'>← 이전</button><button type="button" data-go="'+(i+1)+'"'+(i===ITEMS.length-1?' disabled':'')+'>다음 →</button></div>';
+    if(scroll) view.scrollIntoView({behavior:'smooth',block:'start'});
+  }
+  list.addEventListener('click',e=>{ const b=e.target.closest('.bk-card'); if(!b) return; history.replaceState(null,'','#'+b.dataset.id); show(b.dataset.id,true); });
+  view.addEventListener('click',e=>{ const b=e.target.closest('[data-go]'); if(!b||b.disabled) return; const it=ITEMS[+b.dataset.go]; history.replaceState(null,'','#'+it.id); show(it.id,true); });
+  show(location.hash.slice(1)||'song-01',false);
+  window.addEventListener('hashchange',()=>show(location.hash.slice(1)||'song-01',true));
+})();
+</script>
 </body>
 </html>
