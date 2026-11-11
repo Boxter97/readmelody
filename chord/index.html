@@ -691,9 +691,11 @@ function render(){
     showDeg?wOf([[romanOf(e.chord),'']],S*1.35,700):0, showTones?wOf([[toneNames(e.chord,key).join(' '),'']],S*1.18,500)*1.06:0)+S*1.2;   // + 여백
   const need=Math.max(...song.measures.map(ev=>padL+padR+Math.max(S*(narrow?8:10),...ev.map(e=>nameW(e)*M.len/e.dur))));
   const natW=song.measures.map(()=>need);                                   // 마디 너비는 모두 같게 (코드 자리 = 박 자리)
-  // 한 줄에 늘 4마디 (종이 악보처럼). 다 안 들어가면 악보 전체를 작게 그림
-  const W=Math.max(Math.max(box,300)/(narrow?0.84:1),x0+headW+tsW+4+need*4+6), x1=W-6;
-  const systems=[]; for(let m=0;m<song.measures.length;m+=4) systems.push(song.measures.slice(m,m+4).map((_,i)=>m+i));
+  // 한 줄에 4마디 (종이 악보처럼). 4마디가 안 들어가면 악보를 작게 그리지 않고 한 줄에 2마디 → 1마디로 (K 요청 2026-11-11)
+  const base=Math.max(box,300)/(narrow?0.84:1), room=base-(x0+headW+tsW+4+6);
+  let per=4; while(per>(narrow?1:2)&&need*per>room/0.8) per/=2;          // 80%까지는 작게 줄여도 그대로 (컴퓨터는 최소 2마디)
+  const W=Math.max(base,x0+headW+tsW+4+need*per+6), x1=W-6;
+  const systems=[]; for(let m=0;m<song.measures.length;m+=per) systems.push(song.measures.slice(m,m+per).map((_,i)=>m+i));
   ms.remove();
   const sysH=S*4+84+(showDeg?26:0)+(showTones?26:0), top=72;
   svg.setAttribute('viewBox',`0 0 ${W} ${top+systems.length*sysH}`);
