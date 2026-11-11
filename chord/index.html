@@ -218,17 +218,12 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 
 .stage .sym{font-family:var(--f-body);font-size:17px;font-weight:700;top:14px}
 #score .chord.on text{fill:var(--accent)}
-/* 넓은 화면: 카드를 조금 작게 해서 6칸 한 줄 */
+/* 넓은 화면: 6칸 한 줄. 카드 글씨 크기·굵기는 멜로디 초견과 같게 (K 요청 2026-11-12 "모든 페이지 맞춰") */
 @media (min-width:1000px){
-  #levels{grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
-  .stage{padding:12px 10px 10px;border-radius:16px}
-  .stage .num{font-size:30px} .stage .name{font-size:15px}
-  .stage .sym{font-size:14px;top:12px;right:9px}
-  .stars svg{width:12px;height:12px} .cnt{font-size:13px}
-  .hardtag{font-size:13px} .hard .stage .hardtag{display:inline}
+  #levels{grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
 }
-.hardtag{font-size:14px} @media (min-width:721px){ .stage .top{gap:6px} }          /* 코드 카드는 아이콘(sus4 등)이 넓어서 조금 작게 */
-@media (max-width:720px){ .hardtag{font-size:12px;margin-left:1px} }
+@media (max-width:720px){ .stage .sym{font-size:16px;line-height:26px} }   /* 휴대폰 기호 글씨: 다른 페이지와 같게 */
+@media (min-width:721px){ .stage .name{white-space:normal;line-height:1.25;min-height:2.5em} }   /* 이름 자리는 두 줄 높이로 잡아 별·막대 줄을 맞춤 */   /* 이름이 길면(sus4·aug·dim) 글씨는 그대로 두고 · 자리에서 두 줄로 */
 
 /* 넓은 화면: 화면 전체를 10~20%만 키움 (K 요청 2026-11-11) */
 @media (min-width:1400px){ body.ads-off .wrap, body.ads-off .band .in{max-width:1300px} }   /* 넓은 화면 기본 너비 (K 요청 2026-11-11: 악보가 넓어진 크기를 기본으로) */
@@ -375,7 +370,7 @@ for(const k in CELLS) CELLS[k].forEach(c=>{
 /* 단계 — 리듬이 기준, 음 사이 도약과 음역은 조금씩 넓어짐 (으뜸음 기준) */
 const LEVELS=[
   {n:1,name:'7th 코드',sym:'7',chords:'7th 코드 (M7 · m7 · 7 · m7♭5)',split:0.3},
-  {n:2,name:'sus4·aug7·dim7',sym:'sus4',chords:'sus4 · 7sus4 · aug7 · dim7 추가',split:0.3},   // 예전 2단계(sus4) + 3단계(aug7·dim7) 합침 (K 요청 2026-11-12)
+  {n:2,name:'sus4·\u200baug·\u200bdim',sym:'sus4',chords:'sus4 · 7sus4 · aug7 · dim7 추가',split:0.3},   // 예전 2단계(sus4) + 3단계(aug7·dim7) 합침 (K 요청 2026-11-12)
   {n:3,name:'분수코드',sym:'C/E',chords:'분수코드 추가',split:0.35},
   {n:4,name:'6코드',sym:'6',chords:'6코드 (6 · m6) 추가',split:0.35},
   {n:5,name:'텐션코드',sym:'(9)',chords:'모든 코드가 텐션코드 (9 · 11 · 13)',split:0.35},
