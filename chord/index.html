@@ -77,6 +77,11 @@ h1.logo{font-family:var(--f-disp);font-weight:400;font-size:36px;letter-spacing:
 #modes button[aria-pressed="true"][data-v="hard"]{background:var(--hard);color:var(--bg)}
 .lvrow{display:flex;align-items:center;flex-wrap:wrap;gap:8px 16px;margin-top:-4px}
 .lvdesc{font-size:16px;color:var(--muted)}
+/* 코드표로 가는 버튼: 설명 줄 오른쪽 끝 */
+.sheetlink{margin-left:auto;display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;border:1.5px solid var(--line);border-radius:12px;background:var(--bg);font-size:16.5px;font-weight:700;color:var(--ink);text-decoration:none;white-space:nowrap}
+.sheetlink svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linejoin:round}
+.sheetlink span{color:var(--muted)}
+.sheetlink:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 /* 연습 기록 초기화: 누르면 한 번 더 물어봄 */
 .reset{display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:2px}
 .reset [hidden]{display:none!important}
@@ -190,6 +195,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
   .stage .top{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:0;width:100%} .stage .top .num{grid-column:2}
   .hardtag{grid-column:3;justify-self:start;margin-left:2px;font-size:13px}
   .lvdesc{flex-basis:100%}
+  .sheetlink{margin-left:0;width:100%;justify-content:center}
   .modebox{flex-direction:row;align-items:center;flex-wrap:wrap;gap:8px 12px;padding:8px 12px;border-radius:14px} .reset{margin-top:0;flex:none} .rask{flex-direction:row;flex-wrap:wrap;justify-content:center} #modes{flex-direction:row;flex:1} #modes button{flex:1;min-width:0;border-bottom:0;border-right:1.5px solid var(--line)} #modes button:last-child{border-right:0}
   .seg button{padding:8px 12px}
   .setgrid{grid-template-columns:1fr} .setbox{padding:12px 12px 14px} .setbox .label{min-width:40px}
@@ -206,8 +212,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 .nav a{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 18px;border-radius:10px;font-weight:700;font-size:17px;color:var(--muted);text-decoration:none;white-space:nowrap}
 .nav a[aria-current="page"]{background:var(--ink);color:var(--bg)}
 .nav a:focus-visible,.brand:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
-@media (max-width:1100px){ .nav a{padding:0 13px} }
-@media (max-width:720px){ .nav{width:100%;box-sizing:border-box;gap:2px} .nav a{flex:1 1 0;min-width:0;padding:4px 1px;font-size:14.5px;line-height:1.2;white-space:normal;text-align:center;word-break:keep-all} }   /* 메뉴 6칸: 휴대폰은 두 줄 글씨 허용 */
+@media (max-width:720px){ .nav{width:100%;box-sizing:border-box;gap:2px} .nav a{flex:1 1 0;min-width:0;padding:4px 2px;font-size:15px;line-height:1.2;white-space:normal;text-align:center;word-break:keep-all} }   /* 메뉴 5칸: 휴대폰은 두 줄 글씨 허용 */
 
 .stage .sym{font-family:var(--f-body);font-size:17px;font-weight:700;top:14px}
 #score .chord.on text{fill:var(--accent)}
@@ -232,7 +237,6 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
   <nav class="nav" aria-label="메뉴">
     <a href="../">멜로디 초견</a>
     <a href="./" aria-current="page">코드 초견</a>
-    <a href="../chords/">코드표</a>
     <a href="../improv/">즉흥<wbr>연주</a>
     <a href="../harmony/">화성학</a>
     <a href="../metronome/">메트로<wbr>놈</a>
@@ -253,6 +257,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
     </div>
     <div class="lvrow">
       <div class="lvdesc" id="lvdesc"></div>
+      <a class="sheetlink" href="../chords/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 3v18M13 3v18M5 8h14M5 12h14M5 16h14"/></svg>코드표 보기<span aria-hidden="true">→</span></a>
     </div>
     <div class="setgrid">
       <div class="setbox" aria-label="악보 설정"><h3>악보</h3>
