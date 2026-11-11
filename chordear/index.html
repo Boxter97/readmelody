@@ -302,7 +302,8 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
           <output id="tempoOut">♩ = 40</output>
         </label>
         <div class="optlist">
-          <label class="check"><input type="checkbox" id="hint" checked> 첫 음 알려주기</label>
+          <label class="check"><input type="checkbox" id="hint" checked> 첫 음 듣기</label>
+          <label class="check"><input type="checkbox" id="firstc"> 첫 코드 알려주기</label>
           <label class="check"><input type="checkbox" id="countin"> 한 마디 세고 시작</label>
         </div>
       </div>
@@ -412,7 +413,8 @@ const store={get(k,d){try{const v=localStorage.getItem('cear-'+k);return v==null
 let sel=store.get('level2',1); if(!LEVELS[sel-1]) sel=1;
 let keyName=store.get('key','C'); if(!KEYS[keyName]) keyName='C';
 let mode=store.get('mode','easy'); if(mode!=='hard') mode='easy';
-let hint=store.get('hint',true);                  // 처음엔 첫 음 알려주기 켜짐 (K 요청)
+let firstc=store.get('firstc',false);                // 첫 코드 알려주기: 첫 코드를 미리 보여 줌 (코드 초견처럼, K 요청 2026-11-12)
+let hint=store.get('hint',true);                  // 첫 음 듣기: 처음엔 켜짐 (K 요청)
 let tempo=40;                                      // 코드 청음 기본 빠르기 40 (K 요청 2026-11-12)
 let done=store.get('done',null); if(!done||typeof done!=='object'||!done.easy) done={easy:{},hard:{}};
 let song=null, ans=[], cur=0, checked=false;
@@ -511,9 +513,9 @@ function render(){
   song.chords.forEach((c,i)=>{
     const cx=start+cw*(i+0.5), cg=el('g',{},g); c.ref=cg;
     el('line',{class:'st',x1:cx-S*0.7,x2:cx+S*0.7,y1:y0+2*S,y2:y0+2*S,stroke:'currentColor','stroke-width':S*0.5,'stroke-linecap':'round',style:'opacity:.0'},cg);
-    const show=checked||false;
+    const show=checked||(firstc&&i===0);
     if(!show){ el('text',{class:'q',x:cx,y:y0-S*1.3,'text-anchor':'middle','font-size':S*2.4,'font-weight':700,'font-family':'IBM Plex Sans KR, sans-serif'},cg,'?'); return; }
-    if(checked&&!false&&!isRight(i)) cg.classList.add('ng');
+    if(checked&&!(firstc&&i===0)&&!isRight(i)) cg.classList.add('ng');
     nameText(cg,c,cx,y0-S*1.3,narrow,key);
     el('text',{x:cx,y:y0+4*S+S*3.2,'text-anchor':'middle','font-size':S*1.35,'font-weight':700,'font-family':'IBM Plex Sans KR, sans-serif',style:'fill:var(--muted)'},cg,c.rom);
   });
@@ -587,7 +589,7 @@ async function play(){
   await ready(); if(!playing) return;
   const c=audio(), beat=60/tempo;
   let t=c.currentTime+0.15;
-  if(hint){                                          // 첫 음 알려주기: 그 키의 첫 음(으뜸음)을 먼저 쳐 줌 (K 요청 2026-11-12)
+  if(hint){                                          // 첫 음 듣기: 그 키의 첫 음(으뜸음)을 먼저 쳐 줌 (K 요청 2026-11-12)
     tone(60+rootOf(C(0,''),song.key).pc,t,beat*1.6,0.9); $('status').textContent=`첫 음 (${song.key.label} 키 으뜸음)`;
     t+=beat*2;
   }
@@ -634,10 +636,10 @@ function buildPads(){
 }
 function syncSlots(){
   $('slots').innerHTML=song.chords.map((c,i)=>{
-    const given=false, a=ans[i];
+    const given=firstc&&i===0, a=ans[i];
     let cls='slot'+(given?' given':''), fix='';
     if(checked&&!given){ cls+=isRight(i)?' ok':' ng'; if(!isRight(i)) fix=`<span class="sf">정답 ${c.label}</span>`; }
-    return `<button type="button" class="${cls}" data-i="${i}" aria-current="${!checked&&i===cur}" aria-label="${i+1}번째 코드 ${a?a.name:'비어 있음'}"><span class="sn">${i+1}</span><span class="sv${a?'':' empty'}">${a?a.name:'?'}</span>${fix}</button>`;
+    return `<button type="button" class="${cls}" data-i="${i}" aria-current="${!checked&&i===cur}" aria-label="${i+1}번째 코드 ${a?a.name:'비어 있음'}"><span class="sn">${i+1}${given?' (첫 코드)':''}</span><span class="sv${a?'':' empty'}">${a?a.name:'?'}</span>${fix}</button>`;
   }).join('');
   const full=ans.every(Boolean);
   $('checkBtn').textContent=checked?'다음 문제':'정답 확인';
@@ -648,7 +650,7 @@ function syncSlots(){
 function check(){
   if(checked){ fresh(); return; }
   stop(); checked=true;
-  const from=0, n=4-from; let right=0; for(let i=from;i<4;i++) if(isRight(i)) right++;
+  const from=firstc?1:0, n=4-from; let right=0; for(let i=from;i<4;i++) if(isRight(i)) right++;
   $('result').textContent=right===n?`${n}개 모두 맞았어요`:`${n}개 중 ${right}개 맞았어요`;
   $('result').classList.toggle('good',right===n);
   const d=done[mode]||(done[mode]={}); d[sel===0?'R':sel]=(d[sel===0?'R':sel]||0)+1; store.set('done',done); syncCards();
@@ -662,7 +664,7 @@ function updateMeta(){
 }
 function fresh(){
   stop(); song=makeSong(); checked=false;
-  ans=song.chords.map((c,i)=>false?{name:c.label,id:c.id}:null); cur=0;
+  ans=song.chords.map((c,i)=>firstc&&i===0?{name:c.label,id:c.id}:null); cur=firstc?1:0;
   $('result').textContent=''; $('result').classList.remove('good');
   updateMeta(); render(); syncSlots(); stop();
 }
@@ -715,6 +717,8 @@ function buildUI(){
   on('keys',v=>{keyName=v;store.set('key',keyName)});
   $('tempo').value=tempo; $('tempoOut').textContent='♩ = '+tempo;
   $('tempo').addEventListener('input',e=>{tempo=+e.target.value;$('tempoOut').textContent='♩ = '+tempo});
+  $('firstc').checked=firstc;
+  $('firstc').addEventListener('change',e=>{firstc=e.target.checked;store.set('firstc',firstc);fresh()});
   $('hint').checked=hint;
   $('hint').addEventListener('change',e=>{hint=e.target.checked;store.set('hint',hint)});
   // 코드 버튼: 지금 칸에 넣고 다음 칸으로 (누른 코드는 소리도 남)
@@ -722,15 +726,15 @@ function buildUI(){
     const b=e.target.closest('button'); if(!b||checked) return;
     const p=padChords[+b.dataset.i], ch=p.chord(cur); ans[cur]={name:p.label,id:p.id};
     audio(); ready().then(()=>strike(ch,audio().currentTime+0.02,0.8,0.8));
-    const empty=ans.findIndex((a,i)=>!a&&!false);
+    const empty=ans.findIndex((a,i)=>!a&&!(firstc&&i===0));
     if(empty>=0) cur=empty; else if(cur<3) cur++;
     syncSlots();
   });
-  $('slots').addEventListener('click',e=>{ const b=e.target.closest('.slot'); if(!b||checked) return; const i=+b.dataset.i; cur=i; syncSlots(); });
+  $('slots').addEventListener('click',e=>{ const b=e.target.closest('.slot'); if(!b||checked) return; const i=+b.dataset.i; if(firstc&&i===0) return; cur=i; syncSlots(); });
   $('eraseBtn').onclick=()=>{
     if(checked) return;
-    if(!ans[cur]){ const prev=[3,2,1,0].find(i=>i<cur&&ans[i]&&!false); if(prev!=null) cur=prev; }
-    if(!(false)) ans[cur]=null;
+    if(!ans[cur]){ const prev=[3,2,1,0].find(i=>i<cur&&ans[i]&&!(firstc&&i===0)); if(prev!=null) cur=prev; }
+    if(!(firstc&&cur===0)) ans[cur]=null;
     syncSlots();
   };
   $('checkBtn').onclick=check;

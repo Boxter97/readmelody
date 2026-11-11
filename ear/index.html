@@ -293,7 +293,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
           <output id="tempoOut">♩ = 60</output>
         </label>
         <div class="optlist">
-          <label class="check"><input type="checkbox" id="hint" checked> 첫 음 알려주기</label>
+          <label class="check"><input type="checkbox" id="hint" checked> 첫 음 듣기</label>
           <label class="check"><input type="checkbox" id="countin"> 한 마디 세고 시작</label>
         </div>
       </div>
@@ -368,7 +368,7 @@ const store={get(k,d){try{const v=localStorage.getItem('ear-'+k);return v==null?
 let sel=store.get('level',1); if(sel!==0&&!LEVELS[sel-1]) sel=1;     // sel 0 = 랜덤
 let keyName=store.get('key','C'); if(!KEYS[keyName]) keyName='C';
 let mode=store.get('mode','easy'); if(mode!=='hard') mode='easy';
-let hint=store.get('hint',true);                  // 처음엔 첫 음 알려주기 켜짐 (K 요청)
+let hint=store.get('hint',true);                  // 첫 음 듣기: 처음엔 켜짐 (K 요청)
 let tempo=60;
 let done=store.get('done',null); if(!done||typeof done!=='object'||!done.easy) done={easy:{},hard:{}};
 let song=null, ans=[], cur=0, checked=false;
@@ -560,7 +560,7 @@ async function play(){
   await ready(); if(!playing) return;
   const c=audio(), beat=60/tempo;
   let t=c.currentTime+0.15;
-  if(hint){                                          // 첫 음 알려주기: 그 키의 첫 음(으뜸음)을 먼저 쳐 줌 (K 요청 2026-11-12)
+  if(hint){                                          // 첫 음 듣기: 그 키의 첫 음(으뜸음)을 먼저 쳐 줌 (K 요청 2026-11-12)
     tone(pitchOf(song.tonic,song.key).midi,t,beat*1.6,0.9); $('status').textContent=`첫 음 (${song.key.label} 키 으뜸음)`;
     t+=beat*2;
   }
