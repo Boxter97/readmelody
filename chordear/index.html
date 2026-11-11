@@ -255,6 +255,8 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 .pad.px button{background:var(--tile)}
 .slot .sv{white-space:nowrap}
 #levels{grid-template-columns:repeat(5,minmax(0,1fr))}   /* 코드 청음: 단계 5개 */
+.setbox.off{opacity:.45} .setbox.off button{pointer-events:none;cursor:default}   /* 1단계: 키 상관없어서 회색 */
+.optlist .check.off{opacity:.45;pointer-events:none;cursor:default}
 .stage[data-v="1"] .hardtag .short{font-family:var(--f-body);font-size:1em;font-weight:700}   /* 좁을 때 "7th"는 보통 글꼴로 */
 .pad.qt{padding:0} .pad.qt button{background:var(--bg)} .pad.qt button .cn{white-space:normal;word-break:keep-all;text-align:center}
 @media (max-width:720px){ #levels{grid-template-columns:repeat(3,minmax(0,1fr))} .pad.qt{grid-template-columns:repeat(3,minmax(0,1fr))} .pad.p7{grid-template-columns:repeat(4,minmax(0,1fr))} .pad button{min-height:56px} .pad button .cn{font-size:17px} .pad button .cr{font-size:12px} .slot .sv{font-size:18px} }   /* 휴대폰: 이름이 길어서 한 줄 4칸 */
@@ -292,7 +294,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
       <div class="lvdesc" id="lvdesc"></div>
     </div>
     <div class="setgrid">
-      <div class="setbox" aria-label="악보 설정"><h3>악보</h3>
+      <div class="setbox" id="scoreBox" aria-label="악보 설정"><h3>악보</h3>
         <div class="scorebody">
           <div class="field keyfield"><span class="label">키</span><div class="keys" id="keys"><div class="krows"></div></div></div>
         </div>
@@ -327,7 +329,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
     </div>
     <div class="actions">
       <button type="button" class="btn new" id="newBtn">새 문제</button>
-      <button type="button" class="btn" id="refBtn"><svg viewBox="0 0 16 16"><path d="M3 2h2v12H3zM7 4h2v10H7zM11 6h2v8h-2z"/></svg>기준음 듣기</button>
+      <button type="button" class="btn" id="refBtn"><svg viewBox="0 0 16 16"><path d="M3 2h2v12H3zM7 4h2v10H7zM11 6h2v8h-2z"/></svg><span id="refTxt">기준음 듣기</span></button>
       <button type="button" class="btn primary" id="playBtn"><svg viewBox="0 0 16 16" id="playIcon"><path d="M4 2l10 6-10 6z"/></svg><span id="playTxt">문제 듣기</span></button>
     </div>
   </section>
@@ -493,7 +495,7 @@ function nameText(g,c,x,y,narrow,key){
 function render(){
   const svg=$('score'); svg.innerHTML='';
   const box=svg.parentElement.clientWidth-28, narrow=box<520, W=Math.max(box,300);
-  const key=song.key, ks=Object.keys(key.acc), sharp=ks.length>0&&key.acc[ks[0]]>0;
+  const key=song.single?KEYS.C:song.key, ks=Object.keys(key.acc), sharp=ks.length>0&&key.acc[ks[0]]>0;   // 1단계는 키 상관없어서 조표 없음
   const accs=(sharp?['F','C','G','D','A']:['B','E','A','D','G']).filter(l=>key.acc[l]);
   const x0=6, top=S*4.4, y0=top, clefW=narrow?42:46;
   const yOf=d=>y0+4*S-(d-2)*S/2;
@@ -612,6 +614,13 @@ async function play(){
 async function playRef(){
   if(playing) stop();
   audio(); await ready();
+  if(song.single){                                     // 1단계: 아르페지오로 듣기 — 그 코드를 아래음부터 한 음씩 (K 요청 2026-11-12)
+    const c0=audio(), t0=c0.currentTime+0.1, v=voicing(song.chords[0],song.chords[0].k), ns=[v.bass].concat(v.upper);
+    ns.forEach((m,i)=>tone(m,t0+i*0.55,0.6,i?0.7:0.8));
+    $('status').textContent='아르페지오 (한 음씩)';
+    timers.push(setTimeout(()=>{ if(!playing) $('status').textContent='' },ns.length*550+600));
+    return;
+  }
   const c=audio(), t=c.currentTime+0.1, I=C(0,''), v=voicing(I,song.key);
   v.upper.forEach((m,i)=>tone(m,t+i*0.3,1.8-i*0.3,0.7));
   strike(I,t+1.1,1.4);
@@ -637,7 +646,7 @@ function buildPads(){
   $('pads').innerHTML=rows.join('');
 }
 function syncSlots(){
-  $('slots').style.gridTemplateColumns=song.single?'minmax(0,260px)':'';
+  $('slots').style.gridTemplateColumns=song.single?'minmax(0,260px)':''; $('slots').style.justifyContent=song.single?'center':'';   // 1단계 답 칸은 가운데
   $('slots').innerHTML=song.chords.map((c,i)=>{
     const given=fc()&&i===0, a=ans[i];
     let cls='slot'+(given?' given':''), fix='';
@@ -714,6 +723,11 @@ function buildUI(){
     $('modes').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===mode));
     $('keys').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===keyName));
     updDesc(); buildPads();
+    const one=sel===1;                                 // 1단계: 키 · 첫 음 듣기 · 첫 코드 알려주기는 쓰지 않아서 회색
+    $('scoreBox').classList.toggle('off',one); $('scoreBox').setAttribute('aria-disabled',one);
+    $('keys').querySelectorAll('button').forEach(b=>b.disabled=one);
+    ['hint','firstc'].forEach(id=>{ $(id).disabled=one; $(id).closest('.check').classList.toggle('off',one); });
+    $('refTxt').textContent=one?'아르페지오로 듣기':'기준음 듣기';
   };
   const on=(id,fn)=>$(id).addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;fn(b.dataset.v);sync();fresh();});
   on('levels',v=>{sel=+v; store.set('level2',sel)});
