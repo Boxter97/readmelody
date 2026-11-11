@@ -368,14 +368,15 @@ function render(){
   const perOf=b=>4;                                                     // 구성음은 늘 한 줄 (두 줄은 읽기 어려워서 뺌, K 요청)
   const chipsW=per=>per===4?CW*4+CG*3:CW*2+CG;
   const nameW=(c,per)=>Math.max(wOf(chordName(c,key),S*(narrow?1.75:1.95),700), showDeg?wOf(c.rom,S*1.35,700):0, showTones?wOf(toneNames(c,key).join(' '),S*1.18,500)*1.06:0)+S*1.6;
-  const need=Math.max(S*(narrow?8:10),...song.bars.map(b=>{ const sg=segsOf(b), per=perOf(b); return sg.length*Math.max(...sg.map(c=>nameW(c,per))); }));
+  const needB=song.bars.map((b,m)=>{ const sg=segsOf(b), per=perOf(b); return Math.max(S*(narrow?8:10),sg.length>1?sg.length*(Math.max(...sg.map(c=>nameW(c,per)))-S*0.8):nameW(sg[0],per))+(m===0?S*1.1:0); });   // 마디마다 필요한 너비 (코드 2개면 반 칸씩)
   ms.remove();
-  // 한 줄에 4마디. 안 들어가면 작게 그리지 않고 한 줄에 2마디 → 1마디로 (K 요청 2026-11-11)
-  const base=Math.max(box,300)/(narrow?0.84:1), room=base-(x0+headW+tsW+S*1.5+6);
-  let per=4; while(per>1&&need*per>room) per/=2;                         // 글씨 크기는 Easy 크기 그대로 (절대 줄이지 않음, K 요청) → 대신 한 줄 마디 수를 줄임
-  const W=Math.max(base,x0+headW+tsW+S*1.5+need*per+6), x1=W-6;
-  svg.style.width=W>base+1?(W*box/base)+'px':''; $('scrollHint').hidden=!(W>base+1);   // 그래도 넘치면 옆으로 밀어서 보기 (글씨는 안 줄임)
-  const extra=(showDeg?S*2.2:0)+(showTones?S*2.2:0);                     // 오선 아래 줄 (도수 · 구성음)                     // 오선 아래 줄 (도수 · 구성음)
+  // 한 줄에 늘 4마디 (K 요청 2026-11-11). 글씨는 Easy 크기(코드 초견과 같은 기준)보다 작게 안 함 → 넘치면 옆으로 밀어서 보기
+  const per=4, base=Math.max(box,300)/(narrow?0.84:1), head=x0+headW+tsW+S*1.5+6;
+  const Wref=Math.max(base,head+S*(narrow?8:10)*per+S*1.2*per);
+  const lineW=[]; for(let m=0;m<needB.length;m+=per) lineW.push(needB.slice(m,m+per).reduce((a,b)=>a+b,0));
+  const W=Math.max(Wref,head+Math.max(...lineW)), x1=W-6;                // 마디 너비는 마디마다 따로 (코드 2개인 마디는 넓게)
+  svg.style.width=W>Wref+1?(W*box/Wref)+'px':''; $('scrollHint').hidden=!(W>Wref+1);   // 그래도 넘치면 옆으로 밀어서 보기 (글씨는 안 줄임)
+  const extra=(showDeg?S*2.2:0)+(showTones?S*2.2:0);                     // 오선 아래 줄 (도수 · 구성음)
   const sysH=S*4+84+extra, top=72, nSys=Math.ceil(song.bars.length/per);
   svg.setAttribute('viewBox',`0 0 ${W} ${top+(nSys-1)*sysH+4*S+S*2.6+extra}`);   // 마지막 줄 아래 빈칸은 줄임
   const thick=(x,y0)=>el('rect',{x,y:y0,width:4,height:4*S,fill:'currentColor'},svg);
@@ -402,11 +403,11 @@ function render(){
       el('text',{x,y:yOf(d)+(sharp?S*0.42:S*0.3),'font-size':S*2.6,'font-family':'Noto Music, serif',fill:'currentColor'},svg,sharp?'♯':'♭'); x+=S*0.95; });
     x+=6;
     if(li===0){ [4,4].forEach((t,i)=>el('text',{x:x+S*0.9,y:y0+S*(i===0?2:4)-2,'font-size':S*2.35,'font-weight':700,'text-anchor':'middle','font-family':'IBM Plex Sans KR, sans-serif',fill:'currentColor'},svg,String(t))); x+=tsW; }
-    const startX=x+4, bw=(x1-startX)/per;
+    const startX=x+4, lf=(x1-startX)/lineW[li]; let bx=startX;
     for(let i=0;i<5;i++) el('line',{x1:x0,x2:x1,y1:y0+i*S,y2:y0+i*S,stroke:'currentColor','stroke-width':1.1},svg);
     for(let j=0;j<per;j++){
       const m=li*per+j; if(m>=song.bars.length) break;
-      const bx=startX+j*bw, ex=bx+bw, c=song.bars[m], g=el('g',{class:'bar'},svg);
+      const bw=needB[m]*lf; bx=startX+needB.slice(li*per,m).reduce((a,b)=>a+b,0)*lf; const ex=bx+bw, c=song.bars[m], g=el('g',{class:'bar'},svg);
       el('rect',{class:'barhl',x:bx+1,y:y0-S*4.3,width:bw-2,height:4*S+S*4.3+S*2+extra,rx:8},g);   // 지금 마디 강조
       let pad=S*0.9;
       if(m===0){ thick(bx-2,y0); thin(bx+5,y0); dots(bx+10,y0); pad+=S*1.1; }               // 반복 시작
