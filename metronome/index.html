@@ -186,6 +186,8 @@ body.ads-off .layout .wrap{flex:1;width:100%;box-sizing:border-box;display:flex;
 .bigplay{width:100px;height:100px;border-radius:50%;border:0;background:var(--accent);display:grid;place-items:center;box-shadow:0 12px 26px var(--accent-shadow)}
 .bigplay svg{width:38px;height:38px;fill:var(--bg)}
 .meterrow{display:flex;align-items:center;gap:12px}
+.meterrow .label{min-width:2.6em;text-align:right}
+.seg button:disabled{color:var(--line);cursor:default}
 @media (max-width:720px){ .metro{padding:22px 14px;gap:16px} .round{width:48px;height:48px} .bigplay{width:88px;height:88px} .presets button{min-width:56px} }
 @media (prefers-reduced-motion:reduce){ #bpm.pulse{animation:none} }
 </style>
@@ -222,6 +224,7 @@ body.ads-off .layout .wrap{flex:1;width:100%;box-sizing:border-box;display:flex;
       <label class="side sw"><input type="checkbox" id="accent" checked>첫 박 강세</label>
     </div>
     <div class="meterrow"><span class="label">박자</span><div class="seg" id="meters"></div></div>
+    <div class="meterrow"><span class="label">음표</span><div class="seg" id="subs"></div></div>
   </section>
   <aside class="ad ad-bottom" aria-label="광고">광고<small>320×100</small></aside>
 </div>
@@ -235,6 +238,8 @@ const METERS={'2/4':{n:2,acc:[2,0],note:'♩'},'3/4':{n:3,acc:[2,0,0],note:'♩'
 const TERMS=[[0,'Grave','아주 느리고 무겁게'],[40,'Largo','아주 느리고 폭넓게'],[60,'Larghetto','라르고보다 조금 빠르게'],[66,'Adagio','아주 느리게'],
   [76,'Andante','느리게'],[108,'Moderato','보통 빠르게'],[120,'Allegro','빠르게'],[156,'Vivace','빠르고 경쾌하게'],[176,'Presto','매우 빠르게'],[200,'Prestissimo','가장 빠르게']];
 const PRESETS=[60,80,100,120,160];
+const SUBS=[[1,'4분'],[2,'8분'],[4,'16분'],[3,'셋잇단']];   // 한 박을 몇 개로 나눌지 (6/8은 ♪가 한 박이라 8분=그대로, 16분=둘로)
+let sub=1, subI=0;
 let bpm=60, meter='4/4', running=false, ctx=null, timer=null, nextT=0, beat=0, queue=[], raf=0, lock=null;
 
 function setBpm(v){
@@ -248,9 +253,20 @@ function drawBeats(){
   for(let i=0;i<M.n;i++){ const d=document.createElement('i'); if(M.acc[i]===2) d.className='first'; else if(M.acc[i]===1) d.className='mid'; box.appendChild(d); }
   $('unit').textContent='BPM · '+M.note+' 기준';
 }
+function subN(){ return meter==='6/8'?(sub===4?2:1):sub; }   // 6/8은 8분·16분만
+function syncSubs(){
+  if(meter==='6/8'&&(sub===1||sub===3)) sub=2;
+  $('subs').querySelectorAll('button').forEach(b=>{ const v=+b.dataset.v; b.disabled=meter==='6/8'&&(v===1||v===3); b.setAttribute('aria-pressed',v===sub); });
+}
 function audio(){ if(!ctx) ctx=new (window.AudioContext||window.webkitAudioContext)(); if(ctx.state==='suspended') ctx.resume(); return ctx; }
 function clickAt(t,lv){                         // 나무 블록 같은 짧은 소리 (첫 박은 더 높게)
   const c=ctx, o=c.createOscillator(), g=c.createGain(), f=c.createBiquadFilter();
+  if(lv===-1){                                  // 나눈 박: 작고 낮게
+    o.type='triangle'; o.frequency.setValueAtTime(940,t); o.frequency.exponentialRampToValueAtTime(700,t+0.04);
+    f.type='bandpass'; f.frequency.value=1000; f.Q.value=1.2;
+    g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.3,t+0.002); g.gain.exponentialRampToValueAtTime(0.0001,t+0.05);
+    o.connect(f); f.connect(g); g.connect(c.destination); o.start(t); o.stop(t+0.06); return;
+  }
   o.type='triangle'; o.frequency.setValueAtTime(lv===2?1760:lv===1?1480:1180,t); o.frequency.exponentialRampToValueAtTime(lv===2?1320:lv===1?1100:880,t+0.05);
   f.type='bandpass'; f.frequency.value=lv===2?1700:1200; f.Q.value=1.2;
   g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(lv===2?0.9:lv===1?0.65:0.5,t+0.002); g.gain.exponentialRampToValueAtTime(0.0001,t+0.07);
@@ -259,9 +275,11 @@ function clickAt(t,lv){                         // 나무 블록 같은 짧은 �
 function schedule(){
   const M=METERS[meter];
   while(nextT<ctx.currentTime+0.12){
-    const lv=$('accent').checked?M.acc[beat%M.n]:0;
-    clickAt(nextT,lv); queue.push({t:nextT,b:beat%M.n});
-    nextT+=60/bpm; beat=(beat+1)%M.n;
+    const n=subN();
+    if(subI===0){ const lv=$('accent').checked?M.acc[beat%M.n]:0; clickAt(nextT,lv); queue.push({t:nextT,b:beat%M.n}); }
+    else clickAt(nextT,-1);
+    nextT+=60/bpm/n; subI++;
+    if(subI>=n){ subI=0; beat=(beat+1)%M.n; }
   }
 }
 function paint(){                                // 소리 나는 순간에 맞춰 박 표시
@@ -274,7 +292,7 @@ function paint(){                                // 소리 나는 순간에 맞�
   raf=requestAnimationFrame(paint);
 }
 async function start(){
-  audio(); running=true; beat=0; queue=[]; nextT=ctx.currentTime+0.08;
+  audio(); running=true; beat=0; subI=0; queue=[]; nextT=ctx.currentTime+0.08;
   schedule(); timer=setInterval(schedule,25); raf=requestAnimationFrame(paint);
   $('startBtn').setAttribute('aria-label','멈춤'); $('startIcon').innerHTML='<path d="M3 2h4v12H3zM9 2h4v12H9z"/>';
   try{ if('wakeLock' in navigator) lock=await navigator.wakeLock.request('screen'); }catch(e){}
@@ -294,9 +312,11 @@ function tap(){
 
 PRESETS.forEach(v=>{ const b=document.createElement('button'); b.type='button'; b.dataset.v=v; b.textContent=v; $('presets').appendChild(b); });
 Object.keys(METERS).forEach(m=>{ const b=document.createElement('button'); b.type='button'; b.dataset.v=m; b.textContent=m; $('meters').appendChild(b); });
+SUBS.forEach(([v,t])=>{ const b=document.createElement('button'); b.type='button'; b.dataset.v=v; b.textContent=t; $('subs').appendChild(b); });
+$('subs').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b||b.disabled) return; sub=+b.dataset.v; subI=0; syncSubs(); });
 const syncMeter=()=>$('meters').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===meter));
 $('presets').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b) setBpm(+b.dataset.v); });
-$('meters').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; meter=b.dataset.v; syncMeter(); drawBeats(); beat=0; });
+$('meters').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; meter=b.dataset.v; syncMeter(); syncSubs(); drawBeats(); beat=0; subI=0; });
 $('bpmRange').addEventListener('input',e=>setBpm(+e.target.value));
 $('minus').onclick=()=>setBpm(bpm-1); $('plus').onclick=()=>setBpm(bpm+1);
 $('startBtn').onclick=()=>running?stop():start();
@@ -308,7 +328,7 @@ document.addEventListener('keydown',e=>{
   if(e.code==='ArrowDown'){ e.preventDefault(); setBpm(bpm-1); }
 });
 document.addEventListener('visibilitychange',async()=>{ if(running&&document.visibilityState==='visible'&&!lock){ try{ lock=await navigator.wakeLock.request('screen'); }catch(e){} } });
-setBpm(60); syncMeter(); drawBeats();
+setBpm(60); syncMeter(); syncSubs(); drawBeats();
 })();
 </script>
 
