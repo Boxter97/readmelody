@@ -174,6 +174,11 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 .bk-title span{font-size:17px;color:var(--muted)}
 .bk-pages{display:flex;flex-direction:column;align-items:center;gap:16px}
 .bk-pages img{display:block;width:100%;max-width:860px;height:auto;border:1.5px solid var(--line);border-radius:12px;background:#fff}
+.bk-dl{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 18px;border-radius:12px;font-weight:700;font-size:16px;text-decoration:none;color:#fff;background:var(--accent)}
+.bk-title .bk-dl{margin-left:auto}
+.bk-dl.all{margin-top:12px;background:var(--bg);color:var(--accent);border:1.5px solid var(--accent)}
+.bk-dl:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+@media (max-width:620px){ .bk-title .bk-dl{margin-left:0;width:100%} .bk-dl.all{width:100%} }
 .bk-step{display:flex;justify-content:space-between;gap:10px;max-width:860px;margin:18px auto 0}
 .bk-step button{flex:1;font:inherit;font-weight:700;font-size:17px;min-height:50px;border:1.5px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);cursor:pointer}
 .bk-step button:disabled{color:var(--line);cursor:default}
@@ -201,6 +206,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
     <span class="bk-vol">CHORD SHEET</span>
     <h2>코드표</h2>
     <p>기본 코드 · 하이 코드 · 7th 코드. 누르면 아래에 코드표가 나와요.</p>
+    <a class="bk-dl all" href="img/guitar-master-chords.pdf" download="기타MasTer_코드표_전체.pdf">코드표 전체 받기 (PDF · 6장)</a>
   </section>
   <div class="bk-grid" id="list"></div>
   <section class="bk-view" id="view" aria-live="polite"></section>
@@ -227,8 +233,8 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
   function show(id,scroll){
     const i=Math.max(0,ITEMS.findIndex(x=>x.id===id)), it=ITEMS[i];
     list.querySelectorAll('.bk-card').forEach(b=>b.setAttribute('aria-pressed',b.dataset.id===it.id));
-    view.innerHTML='<div class="bk-title"><h3>'+it.title+'</h3><span>'+it.artist+'</span></div>'
-      +'<div class="bk-pages"><img src="img/'+it.img+'.webp" width="1242" height="1756" alt="'+it.title+' '+it.artist+' 코드표"></div>'
+    view.innerHTML='<div class="bk-title"><h3>'+it.title+'</h3><span>'+it.artist+'</span><a class="bk-dl" href="img/'+it.img+'.png" download="기타MasTer_코드표_'+it.no+'_'+(it.title+' '+it.artist).replace(/[^0-9A-Za-z가-힣♭]+/g,'_')+'.png">이 코드표 저장 (이미지)</a></div>'
+      +'<div class="bk-pages"><img src="img/'+it.img+'.webp" width="1242" height="1956" alt="'+it.title+' '+it.artist+' 코드표"></div>'
       +'<div class="bk-step"><button type="button" data-go="'+(i-1)+'"'+(i===0?' disabled':'')+'>← 이전</button><button type="button" data-go="'+(i+1)+'"'+(i===ITEMS.length-1?' disabled':'')+'>다음 →</button></div>';
     if(scroll) view.scrollIntoView({behavior:'smooth',block:'start'});
   }
