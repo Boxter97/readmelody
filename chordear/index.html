@@ -254,9 +254,10 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 .pad button .cr{font-size:13px;font-weight:500;color:var(--muted);line-height:1.15}
 .pad.px button{background:var(--tile)}
 .slot .sv{white-space:nowrap}
-#levels{grid-template-columns:repeat(4,minmax(0,1fr))}   /* 코드 청음: 단계 4개 */
+#levels{grid-template-columns:repeat(5,minmax(0,1fr))}   /* 코드 청음: 단계 5개 */
+.stage[data-v="1"] .hardtag .short{font-family:var(--f-body);font-size:1em;font-weight:700}   /* 좁을 때 "7th"는 보통 글꼴로 */
 .pad.qt{padding:0} .pad.qt button{background:var(--bg)} .pad.qt button .cn{white-space:normal;word-break:keep-all;text-align:center}
-@media (max-width:720px){ #levels{grid-template-columns:repeat(4,minmax(0,1fr))} .pad.qt{grid-template-columns:repeat(3,minmax(0,1fr))} .pad.p7{grid-template-columns:repeat(4,minmax(0,1fr))} .pad button{min-height:56px} .pad button .cn{font-size:17px} .pad button .cr{font-size:12px} .slot .sv{font-size:18px} }   /* 휴대폰: 이름이 길어서 한 줄 4칸 */
+@media (max-width:720px){ #levels{grid-template-columns:repeat(3,minmax(0,1fr))} .pad.qt{grid-template-columns:repeat(3,minmax(0,1fr))} .pad.p7{grid-template-columns:repeat(4,minmax(0,1fr))} .pad button{min-height:56px} .pad button .cn{font-size:17px} .pad button .cr{font-size:12px} .slot .sv{font-size:18px} }   /* 휴대폰: 이름이 길어서 한 줄 4칸 */
 </style>
 </head>
 <body class="ads-off">
@@ -377,17 +378,18 @@ function chordName(c,key){ return chordParts(c,key).map(x=>x[0]).join(''); }
 function romanOf(c){ if(c.sec!=null) return 'Ⅴ7/'+ROMAN[c.sec]; return accTxt(c.alt||0)+ROMAN[c.deg]+ROMAN_Q[c.q]; }
 
 /* 단계 = 들리는 코드의 종류 */
-/* 단계 (K 요청 2026-11-12): 1 = 코드 종류 맞히기, 2~4 = 코드 진행 (예전 1~3단계를 한 칸씩 뒤로) */
+/* 단계 (K 요청 2026-11-12): 1 = 코드 종류 맞히기, 2~5 = 코드 진행 (예전 1~4단계를 한 칸씩 뒤로) */
 const LEVELS=[
   {n:1,sym:'종류',name:'코드 종류',desc:'메이저 · 마이너 · sus4 · 디미니쉬 · 어그먼트',hdesc:'7th 코드 (maj7 · 7 · m7 · m7♭5 · dim7)',tag:'+ 7th',tagS:'7th'},
   {n:2,sym:'Ⅰ Ⅳ Ⅴ',name:'주요 3화음',desc:'Ⅰ · Ⅳ · Ⅴ 3화음',tag:'+ 부속·차용',tagS:'+α'},
   {n:3,sym:'Ⅱm·Ⅵm',name:'+ Ⅱm · Ⅵm',desc:'Ⅰ · Ⅱm · Ⅳ · Ⅴ · Ⅵm 3화음',tag:'+ 부속·차용',tagS:'+α'},
   {n:4,sym:'3화음',name:'모든 3화음',desc:'다이아토닉 3화음 7개 (Ⅲm · Ⅶ° 추가)',tag:'+ 부속·차용',tagS:'+α'},
+  {n:5,sym:'7th',name:'7th 코드',desc:'다이아토닉 7th 코드 7개 (M7 · m7 · 7 · ø7)',tag:'+ 부속·차용',tagS:'+α'},
 ];
 const Q_EASY=[{q:'',ko:'메이저',sym:'M'},{q:'m',ko:'마이너',sym:'m'},{q:'sus4',ko:'서스포',sym:'sus4'},{q:'dim',ko:'디미니쉬',sym:'dim'},{q:'aug',ko:'어그먼트',sym:'aug'}];
 const Q_HARD=[{q:'maj7',ko:'메이저7',sym:'maj7'},{q:'7',ko:'도미넌트7',sym:'7'},{q:'m7',ko:'마이너7',sym:'m7'},{q:'m7♭5',ko:'하프 디미니쉬',sym:'m7♭5'},{q:'dim7',ko:'디미니쉬7',sym:'dim7'}];
 const qPool=()=>mode==='hard'?Q_HARD:Q_EASY;
-const progLv=()=>sel-1;                                 // 코드 진행 단계 (예전 단계 번호 1~3)
+const progLv=()=>sel-1;                                 // 코드 진행 단계 (예전 단계 번호 1~4)
 const DEGS=[[0,3,4],[0,1,3,4,5],[0,1,2,3,4,5,6]];
 function vocab(lv){                                    // 답 버튼 (Easy)
   const tri=d=>C(d,TRIAD_Q[d]), sev=d=>C(d,SEV_Q[d]);
