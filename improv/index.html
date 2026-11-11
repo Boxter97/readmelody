@@ -106,6 +106,9 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 .sheet{background:var(--bg);border:1.5px solid var(--line);border-radius:18px;padding:20px 14px 14px;box-shadow:0 10px 30px rgba(24,32,46,.07);overflow:hidden}
 .meta{display:flex;flex-wrap:wrap;gap:6px 18px;padding:0 10px 6px;font-size:16px;color:var(--muted)}
 .meta b{color:var(--ink)}
+.targets{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:2px 10px 8px}   /* 타겟 노트: 누른 도수의 음을 오선에 표시 (여러 개 같이 켤 수 있음) */
+.targets .seg button{min-width:64px}
+#score .tnote{fill:var(--accent);stroke:var(--accent)}
 #score{display:block;width:100%;height:auto;color:var(--ink)}
 .scorewrap{overflow-x:auto;-webkit-overflow-scrolling:touch}   /* 글씨를 줄이지 않으려고, 넘칠 때만 옆으로 밀어서 봄 */
 .scrollhint{padding:4px 10px 0;font-size:15px;font-weight:700;color:var(--muted);text-align:center}
@@ -234,6 +237,9 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 
   <section class="sheet" aria-label="악보">
     <div class="meta" id="meta"></div>
+    <div class="targets"><span class="label">타겟 노트</span><div class="seg" id="tgts" role="group" aria-label="타겟 노트">
+      <button type="button" data-v="1">1도</button><button type="button" data-v="3">3도</button><button type="button" data-v="5">5도</button><button type="button" data-v="7">7도</button>
+    </div></div>
     <div class="scorewrap"><svg id="score" role="img" aria-label="코드 진행 악보"></svg></div>
     <div class="scrollhint" id="scrollHint" hidden>← 악보를 옆으로 밀어서 보세요 →</div>
     <div class="actions">
@@ -331,6 +337,8 @@ let progId=store.get('prog',PROGS[0].id); if(!PROGS.some(p=>p.id===progId)) prog
 let keys=store.get('keys',{}); if(!keys||typeof keys!=='object') keys={};
 let vol=+store.get('vol',80); if(!(vol>=0&&vol<=100)) vol=80;
 let showDeg=store.get('deg',false), showTones=store.get('tones',false);
+let targets=store.get('targets',[]); if(!Array.isArray(targets)) targets=[];   // 켜 둔 타겟 노트 도수 (1 · 3 · 5 · 7)
+const TGT_IDX={1:0,3:1,5:2,7:3};
 const $=id=>document.getElementById(id);
 const P=()=>PROGS.find(p=>p.id===progId);
 let song=null;
@@ -397,6 +405,20 @@ function render(){
     let y=y0+4*S+S*3.4;
     if(showDeg){ el('text',{x:cx,y,'font-size':S*1.35,'font-weight':700,'font-family':'IBM Plex Sans KR, sans-serif',style:'fill:var(--muted)'},g,ch.rom); y+=S*2.2; }
     if(showTones) el('text',{x:cx,y,'font-size':S*1.18,'font-weight':500,'font-family':'IBM Plex Sans KR, sans-serif',style:'fill:var(--muted)','word-spacing':S*0.15},g,toneNames(ch,key).join(' '));   // 구성음: 처음 버전 (글자 한 줄, K 요청)
+    if(targets.length){                                                  // 타겟 노트: 고른 도수의 음을 온음표로 오선 안(미~레)에
+      const r=rootOf(ch,key);
+      const ns=targets.map(dg=>{ const [k,s0]=QUAL[ch.q][TGT_IDX[dg]], n=spell(r,k,s0); const d=n.li<2?n.li+7:n.li, L=LETTERS[n.li];
+        return {d,a:n.a,sign:n.a!==(key.acc[L]||0)}; }).sort((a,b)=>a.d-b.d);
+      let prev=null;
+      ns.forEach(n=>{
+        if(prev&&prev.d===n.d) return;
+        const nx=cx+S*2+((prev&&n.d-prev.d===1&&!prev.shift)?S*1.6:0); n.shift=nx>cx+S*2; prev=n;   // 2도로 붙으면 옆으로 비킴
+        const ny=y0+4*S-(n.d-2)*S/2, tg=el('g',{class:'tnote'},g);
+        el('ellipse',{cx:nx,cy:ny,rx:S*0.7,ry:S*0.48,transform:`rotate(-20 ${nx} ${ny})`,fill:'none','stroke-width':S*0.24},tg);
+        if(n.sign){ const t2=n.a>1?'♯♯':n.a===1?'♯':n.a<-1?'♭♭':n.a===-1?'♭':'♮', off=t2.includes('♭')?S*0.3:S*0.42;
+          el('text',{x:nx-S*1.15,y:ny+off,'font-size':S*2.3,'text-anchor':'end','font-family':'Noto Music, serif',stroke:'none'},tg,t2); }
+      });
+    }
   }
   for(let li=0;li<nSys;li++){
     const y0=top+li*sysH, yOf=d=>y0+4*S-(d-2)*S/2;
@@ -569,6 +591,10 @@ function buildUI(){
   $('vol').addEventListener('input',e=>{vol=+e.target.value;$('volOut').textContent=vol;store.set('vol',vol);if(backingEl)backingEl.volume=vol/100;});
   $('deg').checked=showDeg; $('tones').checked=showTones;
   $('deg').addEventListener('change',e=>{showDeg=e.target.checked;store.set('deg',showDeg);stop();render()});
+  const syncT=()=>$('tgts').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',targets.includes(+b.dataset.v)));
+  $('tgts').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; const v=+b.dataset.v;   // 누를 때마다 켜고 끔
+    targets=targets.includes(v)?targets.filter(x=>x!==v):targets.concat(v).sort(); store.set('targets',targets); syncT(); render(); });
+  syncT();
   $('tones').addEventListener('change',e=>{showTones=e.target.checked;store.set('tones',showTones);stop();render()});
   $('playBtn').onclick=play; $('refBtn').onclick=playRef;
   $('scaleRows').addEventListener('click',e=>{const b=e.target.closest('.sbtn'); if(b) playScale(+b.dataset.i,b);});
