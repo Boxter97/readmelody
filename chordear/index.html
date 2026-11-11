@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="코드 4개를 듣고 코드 이름을 맞히는 코드 청음 연습 — 주요 3화음부터 7th · sus4 · 6코드까지, Hard는 부속·차용화음">
+<meta name="description" content="코드 청음 연습 — 코드 종류(메이저 · 마이너 · sus4 · dim · aug, Hard는 7th)와 코드 진행을 듣고 맞히기">
 <style>body{margin:0}[hidden]{display:none!important}img{max-width:100%}
 /* 넓은 화면: 화면 전체를 10~20%만 키움 (K 요청 2026-11-11) */
 @media (min-width:1400px){ body.ads-off .wrap, body.ads-off .band .in{max-width:1300px} }   /* 넓은 화면 기본 너비 (K 요청 2026-11-11: 악보가 넓어진 크기를 기본으로) */
@@ -254,7 +254,9 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 .pad button .cr{font-size:13px;font-weight:500;color:var(--muted);line-height:1.15}
 .pad.px button{background:var(--tile)}
 .slot .sv{white-space:nowrap}
-@media (max-width:720px){ .pad.p7{grid-template-columns:repeat(4,minmax(0,1fr))} .pad button{min-height:56px} .pad button .cn{font-size:17px} .pad button .cr{font-size:12px} .slot .sv{font-size:18px} }   /* 휴대폰: 이름이 길어서 한 줄 4칸 */
+#levels{grid-template-columns:repeat(4,minmax(0,1fr))}   /* 코드 청음: 단계 4개 */
+.pad.qt{padding:0} .pad.qt button{background:var(--bg)} .pad.qt button .cn{white-space:normal;word-break:keep-all;text-align:center}
+@media (max-width:720px){ #levels{grid-template-columns:repeat(4,minmax(0,1fr))} .pad.qt{grid-template-columns:repeat(3,minmax(0,1fr))} .pad.p7{grid-template-columns:repeat(4,minmax(0,1fr))} .pad button{min-height:56px} .pad button .cn{font-size:17px} .pad button .cr{font-size:12px} .slot .sv{font-size:18px} }   /* 휴대폰: 이름이 길어서 한 줄 4칸 */
 </style>
 </head>
 <body class="ads-off">
@@ -296,11 +298,11 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
       </div>
       <div class="setbox" aria-label="연주 설정"><h3>연주</h3>
         <label class="tempo"><span class="label">빠르기</span>
-          <input type="range" id="tempo" min="40" max="140" step="2" value="60">
-          <output id="tempoOut">♩ = 60</output>
+          <input type="range" id="tempo" min="40" max="140" step="2" value="40">
+          <output id="tempoOut">♩ = 40</output>
         </label>
         <div class="optlist">
-          <label class="check"><input type="checkbox" id="hint" checked> 첫 코드 알려주기</label>
+          <label class="check"><input type="checkbox" id="hint" checked> 첫 음 알려주기</label>
           <label class="check"><input type="checkbox" id="countin"> 한 마디 세고 시작</label>
         </div>
       </div>
@@ -361,10 +363,10 @@ const ACCENT=[2,0,0,0];
 
 /* 코드 (코드 초견과 같은 표) */
 const QUAL={'':[0,4,7],'m':[0,3,7],'dim':[0,3,6],'7':[0,4,7,10],'maj7':[0,4,7,11],'m7':[0,3,7,10],'m7♭5':[0,3,6,10],
-  'sus4':[0,5,7],'7sus4':[0,5,7,10],'6':[0,4,7,9],'m6':[0,3,7,9]};
+  'sus4':[0,5,7],'7sus4':[0,5,7,10],'6':[0,4,7,9],'m6':[0,3,7,9],'aug':[0,4,8],'dim7':[0,3,6,9]};
 const TRIAD_Q=['','m','m','','','m','dim'], SEV_Q=['maj7','m7','m7','maj7','7','m7','m7♭5'];
 const ROMAN=['Ⅰ','Ⅱ','Ⅲ','Ⅳ','Ⅴ','Ⅵ','Ⅶ'];
-const ROMAN_Q={'':'','m':'m','dim':'°','7':'7','maj7':'M7','m7':'m7','m7♭5':'ø7','sus4':'sus4','7sus4':'7sus4','6':'6','m6':'m6'};
+const ROMAN_Q={'':'','m':'m','dim':'°','7':'7','maj7':'M7','m7':'m7','m7♭5':'ø7','sus4':'sus4','7sus4':'7sus4','6':'6','m6':'m6','aug':'+','dim7':'°7'};
 const accTxt=a=>a>0?'♯'.repeat(a):a<0?'♭'.repeat(-a):'';
 const C=(deg,q,o={})=>({deg,q,alt:0,...o});
 const idOf=c=>c.deg+'|'+(c.alt||0)+'|'+c.q;
@@ -374,13 +376,17 @@ function chordName(c,key){ return chordParts(c,key).map(x=>x[0]).join(''); }
 function romanOf(c){ if(c.sec!=null) return 'Ⅴ7/'+ROMAN[c.sec]; return accTxt(c.alt||0)+ROMAN[c.deg]+ROMAN_Q[c.q]; }
 
 /* 단계 = 들리는 코드의 종류 */
+/* 단계 (K 요청 2026-11-12): 1 = 코드 종류 맞히기, 2~4 = 코드 진행 (예전 1~3단계를 한 칸씩 뒤로) */
 const LEVELS=[
-  {n:1,sym:'Ⅰ Ⅳ Ⅴ',name:'주요 3화음',desc:'Ⅰ · Ⅳ · Ⅴ 3화음'},
-  {n:2,sym:'+Ⅱm Ⅵm',name:'+ Ⅱm · Ⅵm',desc:'Ⅰ · Ⅱm · Ⅳ · Ⅴ · Ⅵm 3화음'},
-  {n:3,sym:'3화음',name:'모든 3화음',desc:'다이아토닉 3화음 7개 (Ⅲm · Ⅶ° 추가)'},
-  {n:4,sym:'7th',name:'7th 코드',desc:'다이아토닉 7th 코드 7개 (M7 · m7 · 7 · ø7)'},
-  {n:5,sym:'sus4·6',name:'sus4 · 6코드',desc:'7th 코드 + sus4 · 6코드'},
+  {n:1,sym:'종류',name:'코드 종류',desc:'메이저 · 마이너 · sus4 · 디미니쉬 · 어그먼트',hdesc:'7th 코드 (maj7 · 7 · m7 · m7♭5 · dim7)',tag:'+ 7th',tagS:'7th'},
+  {n:2,sym:'Ⅰ Ⅳ Ⅴ',name:'주요 3화음',desc:'Ⅰ · Ⅳ · Ⅴ 3화음',tag:'+ 부속·차용',tagS:'+α'},
+  {n:3,sym:'Ⅱm·Ⅵm',name:'+ Ⅱm · Ⅵm',desc:'Ⅰ · Ⅱm · Ⅳ · Ⅴ · Ⅵm 3화음',tag:'+ 부속·차용',tagS:'+α'},
+  {n:4,sym:'3화음',name:'모든 3화음',desc:'다이아토닉 3화음 7개 (Ⅲm · Ⅶ° 추가)',tag:'+ 부속·차용',tagS:'+α'},
 ];
+const Q_EASY=[{q:'',ko:'메이저',sym:'M'},{q:'m',ko:'마이너',sym:'m'},{q:'sus4',ko:'서스포',sym:'sus4'},{q:'dim',ko:'디미니쉬',sym:'dim'},{q:'aug',ko:'어그먼트',sym:'aug'}];
+const Q_HARD=[{q:'maj7',ko:'메이저7',sym:'maj7'},{q:'7',ko:'도미넌트7',sym:'7'},{q:'m7',ko:'마이너7',sym:'m7'},{q:'m7♭5',ko:'하프 디미니쉬',sym:'m7♭5'},{q:'dim7',ko:'디미니쉬7',sym:'dim7'}];
+const qPool=()=>mode==='hard'?Q_HARD:Q_EASY;
+const progLv=()=>sel-1;                                 // 코드 진행 단계 (예전 단계 번호 1~3)
 const DEGS=[[0,3,4],[0,1,3,4,5],[0,1,2,3,4,5,6]];
 function vocab(lv){                                    // 답 버튼 (Easy)
   const tri=d=>C(d,TRIAD_Q[d]), sev=d=>C(d,SEV_Q[d]);
@@ -403,11 +409,11 @@ function hardVocab(lv){                                // Hard: 부속화음 · 
 /* ---------- 상태 ---------- */
 const store={get(k,d){try{const v=localStorage.getItem('cear-'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},
              set(k,v){try{localStorage.setItem('cear-'+k,JSON.stringify(v))}catch(e){}}};
-let sel=store.get('level',1); if(sel!==0&&!LEVELS[sel-1]) sel=1;
+let sel=store.get('level2',1); if(!LEVELS[sel-1]) sel=1;
 let keyName=store.get('key','C'); if(!KEYS[keyName]) keyName='C';
 let mode=store.get('mode','easy'); if(mode!=='hard') mode='easy';
 let hint=store.get('hint',true);                  // 처음엔 첫 음 알려주기 켜짐 (K 요청)
-let tempo=60;
+let tempo=40;                                      // 코드 청음 기본 빠르기 40 (K 요청 2026-11-12)
 let done=store.get('done',null); if(!done||typeof done!=='object'||!done.easy) done={easy:{},hard:{}};
 let song=null, ans=[], cur=0, checked=false;
 
@@ -419,8 +425,19 @@ const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()
 const PATTERNS=[[0,3,4,0],[0,4,3,0],[0,3,0,4],[3,4,0,3],[0,4,0,3],[4,3,0,4],[3,0,4,0],
   [0,5,3,4],[0,3,5,4],[5,3,4,0],[0,5,1,4],[1,4,0,5],[5,1,4,0],[0,4,5,3],[0,1,4,0],[3,4,0,5],[5,3,0,4],[1,4,0,3],[0,5,3,1],[3,0,1,4],
   [3,2,1,0],[2,5,1,4],[3,6,2,5],[0,3,6,2],[3,4,2,5],[0,2,3,4],[1,4,2,5],[0,1,2,3],[0,6,2,5],[2,5,3,4],[5,2,3,0],[0,2,5,4],[0,6,5,4]];
+function makeQ(){                                     // 1단계: 코드 4개, 근음은 그 키의 음 중에서, 종류를 맞힘
+  const key=KEYS[keyName], pool=qPool();
+  for(let k=0;k<300;k++){
+    const chords=[0,1,2,3].map(()=>C(Math.floor(Math.random()*7),rnd(pool).q));
+    if(new Set(chords.map(c=>c.q)).size<3) continue;                       // 종류는 3가지 이상
+    if(chords.some((c,i)=>i&&c.q===chords[i-1].q)) continue;               // 같은 종류 연달아 안 나오게
+    chords.forEach(c=>{ const t=pool.find(x=>x.q===c.q); c.name=chordName(c,key); c.label=t.ko; c.rom=t.ko; c.id=c.q; });
+    return {key,chords};
+  }
+}
 function makeSong(){
-  const key=KEYS[keyName], L=sel===0?0:sel, allowed=L===0||L>=3?DEGS[2]:DEGS[L-1];
+  if(sel===1) return makeQ();
+  const key=KEYS[keyName], L=progLv(), allowed=L===0||L>=3?DEGS[2]:DEGS[L-1];
   for(let k=0;k<500;k++){
     const pat=rnd(PATTERNS);
     if(!pat.every(d=>allowed.includes(d))) continue;
@@ -452,7 +469,7 @@ function makeSong(){
       if(n<1) continue;
     }
     if(chords.some((c,i)=>i&&idOf(c)===idOf(chords[i-1]))) continue;   // 같은 코드 연달아 안 나오게
-    chords.forEach(c=>{ c.name=chordName(c,key); c.rom=romanOf(c); c.id=idOf(c); });
+    chords.forEach(c=>{ c.name=chordName(c,key); c.label=c.name; c.rom=romanOf(c); c.id=idOf(c); });
     return {key,chords};
   }
   return null;
@@ -494,9 +511,9 @@ function render(){
   song.chords.forEach((c,i)=>{
     const cx=start+cw*(i+0.5), cg=el('g',{},g); c.ref=cg;
     el('line',{class:'st',x1:cx-S*0.7,x2:cx+S*0.7,y1:y0+2*S,y2:y0+2*S,stroke:'currentColor','stroke-width':S*0.5,'stroke-linecap':'round',style:'opacity:.0'},cg);
-    const show=checked||(hint&&i===0);
+    const show=checked||false;
     if(!show){ el('text',{class:'q',x:cx,y:y0-S*1.3,'text-anchor':'middle','font-size':S*2.4,'font-weight':700,'font-family':'IBM Plex Sans KR, sans-serif'},cg,'?'); return; }
-    if(checked&&!(hint&&i===0)&&!isRight(i)) cg.classList.add('ng');
+    if(checked&&!false&&!isRight(i)) cg.classList.add('ng');
     nameText(cg,c,cx,y0-S*1.3,narrow,key);
     el('text',{x:cx,y:y0+4*S+S*3.2,'text-anchor':'middle','font-size':S*1.35,'font-weight':700,'font-family':'IBM Plex Sans KR, sans-serif',style:'fill:var(--muted)'},cg,c.rom);
   });
@@ -570,6 +587,10 @@ async function play(){
   await ready(); if(!playing) return;
   const c=audio(), beat=60/tempo;
   let t=c.currentTime+0.15;
+  if(hint){                                          // 첫 음 알려주기: 그 키의 첫 음(으뜸음)을 먼저 쳐 줌 (K 요청 2026-11-12)
+    tone(60+rootOf(C(0,''),song.key).pc,t,beat*1.6,0.9); $('status').textContent=`첫 음 (${song.key.label} 키 으뜸음)`;
+    t+=beat*2;
+  }
   if($('countin').checked){
     for(let b=0;b<4;b++){ click(t+b*beat,ACCENT[b]); timers.push(setTimeout(()=>$('status').textContent=`${b===0?'준비… ':''}${b+1}`,(t+b*beat-c.currentTime)*1000)); }
     t+=4*beat;
@@ -599,8 +620,13 @@ async function playRef(){
 const isRight=i=>ans[i]&&ans[i].id===song.chords[i].id;
 let padChords=[];
 function buildPads(){
-  const key=KEYS[keyName], L=sel===0?0:sel, base=vocab(L), hard=mode==='hard'?hardVocab(L):[];
-  padChords=base.concat(hard);
+  if(sel===1){                                          // 1단계: 코드 종류 버튼 (이름 + 기호)
+    padChords=qPool().map(t=>({label:t.ko,id:t.q,chord:i=>C(song.chords[i].deg,t.q)}));
+    $('pads').innerHTML='<div class="pad p5 qt">'+qPool().map((t,i)=>`<button type="button" data-i="${i}"><span class="cn">${t.ko}</span><span class="cr">${t.sym}</span></button>`).join('')+'</div>';
+    return;
+  }
+  const key=KEYS[keyName], L=progLv(), base=vocab(L), hard=mode==='hard'?hardVocab(L):[];
+  padChords=base.concat(hard).map(c=>({label:chordName(c,key),id:idOf(c),chord:()=>c}));
   const btn=(c,i)=>`<button type="button" data-i="${i}"><span class="cn">${chordName(c,key)}</span><span class="cr">${romanOf(c)}</span></button>`;
   const rows=[]; for(let i=0;i<base.length;i+=7) rows.push('<div class="pad p7">'+base.slice(i,i+7).map((c,j)=>btn(c,i+j)).join('')+'</div>');
   if(hard.length) rows.push('<div class="pad p7 px">'+hard.map((c,j)=>btn(c,base.length+j)).join('')+'</div>');
@@ -608,10 +634,10 @@ function buildPads(){
 }
 function syncSlots(){
   $('slots').innerHTML=song.chords.map((c,i)=>{
-    const given=hint&&i===0, a=ans[i];
+    const given=false, a=ans[i];
     let cls='slot'+(given?' given':''), fix='';
-    if(checked&&!given){ cls+=isRight(i)?' ok':' ng'; if(!isRight(i)) fix=`<span class="sf">정답 ${c.name}</span>`; }
-    return `<button type="button" class="${cls}" data-i="${i}" aria-current="${!checked&&i===cur}" aria-label="${i+1}번째 코드 ${a?a.name:'비어 있음'}"><span class="sn">${i+1}${given?' (첫 코드)':''}</span><span class="sv${a?'':' empty'}">${a?a.name:'?'}</span>${fix}</button>`;
+    if(checked&&!given){ cls+=isRight(i)?' ok':' ng'; if(!isRight(i)) fix=`<span class="sf">정답 ${c.label}</span>`; }
+    return `<button type="button" class="${cls}" data-i="${i}" aria-current="${!checked&&i===cur}" aria-label="${i+1}번째 코드 ${a?a.name:'비어 있음'}"><span class="sn">${i+1}</span><span class="sv${a?'':' empty'}">${a?a.name:'?'}</span>${fix}</button>`;
   }).join('');
   const full=ans.every(Boolean);
   $('checkBtn').textContent=checked?'다음 문제':'정답 확인';
@@ -622,7 +648,7 @@ function syncSlots(){
 function check(){
   if(checked){ fresh(); return; }
   stop(); checked=true;
-  const from=hint?1:0, n=4-from; let right=0; for(let i=from;i<4;i++) if(isRight(i)) right++;
+  const from=0, n=4-from; let right=0; for(let i=from;i<4;i++) if(isRight(i)) right++;
   $('result').textContent=right===n?`${n}개 모두 맞았어요`:`${n}개 중 ${right}개 맞았어요`;
   $('result').classList.toggle('good',right===n);
   const d=done[mode]||(done[mode]={}); d[sel===0?'R':sel]=(d[sel===0?'R':sel]||0)+1; store.set('done',done); syncCards();
@@ -636,21 +662,20 @@ function updateMeta(){
 }
 function fresh(){
   stop(); song=makeSong(); checked=false;
-  ans=song.chords.map((c,i)=>hint&&i===0?{name:c.name,id:c.id}:null); cur=hint?1:0;
+  ans=song.chords.map((c,i)=>false?{name:c.label,id:c.id}:null); cur=0;
   $('result').textContent=''; $('result').classList.remove('good');
   updateMeta(); render(); syncSlots(); stop();
 }
-function updDesc(){ $('lvdesc').textContent='4분음표 한 마디의 코드 4개를 듣고 맞히기 · '+(sel===0?'1~'+LEVELS.length+'단계 코드가 한 문제에 섞여 나와요':LEVELS[sel-1].desc)+(mode==='hard'?' · 부속·차용화음 추가':''); }
+function updDesc(){ const L=LEVELS[sel-1]; $('lvdesc').textContent=sel===1?'코드 4개를 듣고 코드 종류 맞히기 · '+(mode==='hard'?L.hdesc:L.desc):'코드 진행 4개를 듣고 맞히기 · '+L.desc+(mode==='hard'?' · 부속·차용화음 추가':''); }
 const STAR3=[0,1,2,3,4].map(()=>'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.2 6.6.7-5 4.5 1.4 6.6L12 17.3 6.1 20.5l1.4-6.6-5-4.5 6.6-.7z"/></svg>').join('');
 function levelInfo(n){ const c=(done[mode]||{})[n===0?'R':n]||0; return {c,pct:Math.min(100,Math.round(c/20*100))}; }
 function buildCards(){
   const box=$('levels');
   LEVELS.forEach(L=>{
     const b=document.createElement('button'); b.type='button'; b.className='stage txt'; b.dataset.v=L.n;
-    b.innerHTML='<span class="top"><span class="num">'+L.n+'</span><span class="hardtag" aria-hidden="true"><span class="full">+ 부속·차용</span><span class="short">+α</span></span></span><span class="sym" aria-hidden="true"></span><span class="name"></span><span class="stars" aria-hidden="true">'+STAR3+'</span><span class="prog"><span class="pbar"><i></i></span><span class="cnt"></span></span>';
+    b.innerHTML='<span class="top"><span class="num">'+L.n+'</span><span class="hardtag" aria-hidden="true"><span class="full">'+L.tag+'</span><span class="short">'+L.tagS+'</span></span></span><span class="sym" aria-hidden="true"></span><span class="name"></span><span class="stars" aria-hidden="true">'+STAR3+'</span><span class="prog"><span class="pbar"><i></i></span><span class="cnt"></span></span>';
     box.appendChild(b);
   });
-  const r=box.lastElementChild.cloneNode(true); r.dataset.v=0; r.classList.add('rnd'); r.querySelector('.num').textContent='R'; box.appendChild(r);
 }
 function syncCards(){
   $('levels').querySelectorAll('.stage').forEach(b=>{
@@ -661,7 +686,7 @@ function syncCards(){
     b.querySelectorAll('.stars svg').forEach((s,k)=>s.classList.toggle('on',k<n));
     b.querySelector('.cnt').textContent=inf.c+'문제';
     b.querySelector('.pbar i').style.width=inf.pct+'%';
-    b.setAttribute('aria-label',(n?n+'단계 ':'')+name+(mode==='hard'?' + 부속·차용':'')+', 난이도 별 '+n+'개, '+inf.c+'문제 연습');
+    b.setAttribute('aria-label',(n?n+'단계 ':'')+name+(mode==='hard'?' '+LEVELS[n-1].tag:'')+', 난이도 별 '+n+'개, '+inf.c+'문제 연습');
   });
 }
 function segButtons(id,items,label){
@@ -685,27 +710,27 @@ function buildUI(){
     updDesc(); buildPads();
   };
   const on=(id,fn)=>$(id).addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;fn(b.dataset.v);sync();fresh();});
-  on('levels',v=>{sel=+v; store.set('level',sel)});
+  on('levels',v=>{sel=+v; store.set('level2',sel)});
   on('modes',v=>{mode=v;store.set('mode',mode)});
   on('keys',v=>{keyName=v;store.set('key',keyName)});
   $('tempo').value=tempo; $('tempoOut').textContent='♩ = '+tempo;
   $('tempo').addEventListener('input',e=>{tempo=+e.target.value;$('tempoOut').textContent='♩ = '+tempo});
   $('hint').checked=hint;
-  $('hint').addEventListener('change',e=>{hint=e.target.checked;store.set('hint',hint);fresh()});
+  $('hint').addEventListener('change',e=>{hint=e.target.checked;store.set('hint',hint)});
   // 코드 버튼: 지금 칸에 넣고 다음 칸으로 (누른 코드는 소리도 남)
   $('pads').addEventListener('click',e=>{
     const b=e.target.closest('button'); if(!b||checked) return;
-    const p=padChords[+b.dataset.i]; ans[cur]={name:chordName(p,song.key),id:idOf(p)};
-    audio(); ready().then(()=>strike(p,audio().currentTime+0.02,0.8,0.8));
-    const empty=ans.findIndex((a,i)=>!a&&!(hint&&i===0));
+    const p=padChords[+b.dataset.i], ch=p.chord(cur); ans[cur]={name:p.label,id:p.id};
+    audio(); ready().then(()=>strike(ch,audio().currentTime+0.02,0.8,0.8));
+    const empty=ans.findIndex((a,i)=>!a&&!false);
     if(empty>=0) cur=empty; else if(cur<3) cur++;
     syncSlots();
   });
-  $('slots').addEventListener('click',e=>{ const b=e.target.closest('.slot'); if(!b||checked) return; const i=+b.dataset.i; if(hint&&i===0) return; cur=i; syncSlots(); });
+  $('slots').addEventListener('click',e=>{ const b=e.target.closest('.slot'); if(!b||checked) return; const i=+b.dataset.i; cur=i; syncSlots(); });
   $('eraseBtn').onclick=()=>{
     if(checked) return;
-    if(!ans[cur]){ const prev=[3,2,1,0].find(i=>i<cur&&ans[i]&&!(hint&&i===0)); if(prev!=null) cur=prev; }
-    if(!(hint&&cur===0)) ans[cur]=null;
+    if(!ans[cur]){ const prev=[3,2,1,0].find(i=>i<cur&&ans[i]&&!false); if(prev!=null) cur=prev; }
+    if(!(false)) ans[cur]=null;
     syncSlots();
   };
   $('checkBtn').onclick=check;

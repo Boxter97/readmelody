@@ -478,12 +478,12 @@ function render(){
   const cw=(endX-8-start)/4;
   song.notes.forEach((n,i)=>{
     const nx=start+cw*(i+0.5)+S*0.3, ng=el('g',{},g); n.ref=ng;
-    const show=checked||(hint&&i===0);
+    const show=checked||false;
     if(!show){                                                     // 아직 모르는 음: 물음표
       el('text',{class:'q',x:nx,y:mid+S*1.05,'text-anchor':'middle','font-size':S*2.6,'font-weight':700,'font-family':'IBM Plex Sans KR, sans-serif'},ng,'?');
       return;
     }
-    if(checked&&!(hint&&i===0)&&!isRight(i)) ng.classList.add('ng');
+    if(checked&&!false&&!isRight(i)) ng.classList.add('ng');
     const y=yOf(n.deg);
     for(let d=0;d>=n.deg;d-=2) el('line',{x1:nx-S*0.95,x2:nx+S*0.95,y1:yOf(d),y2:yOf(d),stroke:'currentColor','stroke-width':1.2},ng);
     for(let d=12;d<=n.deg;d+=2) el('line',{x1:nx-S*0.95,x2:nx+S*0.95,y1:yOf(d),y2:yOf(d),stroke:'currentColor','stroke-width':1.2},ng);
@@ -560,6 +560,10 @@ async function play(){
   await ready(); if(!playing) return;
   const c=audio(), beat=60/tempo;
   let t=c.currentTime+0.15;
+  if(hint){                                          // 첫 음 알려주기: 그 키의 첫 음(으뜸음)을 먼저 쳐 줌 (K 요청 2026-11-12)
+    tone(pitchOf(song.tonic,song.key).midi,t,beat*1.6,0.9); $('status').textContent=`첫 음 (${song.key.label} 키 으뜸음)`;
+    t+=beat*2;
+  }
   if($('countin').checked){
     for(let b=0;b<4;b++){ click(t+b*beat,ACCENT[b]); timers.push(setTimeout(()=>$('status').textContent=`${b===0?'준비… ':''}${b+1}`,(t+b*beat-c.currentTime)*1000)); }
     t+=4*beat;
@@ -607,11 +611,11 @@ function buildPads(){                                       // 조표대로 도~
 }
 function syncSlots(){
   $('slots').innerHTML=song.notes.map((n,i)=>{
-    const given=hint&&i===0, a=ans[i];
+    const given=false, a=ans[i];
     let cls='slot'+(given?' given':''), fix='';
     if(checked&&!given){ cls+=isRight(i)?' ok':' ng'; if(!isRight(i)) fix=`<span class="sf">정답 ${n.name}</span>`; }
     const v=a?a.name:'?';
-    return `<button type="button" class="${cls}" data-i="${i}" aria-current="${!checked&&i===cur}" aria-label="${i+1}번째 음 ${a?a.name:'비어 있음'}"><span class="sn">${i+1}${given?' (첫 음)':''}</span><span class="sv${a?'':' empty'}">${v}</span>${fix}</button>`;
+    return `<button type="button" class="${cls}" data-i="${i}" aria-current="${!checked&&i===cur}" aria-label="${i+1}번째 음 ${a?a.name:'비어 있음'}"><span class="sn">${i+1}</span><span class="sv${a?'':' empty'}">${v}</span>${fix}</button>`;
   }).join('');
   const full=ans.every(Boolean);
   $('checkBtn').textContent=checked?'다음 문제':'정답 확인';
@@ -622,7 +626,7 @@ function syncSlots(){
 function check(){
   if(checked){ fresh(); return; }
   stop(); checked=true;
-  const from=hint?1:0, n=4-from, right=song.notes.slice(from).filter((x,k)=>isRight(k+from)).length;
+  const from=0, n=4-from, right=song.notes.slice(from).filter((x,k)=>isRight(k+from)).length;
   $('result').textContent=right===n?`${n}개 모두 맞았어요`:`${n}개 중 ${right}개 맞았어요`;
   $('result').classList.toggle('good',right===n);
   const d=done[mode]||(done[mode]={}); d[sel===0?'R':sel]=(d[sel===0?'R':sel]||0)+1; store.set('done',done); syncCards();
@@ -636,7 +640,7 @@ function updateMeta(){
 }
 function fresh(){
   stop(); song=makeSong(); checked=false;
-  ans=song.notes.map((n,i)=>hint&&i===0?{name:n.name,pc:n.pc}:null); cur=hint?1:0;
+  ans=song.notes.map((n,i)=>false?{name:n.name,pc:n.pc}:null); cur=0;
   $('result').textContent=''; $('result').classList.remove('good');
   updateMeta(); render(); syncSlots(); stop();
 }
@@ -691,22 +695,22 @@ function buildUI(){
   $('tempo').value=tempo; $('tempoOut').textContent='♩ = '+tempo;
   $('tempo').addEventListener('input',e=>{tempo=+e.target.value;$('tempoOut').textContent='♩ = '+tempo});
   $('hint').checked=hint;
-  $('hint').addEventListener('change',e=>{hint=e.target.checked;store.set('hint',hint);fresh()});
+  $('hint').addEventListener('change',e=>{hint=e.target.checked;store.set('hint',hint)});
   // 음이름 버튼: 지금 칸에 넣고 다음 칸으로 (누른 음은 소리도 남)
   $('pads').addEventListener('click',e=>{
     const b=e.target.closest('button'); if(!b||checked) return;
     const p=padNotes[+b.dataset.i]; ans[cur]={name:p.name,pc:p.pc};
     const near=song.notes[cur].midi, m=p.pc+12*Math.round((near-p.pc)/12);    // 문제 음과 같은 높이 근처에서 소리
     audio(); ready().then(()=>tone(m,audio().currentTime+0.02,0.6,0.8));
-    const empty=ans.findIndex((a,i)=>!a&&!(hint&&i===0));
+    const empty=ans.findIndex((a,i)=>!a&&!false);
     if(empty>=0) cur=empty; else if(cur<3) cur++;
     syncSlots();
   });
-  $('slots').addEventListener('click',e=>{ const b=e.target.closest('.slot'); if(!b||checked) return; const i=+b.dataset.i; if(hint&&i===0) return; cur=i; syncSlots(); });
+  $('slots').addEventListener('click',e=>{ const b=e.target.closest('.slot'); if(!b||checked) return; const i=+b.dataset.i; cur=i; syncSlots(); });
   $('eraseBtn').onclick=()=>{
     if(checked) return;
-    if(!ans[cur]){ const prev=[3,2,1,0].find(i=>i<cur&&ans[i]&&!(hint&&i===0)); if(prev!=null) cur=prev; }
-    if(!(hint&&cur===0)) ans[cur]=null;
+    if(!ans[cur]){ const prev=[3,2,1,0].find(i=>i<cur&&ans[i]&&!false); if(prev!=null) cur=prev; }
+    if(!(false)) ans[cur]=null;
     syncSlots();
   };
   $('checkBtn').onclick=check;
