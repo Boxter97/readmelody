@@ -255,7 +255,8 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 .pad.px button{background:var(--tile)}
 .slot .sv{white-space:nowrap}
 #levels{grid-template-columns:repeat(5,minmax(0,1fr))}   /* 코드 청음: 단계 5개 */
-.setbox.off{opacity:.45} .setbox.off button{pointer-events:none;cursor:default}   /* 1단계: 키 상관없어서 회색 */
+.setbox.off #keys button{background:var(--tile);color:#A9B0BC;pointer-events:none;cursor:default}   /* 1단계: 키 상관없어서 키 버튼만 회색 (K 요청: 상자 전체 말고 버튼만) */
+.setbox.off #keys button .ks{color:#A9B0BC}
 .optlist .check.off{opacity:.45;pointer-events:none;cursor:default}
 .stage[data-v="1"] .hardtag .short{font-family:var(--f-body);font-size:1em;font-weight:700}   /* 좁을 때 "7th"는 보통 글꼴로 */
 .pad.qt{padding:0} .pad.qt button{background:var(--bg)} .pad.qt button .cn{white-space:normal;word-break:keep-all;text-align:center}
@@ -497,7 +498,9 @@ function render(){
   const box=svg.parentElement.clientWidth-28, narrow=box<520, W=Math.max(box,300);
   const key=song.single?KEYS.C:song.key, ks=Object.keys(key.acc), sharp=ks.length>0&&key.acc[ks[0]]>0;   // 1단계는 키 상관없어서 조표 없음
   const accs=(sharp?['F','C','G','D','A']:['B','E','A','D','G']).filter(l=>key.acc[l]);
-  const x0=6, top=S*4.4, y0=top, clefW=narrow?42:46;
+  const clefW=narrow?42:46, headW=clefW+accs.length*S*0.95+6+S*2.4+4;
+  const barW=narrow?W-12-headW:Math.min(S*52,W-12-headW);          // 한 마디 너비 (컴퓨터는 너무 늘어나지 않게)
+  const x0=narrow?6:Math.max(6,(W-headW-barW)/2), top=S*4.4, y0=top;   // 오선을 가운데로 (K 요청 2026-11-12)
   const yOf=d=>y0+4*S-(d-2)*S/2;
   svg.setAttribute('viewBox',`0 0 ${W} ${top+S*4+S*4.6}`);
   const g=el('g',{},svg);
@@ -508,13 +511,13 @@ function render(){
   x+=6;
   ['4','4'].forEach((t,i)=>el('text',{x:x+S*0.9,y:y0+S*(i===0?2:4)-2,'font-size':S*2.35,'font-weight':700,'text-anchor':'middle','font-family':'IBM Plex Sans KR, sans-serif',fill:'currentColor'},g,t));
   x+=S*2.4+4;
-  const start=x, endX=Math.min(W-6,start+(narrow?9999:S*52));
+  const start=x, endX=start+barW;
   for(let i=0;i<5;i++) el('line',{x1:x0,x2:endX,y1:y0+i*S,y2:y0+i*S,stroke:'currentColor','stroke-width':1.1},g);
   el('line',{x1:endX-7,x2:endX-7,y1:y0,y2:y0+4*S,stroke:'currentColor','stroke-width':1.2},g);
   el('rect',{x:endX-4,y:y0,width:4,height:4*S,fill:'currentColor'},g);
   const cw=(endX-8-start)/song.chords.length;
   song.chords.forEach((c,i)=>{
-    const cx=start+cw*(i+0.5), cg=el('g',{},g); c.ref=cg;
+    const cx=song.single?W/2:start+cw*(i+0.5), cg=el('g',{},g); c.ref=cg;   // 1단계: 코드 하나는 화면 가운데
     el('line',{class:'st',x1:cx-S*0.7,x2:cx+S*0.7,y1:y0+2*S,y2:y0+2*S,stroke:'currentColor','stroke-width':S*0.5,'stroke-linecap':'round',style:'opacity:.0'},cg);
     const show=checked||(fc()&&i===0);
     if(!show){ el('text',{class:'q',x:cx,y:y0-S*1.3,'text-anchor':'middle','font-size':S*2.4,'font-weight':700,'font-family':'IBM Plex Sans KR, sans-serif'},cg,'?'); return; }
@@ -647,6 +650,8 @@ function buildPads(){
 }
 function syncSlots(){
   $('slots').style.gridTemplateColumns=song.single?'minmax(0,260px)':''; $('slots').style.justifyContent=song.single?'center':'';   // 1단계 답 칸은 가운데
+  const ac=document.querySelector('.anscol'), side=ac.offsetTop===$('slots').offsetTop;   // 지우기·정답 확인이 옆에 있으면 그만큼 왼쪽도 띄워서 화면 가운데에 맞춤
+  $('slots').style.paddingLeft=song.single&&side?(ac.offsetWidth+10)+'px':'';
   $('slots').innerHTML=song.chords.map((c,i)=>{
     const given=fc()&&i===0, a=ans[i];
     let cls='slot'+(given?' given':''), fix='';
