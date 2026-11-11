@@ -54,8 +54,6 @@ h1.logo{font-family:var(--f-disp);font-weight:400;font-size:36px;letter-spacing:
 .seg button{min-height:46px;padding:8px 16px;border:0;border-right:1.5px solid var(--line);background:var(--bg);font-size:17px;font-weight:500;color:var(--ink)}
 .seg button:last-child{border-right:0}
 .seg button[aria-pressed="true"]{background:var(--accent);color:var(--bg);font-weight:700}
-#vars{display:flex;flex-direction:column} #vars button{border-right:0;border-bottom:1.5px solid var(--line);text-align:left;line-height:1.3} #vars button:last-child{border-bottom:0}
-#vars .vs{display:block;font-size:14px;font-weight:500;color:var(--muted)} #vars button[aria-pressed="true"] .vs{color:var(--bg)}
 #keys button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;min-height:56px;padding:6px 13px;line-height:1.15}
 #keys .kl{font-size:18px;font-weight:700;white-space:nowrap}
 #keys .ks{font-size:13px;font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums}
@@ -71,7 +69,7 @@ h1.logo{font-family:var(--f-disp);font-weight:400;font-size:36px;letter-spacing:
 button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 
 /* 설정: 악보 상자 · 연주 상자 (코드 초견과 같은 모양) */
-.setgrid{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:12px;align-items:stretch}
+.setgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:stretch}
 .setbox{display:flex;flex-direction:column;gap:12px;padding:14px 16px 16px;border:1.5px solid var(--line);border-radius:14px;background:var(--bg)}
 .setbox h3{margin:0;font-size:15px;font-weight:700;color:var(--muted)}
 .setbox .label{min-width:48px}
@@ -92,6 +90,10 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
   .keys{gap:10px} #keys .kc button{padding-left:14px;padding-right:14px}
   #keys .kl{font-size:18.5px}
 }
+.binfo{display:flex;flex-wrap:wrap;align-items:center;gap:8px 22px;font-size:17px;color:var(--muted)}
+.binfo b{color:var(--ink);font-size:20px}
+.binfo .chip{padding:3px 12px;border-radius:999px;background:var(--tile);font-size:15px;font-weight:700;color:var(--muted)}
+.binfo .chip.ok{background:var(--accent-soft);color:var(--accent)}
 .optlist{display:flex;flex-direction:column}
 .optlist .check{flex-direction:row-reverse;justify-content:space-between;gap:12px;min-height:46px;padding:0;border:0;border-top:1.5px solid var(--line);border-radius:0;background:transparent;font-size:17px}
 .optlist .check:first-child{border-top:0}
@@ -112,6 +114,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:56px;padding:0 16px;border-radius:14px;border:1.5px solid var(--line);background:var(--bg);font-size:18px;font-weight:700;color:var(--ink);white-space:nowrap}
 .btn svg{width:18px;height:18px;fill:currentColor;flex:none}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+.btn[aria-disabled="true"]{opacity:.45}
 .status{font-size:16px;color:var(--muted);min-height:1.5em}
 .credit{margin:8px 0 0;font-size:14px;color:var(--muted)}
 
@@ -206,24 +209,17 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
     <div id="progs" role="group" aria-label="코드 진행"></div>
     <div class="lvdesc" id="lvdesc"></div>
     <div class="setgrid">
-      <div class="setbox" aria-label="악보 설정"><h3>악보</h3>
-        <div class="scorebody">
-          <div class="field varfield"><span class="label">변형</span><div class="seg" id="vars"></div></div>
-          <div class="field keyfield"><span class="label">키</span><div class="keys" id="keys"><div class="krows"></div></div></div>
-        </div>
-      </div>
-      <div class="setbox" aria-label="연주 설정"><h3>연주</h3>
-        <label class="tempo"><span class="label">빠르기</span>
-          <input type="range" id="tempo" min="40" max="200" step="2" value="80">
-          <output id="tempoOut">♩ = 80</output>
+      <div class="setbox" aria-label="백킹"><h3>백킹</h3>
+        <div class="binfo" id="binfo"></div>
+        <label class="tempo"><span class="label">볼륨</span>
+          <input type="range" id="vol" min="0" max="100" step="5" value="80">
+          <output id="volOut">80</output>
         </label>
+      </div>
+      <div class="setbox" aria-label="보기 설정"><h3>보기</h3>
         <div class="optlist">
-          <label class="check"><input type="checkbox" id="countin" checked> 한 마디 세고 시작</label>
-          <label class="check"><input type="checkbox" id="metro" checked> 메트로놈</label>
-          <div class="pair">
-            <label class="check"><input type="checkbox" id="deg"> 도수 보기</label>
-            <label class="check"><input type="checkbox" id="tones"> 구성음 보기</label>
-          </div>
+          <label class="check"><input type="checkbox" id="deg"> 도수 보기</label>
+          <label class="check"><input type="checkbox" id="tones"> 구성음 보기</label>
         </div>
       </div>
     </div>
@@ -234,7 +230,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
     <svg id="score" role="img" aria-label="코드 진행 악보"></svg>
     <div class="actions">
       <button type="button" class="btn" id="refBtn"><svg viewBox="0 0 16 16"><path d="M3 2h2v12H3zM7 4h2v10H7zM11 6h2v8h-2z"/></svg>기준음 듣기</button>
-      <button type="button" class="btn primary" id="playBtn"><svg viewBox="0 0 16 16" id="playIcon"><path d="M4 2l10 6-10 6z"/></svg><span id="playTxt">반복 재생</span></button>
+      <button type="button" class="btn primary" id="playBtn"><svg viewBox="0 0 16 16" id="playIcon"><path d="M4 2l10 6-10 6z"/></svg><span id="playTxt">백킹 재생</span></button>
     </div>
   </section>
 
@@ -266,7 +262,6 @@ const MAJ={      // 조표 (코드 초견과 같음)
   F:{letter:3,acc:{B:-1}}, Bb:{letter:6,acc:{B:-1,E:-1}}, Eb:{letter:2,acc:{B:-1,E:-1,A:-1}},
   Ab:{letter:5,acc:{B:-1,E:-1,A:-1,D:-1}}, Db:{letter:1,acc:{B:-1,E:-1,A:-1,D:-1,G:-1}},
 };
-const KEY_GROUPS=[['C'],['G','D','A','E','B'],['F','Bb','Eb','Ab','Db']];   // 키 버튼: C 하나 · ♯줄 · ♭줄 (마이너는 나란한조: Am · Em …)
 const SHARP_POS={F:10,C:7,G:11,D:8,A:5}, FLAT_POS={B:6,E:9,A:5,D:8,G:4};
 const accTxt=a=>a>0?'♯'.repeat(a):a<0?'♭'.repeat(-a):'';
 function keyOf(id,minor){          // 메이저는 그대로, 마이너는 같은 조표의 나란한조 (C → Am)
@@ -280,21 +275,19 @@ const QUAL={'7':[[0,0],[2,4],[4,7],[6,10]],'m7':[[0,0],[2,3],[4,7],[6,10]]};
 /* 진행 — deg: 키의 음계 몇 번째 (0 = Ⅰ), rom: 도수 표기. 마이너 키의 ♭Ⅵ는 음계 그대로라 alt 없음 */
 const C_=(deg,q,rom)=>({deg,q,rom});
 const PROGS=[
-  {id:'blues',name:'메이저 블루스',tag:'12마디',minor:false,sub:'Ⅰ7 · Ⅳ7 · Ⅴ7',
+  {id:'blues',name:'메이저 블루스',tag:'12마디',minor:false,key:'A',sub:'Ⅰ7 · Ⅳ7 · Ⅴ7',
    desc:'코드 세 개(Ⅰ7 Ⅳ7 Ⅴ7)로 12마디를 도는 가장 기본 블루스',
-   vars:[{id:'basic',name:'기본',sub:'2마디 Ⅰ7'},{id:'quick',name:'퀵 체인지',sub:'2마디 Ⅳ7'}],
    bars:v=>{const I=C_(0,'7','Ⅰ7'),IV=C_(3,'7','Ⅳ7'),V=C_(4,'7','Ⅴ7');
-     return [I,v==='quick'?IV:I,I,I, IV,IV,I,I, V,IV,I,V];},
+     return [I,I,I,I, IV,IV,I,I, V,IV,I,V];},
    scales:[
      {name:'마이너 펜타토닉',sub:'블루스 기타의 기본',iv:[[0,0,'1'],[2,3,'♭3'],[3,5,'4'],[4,7,'5'],[6,10,'♭7']]},
      {name:'블루스 스케일',sub:'펜타토닉 + ♭5',iv:[[0,0,'1'],[2,3,'♭3'],[3,5,'4'],[4,6,'♭5',1],[4,7,'5'],[6,10,'♭7']]},
      {name:'메이저 펜타토닉',sub:'밝고 컨트리 느낌',iv:[[0,0,'1'],[1,2,'2'],[2,4,'3'],[4,7,'5'],[5,9,'6']]}],
    hint:'마이너 펜타토닉으로 시작하고, 익숙해지면 메이저 펜타토닉을 섞어 보세요'},
-  {id:'minor',name:'마이너 블루스',tag:'12마디',minor:true,sub:'Ⅰm7 · Ⅳm7 · Ⅴ7',
+  {id:'minor',name:'마이너 블루스',tag:'12마디',minor:true,key:'C',sub:'Ⅰm7 · Ⅳm7 · Ⅴ7',
    desc:'Ⅰm7 Ⅳm7로 어둡게 돌고, 9~10마디에서 Ⅴ7로 긴장을 만드는 블루스',
-   vars:[{id:'b6',name:'기본',sub:'9마디 ♭Ⅵ7'},{id:'v',name:'Ⅴ7 → Ⅳm7',sub:'9마디 Ⅴ7'}],
    bars:v=>{const I=C_(0,'m7','Ⅰm7'),IV=C_(3,'m7','Ⅳm7'),V=C_(4,'7','Ⅴ7'),VI=C_(5,'7','♭Ⅵ7');
-     return [I,I,I,I, IV,IV,I,I, v==='v'?V:VI, v==='v'?IV:V, I,V];},
+     return [I,I,I,I, IV,IV,I,I, VI,V,I,V];},
    scales:[
      {name:'마이너 펜타토닉',sub:'처음엔 이것 하나로',iv:[[0,0,'1'],[2,3,'♭3'],[3,5,'4'],[4,7,'5'],[6,10,'♭7']]},
      {name:'블루스 스케일',sub:'펜타토닉 + ♭5',iv:[[0,0,'1'],[2,3,'♭3'],[3,5,'4'],[4,6,'♭5',1],[4,7,'5'],[6,10,'♭7']]},
@@ -302,24 +295,23 @@ const PROGS=[
    hint:'마이너 펜타토닉 하나로 12마디 내내 칠 수 있어요. Ⅴ7 마디에서는 그 코드의 3음(이끎음)을 노려 보세요'},
 ];
 
-/* 백킹 트랙 자리 (나중에 직접 만든 음원을 넣을 곳)
-   음원이 생기면 improv/backing/ 폴더에 넣고 아래에 적으면, 그 진행·키는 피아노 대신 음원이 반복 재생됨.
-   예) 'blues-A-basic':{src:'backing/blues-A.mp3',bpm:90}   ← 진행id-키-변형 */
-const BACKING={};
+/* 백킹 음원 (K가 AI로 만든 것) — improv/backing/ 폴더에 이 이름으로 넣으면 바로 재생됨
+   bpm·intro(첫 마디 시작까지 초)를 적으면 재생 중 지금 마디를 따라가며 강조. 0이면 강조 없이 재생만 */
+const BACKING={
+  blues:{src:'backing/blues-A.mp3',bpm:0,intro:0},
+  minor:{src:'backing/minor-Am.mp3',bpm:0,intro:0},
+};
 
 /* ---------- 상태 ---------- */
 const store={get(k,d){try{const v=localStorage.getItem('im-'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},
              set(k,v){try{localStorage.setItem('im-'+k,JSON.stringify(v))}catch(e){}}};
 let progId=store.get('prog','blues'); if(!PROGS.some(p=>p.id===progId)) progId='blues';
-let keys=store.get('keys',{}); if(!keys||typeof keys!=='object') keys={};
-let vars=store.get('vars',{}); if(!vars||typeof vars!=='object') vars={};
-let tempo=80, showDeg=store.get('deg',false), showTones=store.get('tones',false);
+let vol=+store.get('vol',80); if(!(vol>=0&&vol<=100)) vol=80;
+let showDeg=store.get('deg',false), showTones=store.get('tones',false);
 const $=id=>document.getElementById(id);
 const P=()=>PROGS.find(p=>p.id===progId);
-const curKeyId=()=>MAJ[keys[progId]]?keys[progId]:'C';
-const curVar=()=>{const p=P(); return p.vars.some(v=>v.id===vars[progId])?vars[progId]:p.vars[0].id;};
 let song=null;
-function makeSong(){ const p=P(); return {p,key:keyOf(curKeyId(),p.minor),bars:p.bars(curVar())}; }
+function makeSong(){ const p=P(); return {p,key:keyOf(p.key,p.minor),bars:p.bars()}; }
 
 /* 음 이름 */
 function rootOf(c,key){ const li=(key.letter+c.deg)%7, L=LETTERS[li], acc=key.acc[L]||0; return {li,acc,pc:((SEMI[li]+acc)%12+12)%12}; }
@@ -390,7 +382,8 @@ function render(){
 }
 
 /* ---------- 소리 (코드 초견과 같은 피아노) ---------- */
-let ctx=null, master=null, buffers=null, loading=null, playing=false, timers=[], nodes=[], backingEl=null;
+let ctx=null, master=null, buffers=null, loading=null, playing=false, timers=[], nodes=[], backingEl=null, raf=0;
+const have={};                     // 백킹 음원이 실제로 있는지 (진행별)
 function makeCtx(){
   if(ctx) return ctx;
   ctx=new (window.AudioContext||window.webkitAudioContext)();
@@ -427,12 +420,6 @@ function synthTone(midi,t,len,vol){
   g.gain.exponentialRampToValueAtTime(0.0001,t+Math.max(len,0.15)+0.25);
   const o=c.createOscillator(); o.type='triangle'; o.frequency.value=f; o.connect(g); o.start(t); o.stop(t+len+0.6); keep(o,t+len+0.6);
 }
-function click(t,lv){
-  const c=audio(), o=c.createOscillator(), g=c.createGain();
-  o.frequency.value=lv===2?1600:1100; o.type='square';
-  g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(lv===2?0.16:0.08,t+0.002); g.gain.exponentialRampToValueAtTime(0.0001,t+0.05);
-  o.connect(g); g.connect(master); o.start(t); o.stop(t+0.06); keep(o,t+0.06);
-}
 function voicing(c,key){
   const r=rootOf(c,key); let root=48+r.pc; while(root<55) root+=12;
   let bass=36+r.pc; if(bass<40) bass+=12;
@@ -448,37 +435,27 @@ function clearOn(){ barEls.forEach(g=>g&&g.classList.remove('on')); }
 function stop(){
   playing=false; timers.forEach(clearTimeout); timers=[];
   nodes.forEach(o=>{try{o.n.stop()}catch(e){}}); nodes=[];
-  if(backingEl){ backingEl.pause(); backingEl=null; }
+  if(backingEl){ backingEl.pause(); backingEl=null; } cancelAnimationFrame(raf);
   clearOn(); document.querySelectorAll('.note.on').forEach(n=>n.classList.remove('on'));
-  $('playTxt').textContent='반복 재생'; $('playIcon').innerHTML='<path d="M4 2l10 6-10 6z"/>'; $('status').textContent='';
+  $('playTxt').textContent='백킹 재생'; $('playIcon').innerHTML='<path d="M4 2l10 6-10 6z"/>'; $('status').textContent='';
 }
 const at=(c,t,fn)=>timers.push(setTimeout(fn,Math.max(0,(t-c.currentTime)*1000)));
-function pass(t,n){                 // 12마디 한 바퀴를 예약하고, 끝나기 조금 전에 다음 바퀴를 예약 (빠르기를 바꾸면 다음 바퀴부터)
-  if(!playing) return;
-  const c=audio(), beat=60/tempo, bar=beat*4, N=song.bars.length;
-  nodes=nodes.filter(o=>o.end>c.currentTime);
-  song.bars.forEach((ch,m)=>{
-    const bt=t+m*bar;
-    strike(ch,bt,beat*2*0.95,1); strike(ch,bt+beat*2,beat*2*0.95,0.7);     // 1박 · 3박에 코드 (임시 반주)
-    if($('metro').checked) for(let b=0;b<4;b++) click(bt+b*beat,b===0?2:0);
-    at(c,bt,()=>{ clearOn(); barEls[m]&&barEls[m].classList.add('on'); if(m===0) $('status').textContent=n+'번째 반복'; });
-  });
-  const end=t+N*bar;
-  at(c,end-1.2,()=>pass(end,n+1));
+function follow(bk){              // bpm을 알면 음원 위치로 지금 마디를 계산해 강조
+  if(!playing||!backingEl) return;
+  const bar=60/bk.bpm*4, t=backingEl.currentTime-bk.intro;
+  clearOn();
+  if(t>=0){ const n=Math.floor(t/bar), m=n%song.bars.length; barEls[m]&&barEls[m].classList.add('on'); }
+  raf=requestAnimationFrame(()=>follow(bk));
 }
-async function play(){
+function play(){
   if(playing){stop();return}
-  audio(); playing=true;
+  const bk=BACKING[progId];
+  if(!have[progId]){ $('status').textContent='이 진행의 백킹 음원은 아직 준비 중이에요'; return; }
+  playing=true;
   $('playTxt').textContent='멈춤'; $('playIcon').innerHTML='<path d="M3 2h4v12H3zM9 2h4v12H9z"/>';
-  const bk=BACKING[progId+'-'+curKeyId()+'-'+curVar()];
-  if(bk){ backingEl=new Audio(bk.src); backingEl.loop=true; backingEl.play().catch(()=>{}); $('status').textContent='백킹 트랙 재생 중'; return; }
-  await ready(); if(!playing) return;
-  const c=audio(), beat=60/tempo; let t=c.currentTime+0.15;
-  if($('countin').checked){
-    for(let b=0;b<4;b++){ click(t+b*beat,b===0?2:0); const k=b; at(c,t+b*beat,()=>$('status').textContent=(k===0?'준비… ':'')+(k+1)); }
-    t+=4*beat;
-  }
-  pass(t,1);
+  backingEl=new Audio(bk.src); backingEl.loop=true; backingEl.volume=vol/100;
+  backingEl.play().then(()=>{ $('status').textContent=''; if(bk.bpm>0) follow(bk); })
+    .catch(()=>{ stop(); $('status').textContent='백킹 음원을 재생하지 못했어요. 다시 눌러 주세요'; });
 }
 async function playRef(){
   if(playing) stop();
@@ -514,29 +491,25 @@ function renderScales(){
     <div class="notes">${sc.iv.map(([k,s,d,blue])=>`<span class="note${blue?' blue':''}${s===0?' root':''}"><b>${krName(spell(r,k,s))}</b><span>${d}</span></span>`).join('')}</div>
     <button type="button" class="btn sbtn" data-i="${i}"><svg viewBox="0 0 16 16"><path d="M4 2l10 6-10 6z"/></svg>듣기</button></div>`).join('');
 }
-function fresh(){ stop(); song=makeSong(); updateMeta(); render(); renderScales(); }
+function updBacking(){
+  const bk=BACKING[progId], ok=have[progId];
+  $('binfo').innerHTML=`<span>키 <b>${song.key.label}</b></span><span>빠르기 <b>${ok&&bk.bpm?'♩ = '+bk.bpm:'음원 그대로'}</b></span><span class="chip${ok?' ok':''}">${ok?'음원 있음':'음원 준비 중'}</span>`;
+  $('playBtn').setAttribute('aria-disabled',ok?'false':'true');
+}
+function checkBacking(){            // 음원 파일이 올라와 있는지 확인 (없으면 '준비 중')
+  PROGS.forEach(p=>{ if(have[p.id]!=null) return; have[p.id]=false;
+    fetch(BACKING[p.id].src,{method:'HEAD'}).then(r=>{ have[p.id]=r.ok; if(song&&song.p.id===p.id) updBacking(); }).catch(()=>{}); });
+}
+function fresh(){ stop(); song=makeSong(); updateMeta(); render(); renderScales(); updBacking(); }
 function buildUI(){
   $('progs').innerHTML=PROGS.map(p=>`<button type="button" class="pcard" data-v="${p.id}"><span class="tag">${p.tag}</span><span class="name">${p.name}</span><span class="sub">${p.sub}</span></button>`).join('');
-  KEY_GROUPS.forEach((g,i)=>{ const b=document.createElement('div'); b.className='seg'+(i?' krow':' kc'); b.id='keys'+i;
-    if(i) $('keys').querySelector('.krows').appendChild(b); else $('keys').prepend(b);
-    g.forEach(v=>{ const x=document.createElement('button'); x.type='button'; x.dataset.v=v; b.appendChild(x); }); });
   const sync=()=>{
-    const p=P(), minor=p.minor;
     $('progs').querySelectorAll('.pcard').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===progId));
-    $('vars').innerHTML=p.vars.map(v=>`<button type="button" data-v="${v.id}" aria-pressed="${v.id===curVar()}">${v.name}<span class="vs">${v.sub}</span></button>`).join('');
-    $('keys').querySelectorAll('button').forEach(b=>{                 // 글자 아래에 조표 개수
-      const k=keyOf(b.dataset.v,minor), n=Object.keys(k.acc).length, sh=n&&k.acc[Object.keys(k.acc)[0]]>0;
-      b.innerHTML='<span class="kl">'+k.label+'</span><span class="ks">'+(n?(sh?'♯':'♭')+n:'없음')+'</span>';
-      b.setAttribute('aria-label',k.label.replace('m',' 마이너')+' 키, '+(n?(sh?'샵 ':'플랫 ')+n+'개':'조표 없음'));
-      b.setAttribute('aria-pressed',b.dataset.v===curKeyId());
-    });
   };
   const on=(id,fn)=>$(id).addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;fn(b.dataset.v);sync();fresh();});
   on('progs',v=>{progId=v;store.set('prog',progId)});
-  on('vars',v=>{vars[progId]=v;store.set('vars',vars)});
-  on('keys',v=>{keys[progId]=v;store.set('keys',keys)});
-  $('tempo').value=tempo; $('tempoOut').textContent='♩ = '+tempo;
-  $('tempo').addEventListener('input',e=>{tempo=+e.target.value;$('tempoOut').textContent='♩ = '+tempo});
+  $('vol').value=vol; $('volOut').textContent=vol;
+  $('vol').addEventListener('input',e=>{vol=+e.target.value;$('volOut').textContent=vol;store.set('vol',vol);if(backingEl)backingEl.volume=vol/100;});
   $('deg').checked=showDeg; $('tones').checked=showTones;
   $('deg').addEventListener('change',e=>{showDeg=e.target.checked;store.set('deg',showDeg);stop();render()});
   $('tones').addEventListener('change',e=>{showTones=e.target.checked;store.set('tones',showTones);stop();render()});
@@ -545,7 +518,7 @@ function buildUI(){
   let rt; window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{stop();render()},150)});
   sync();
 }
-buildUI(); fresh();
+checkBacking(); buildUI(); fresh();
 try{ loadPiano() }catch(e){}
 if(document.fonts&&document.fonts.ready) document.fonts.ready.then(render);
 })();
