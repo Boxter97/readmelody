@@ -231,6 +231,8 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 @media (max-width:720px){ .hardtag{font-size:12px;margin-left:1px} }
 
 /* 넓은 화면: 화면 전체를 비율대로 키움 (양옆이 너무 비지 않게, 광고를 켜도 들어가게. K 요청 2026-11-11) */
+@media (min-width:1400px){ body.ads-off .wrap, body.ads-off .band .in{max-width:1360px} }   /* 넓은 화면: 내용 칸을 넓혀서 악보를 옆으로 밀지 않게 (K 요청) */
+@media (min-width:1700px){ body.ads-off .wrap, body.ads-off .band .in{max-width:1440px} }
 @media (min-width:1700px){ html{zoom:1.15} }
 @media (min-width:2000px){ html{zoom:1.3} }
 @media (min-width:2300px){ html{zoom:1.45} }
