@@ -285,15 +285,6 @@ const QUAL={'7':[[0,0],[2,4],[4,7],[6,10]],'m7':[[0,0],[2,3],[4,7],[6,10]],'dim7
 /* 진행 — deg: 키의 음계 몇 번째 (0 = Ⅰ), rom: 도수 표기. 마이너 키의 ♭Ⅵ는 음계 그대로라 alt 없음 */
 const C_=(deg,q,rom,alt)=>({deg,q,rom,alt});   // 한 마디에 코드 2개면 [코드, 코드] (1박 · 3박)
 const PROGS=[
-  {id:'blues',name:'메이저 블루스',tag:'12마디',minor:false,key:'A',sub:'Ⅰ7 · Ⅳ7 · Ⅴ7',
-   desc:'코드 세 개(Ⅰ7 Ⅳ7 Ⅴ7)로 12마디를 도는 가장 기본 블루스',
-   bars:v=>{const I=C_(0,'7','Ⅰ7'),IV=C_(3,'7','Ⅳ7'),V=C_(4,'7','Ⅴ7');
-     return [I,I,I,I, IV,IV,I,I, V,IV,I,V];},
-   scales:[
-     {name:'마이너 펜타토닉',sub:'블루스 기타의 기본',iv:[[0,0,'1'],[2,3,'♭3'],[3,5,'4'],[4,7,'5'],[6,10,'♭7']]},
-     {name:'블루스 스케일',sub:'펜타토닉 + ♭5',iv:[[0,0,'1'],[2,3,'♭3'],[3,5,'4'],[4,6,'♭5',1],[4,7,'5'],[6,10,'♭7']]},
-     {name:'메이저 펜타토닉',sub:'밝고 컨트리 느낌',iv:[[0,0,'1'],[1,2,'2'],[2,4,'3'],[4,7,'5'],[5,9,'6']]}],
-   hint:'마이너 펜타토닉으로 시작하고, 익숙해지면 메이저 펜타토닉을 섞어 보세요'},
   {id:'minor',name:'마이너 블루스',tag:'12마디',minor:true,key:'C',sub:'Ⅰm7 · Ⅳm7 · Ⅴ7',
    desc:'Ⅰm7 Ⅳm7로 어둡게 돌고, 9~10마디에서 Ⅴ7로 긴장을 만드는 블루스',
    bars:v=>{const I=C_(0,'m7','Ⅰm7'),IV=C_(3,'m7','Ⅳm7'),V=C_(4,'7','Ⅴ7'),VI=C_(5,'7','♭Ⅵ7');
@@ -303,7 +294,17 @@ const PROGS=[
      {name:'블루스 스케일',sub:'펜타토닉 + ♭5',iv:[[0,0,'1'],[2,3,'♭3'],[3,5,'4'],[4,6,'♭5',1],[4,7,'5'],[6,10,'♭7']]},
      {name:'내추럴 마이너',sub:'에올리안 · 멜로디를 길게',iv:[[0,0,'1'],[1,2,'2'],[2,3,'♭3'],[3,5,'4'],[4,7,'5'],[5,8,'♭6'],[6,10,'♭7']]}],
    hint:'마이너 펜타토닉 하나로 12마디 내내 칠 수 있어요. Ⅴ7 마디에서는 그 코드의 3음(이끎음)을 노려 보세요'},
-  {id:'jazz',name:'재즈 블루스',tag:'12마디',minor:false,key:'A',sub:'Ⅰ7 · Ⅳ7 · ♯Ⅳ°7 · Ⅱm7 Ⅴ7',
+  {id:'blues',name:'메이저 블루스',tag:'12마디',minor:false,key:'A',sub:'Ⅰ7 · Ⅳ7 · Ⅴ7',
+   desc:'코드 세 개(Ⅰ7 Ⅳ7 Ⅴ7)로 12마디를 도는 가장 기본 블루스',
+   bars:v=>{const I=C_(0,'7','Ⅰ7'),IV=C_(3,'7','Ⅳ7'),V=C_(4,'7','Ⅴ7');
+     return [I,I,I,I, IV,IV,I,I, V,IV,I,V];},
+   scales:[
+     {name:'마이너 펜타토닉',sub:'블루스 기타의 기본',iv:[[0,0,'1'],[2,3,'♭3'],[3,5,'4'],[4,7,'5'],[6,10,'♭7']]},
+     {name:'블루스 스케일',sub:'펜타토닉 + ♭5',iv:[[0,0,'1'],[2,3,'♭3'],[3,5,'4'],[4,6,'♭5',1],[4,7,'5'],[6,10,'♭7']]},
+     {name:'메이저 펜타토닉',sub:'밝고 컨트리 느낌',iv:[[0,0,'1'],[1,2,'2'],[2,4,'3'],[4,7,'5'],[5,9,'6']]}],
+   hint:'마이너 펜타토닉으로 시작하고, 익숙해지면 메이저 펜타토닉을 섞어 보세요'},
+  {id:'jazz',name:'재즈 블루스',tag:'12마디',minor:false,key:'F',   // 재즈 블루스 백킹은 F키 (K 요청)
+  sub:'Ⅰ7 · Ⅳ7 · ♯Ⅳ°7 · Ⅱm7 Ⅴ7',
    desc:'블루스에 Ⅱm7 Ⅴ7과 경과 코드를 넣은 재즈 블루스 (한 마디에 코드 2개인 곳이 있어요)',
    bars:()=>{const I=C_(0,'7','Ⅰ7'),IV=C_(3,'7','Ⅳ7'),V=C_(4,'7','Ⅴ7'),Vm=C_(4,'m7','Ⅴm7'),dim=C_(3,'dim7','♯Ⅳ°7',1),
      IIIm=C_(2,'m7','Ⅲm7'),VI=C_(5,'7','Ⅵ7'),IIm=C_(1,'m7','Ⅱm7');
@@ -320,20 +321,20 @@ const PROGS=[
 const BACKING={
   blues:{src:'backing/blues-A.mp3',bpm:0,intro:0},
   minor:{src:'backing/minor-Am.mp3',bpm:0,intro:0},
-  jazz:{src:'backing/jazz-A.mp3',bpm:0,intro:0},
+  jazz:{src:'backing/jazz-F.mp3',bpm:0,intro:0},
 };
 
 /* ---------- 상태 ---------- */
 const store={get(k,d){try{const v=localStorage.getItem('im-'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},
              set(k,v){try{localStorage.setItem('im-'+k,JSON.stringify(v))}catch(e){}}};
-let progId=store.get('prog','blues'); if(!PROGS.some(p=>p.id===progId)) progId='blues';
+let progId=store.get('prog',PROGS[0].id); if(!PROGS.some(p=>p.id===progId)) progId=PROGS[0].id;   // 카드 순서: 마이너 · 메이저 · 재즈 블루스 (K 요청)
 let keys=store.get('keys',{}); if(!keys||typeof keys!=='object') keys={};
 let vol=+store.get('vol',80); if(!(vol>=0&&vol<=100)) vol=80;
 let showDeg=store.get('deg',false), showTones=store.get('tones',false);
 const $=id=>document.getElementById(id);
 const P=()=>PROGS.find(p=>p.id===progId);
 let song=null;
-const curKey=()=>MAJ[keys[progId]]?keys[progId]:P().key;          // 처음엔 음원 키 (A · Am)
+const curKey=()=>MAJ[keys[progId]]?keys[progId]:P().key;          // 처음엔 음원 키 (블루스 A · 마이너 Am · 재즈 F)
 const onAudioKey=()=>curKey()===P().key;
 function makeSong(){ const p=P(); return {p,key:keyOf(curKey(),p.minor),bars:p.bars()}; }
 
@@ -355,7 +356,7 @@ function render(){
   const box=svg.parentElement.clientWidth, narrow=box<520, key=song.key;
   const ks=Object.keys(key.acc), sharp=ks.length>0&&key.acc[ks[0]]>0;
   const accs=(sharp?['F','C','G','D','A','E']:['B','E','A','D','G']).filter(l=>key.acc[l]);
-  const x0=6, clefW=narrow?42:46, headW=clefW+accs.length*S*0.95+6, tsW=S*2.4;
+  const x0=6, clefW=narrow?42:46, headW=clefW+accs.length*S*0.95+6+(accs.length?S*0.5:0), tsW=S*2.4;
   const ms=el('text',{x:0,y:-999,'font-family':'IBM Plex Sans KR, sans-serif'},svg);
   const wOf=(txt,fs,fw)=>{ ms.textContent=txt; ms.setAttribute('font-size',fs); ms.setAttribute('font-weight',fw); return ms.getComputedTextLength(); };
   const TF=S*1.55, CH=S*2.6, CG=S*0.4, PER=narrow?2:4;   // (마디마다 perOf로 정함)                   // 구성음 칸: 글씨 · 칸 높이 · 칸 사이 · 한 줄 칸 수 (휴대폰은 2개씩 두 줄이라 악보가 덜 작아짐)
@@ -367,14 +368,15 @@ function render(){
   const CW=Math.max(S*2.9,...song.bars.flatMap(segsOf).flatMap(c=>toneNames(c,key)).map(n=>noteW(n)+S*1.3));   // 칸 너비는 모두 같게 (♯ 들어간 음 기준)
   const perOf=b=>4;                                                     // 구성음은 늘 한 줄 (두 줄은 읽기 어려워서 뺌, K 요청)
   const chipsW=per=>per===4?CW*4+CG*3:CW*2+CG;
-  const nameW=(c,per)=>Math.max(wOf(chordName(c,key),S*(narrow?1.75:1.95),700), showDeg?wOf(c.rom,S*1.35,700):0, showTones?wOf(toneNames(c,key).join(' '),S*1.18,500)*1.06:0)+S*1.6;
-  const needB=song.bars.map((b,m)=>{ const sg=segsOf(b), per=perOf(b); return Math.max(S*(narrow?8:10),sg.length>1?sg.length*(Math.max(...sg.map(c=>nameW(c,per)))-S*0.8):nameW(sg[0],per))+(m===0?S*1.1:0); });   // 마디마다 필요한 너비 (코드 2개면 반 칸씩)
+  const toneW=c=>{ ms.setAttribute('word-spacing',S*0.15); const w=wOf(toneNames(c,key).join(' '),S*1.18,500); ms.removeAttribute('word-spacing'); return w; };   // 그릴 때와 똑같이 재기
+  const textW=c=>Math.max(wOf(chordName(c,key),S*(narrow?1.75:1.95),700), showDeg?wOf(c.rom,S*1.35,700):0, showTones?toneW(c):0);
+  const nameW=(c,per)=>textW(c)+S*1.6;
+  const needB=song.bars.map((b,m)=>{ const sg=segsOf(b), per=perOf(b); return Math.max(S*(narrow?8:10),sg.length>1?sg.length*(Math.max(...sg.map(textW))+S*1.0):nameW(sg[0],per)); });   // 마디마다 필요한 너비 (코드 2개면 반 칸씩)
   ms.remove();
   // 한 줄에 늘 4마디 (K 요청 2026-11-11). 글씨는 Easy 크기(코드 초견과 같은 기준)보다 작게 안 함 → 넘치면 옆으로 밀어서 보기
   const per=4, base=Math.max(box,300)/(narrow?0.84:1), head=x0+headW+tsW+S*1.5+6;
   const Wref=Math.max(base,head+S*(narrow?8:10)*per+S*1.2*per);
-  const eq=head+Math.max(...needB)*per<=Wref+1;                          // 마디 너비가 모두 같게 들어가면 그렇게 (종이 악보처럼)
-  const natB=eq?needB.map(()=>Math.max(...needB)):needB;                 // 안 되면 마디마다 필요한 만큼 + 남는 칸은 똑같이 나눔
+  const natB=needB.map(()=>Math.max(...needB));                          // 마디 너비는 늘 모두 같게 (줄마다 마디선이 같은 자리, K 요청). 넘치면 옆으로 밀기
   const lineW=[]; for(let m=0;m<natB.length;m+=per) lineW.push(natB.slice(m,m+per).reduce((a,b)=>a+b,0));
   const W=Math.max(Wref,head+Math.max(...lineW)), x1=W-6;
   svg.style.width=W>Wref+1?(W*box/Wref)+'px':''; $('scrollHint').hidden=!(W>Wref+1);   // 그래도 넘치면 옆으로 밀어서 보기 (글씨는 안 줄임)
@@ -403,7 +405,7 @@ function render(){
     let x=x0+clefW;
     accs.forEach(l=>{ const d=sharp?SHARP_POS[l]:FLAT_POS[l];   // 조표
       el('text',{x,y:yOf(d)+(sharp?S*0.42:S*0.3),'font-size':S*2.6,'font-family':'Noto Music, serif',fill:'currentColor'},svg,sharp?'♯':'♭'); x+=S*0.95; });
-    x+=6;
+    x+=6+(accs.length?S*0.5:0);                                         // 조표 뒤 조금 띄움 (박자표와 겹치지 않게)
     if(li===0){ [4,4].forEach((t,i)=>el('text',{x:x+S*0.9,y:y0+S*(i===0?2:4)-2,'font-size':S*2.35,'font-weight':700,'text-anchor':'middle','font-family':'IBM Plex Sans KR, sans-serif',fill:'currentColor'},svg,String(t))); x+=tsW; }
     const startX=x+4, nb=Math.min(per,song.bars.length-li*per), addB=Math.max(0,(x1-startX-lineW[li])/nb);
     for(let i=0;i<5;i++) el('line',{x1:x0,x2:x1,y1:y0+i*S,y2:y0+i*S,stroke:'currentColor','stroke-width':1.1},svg);
@@ -412,8 +414,7 @@ function render(){
       const bw=natB[m]+addB, bx=startX+natB.slice(li*per,m).reduce((a,b)=>a+b+addB,0), ex=bx+bw, c=song.bars[m], g=el('g',{class:'bar'},svg);
       el('rect',{class:'barhl',x:bx+1,y:y0-S*4.3,width:bw-2,height:4*S+S*4.3+S*2+extra,rx:8},g);   // 지금 마디 강조
       let pad=S*0.9;
-      if(m===0){ thick(bx-2,y0); thin(bx+5,y0); dots(bx+10,y0); pad+=S*1.1; }               // 반복 시작
-      if(m===song.bars.length-1){ dots(ex-14,y0); thin(ex-9,y0); thick(ex-4,y0); }          // 반복 끝
+      if(m===song.bars.length-1){ thin(ex-7,y0); thick(ex-4,y0); }                        // 끝 세로줄 (도돌이표는 뺌: 블루스는 늘 반복이라, K 요청)
       else thin(ex,y0);
       const sg=segsOf(c), cp=perOf(c);
       sg.forEach((ch,k)=>drawChord(g,ch,k?bx+bw/2+S*0.5:bx+pad,y0,cp));   // 코드 2개면 1박 · 3박 자리
