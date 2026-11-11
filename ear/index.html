@@ -230,6 +230,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 .anscol .btn{flex:1;min-height:0}
 .btn:disabled{opacity:.45;cursor:default}
 .pads{display:flex;flex-direction:column;gap:8px}
+#pads{margin-top:28px}   /* 답 칸과 음이름 버튼 사이 띄우기 (K 요청: 너무 붙어 있음) */
 .pad{display:grid;gap:6px}
 .pad.p7{grid-template-columns:repeat(7,minmax(0,1fr))}
 .pad.p5{grid-template-columns:repeat(5,minmax(0,1fr));padding:0 7%}
@@ -295,6 +296,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
         <div class="optlist">
           <label class="check"><input type="checkbox" id="hint" checked> 첫 음 듣기</label>
           <label class="check"><input type="checkbox" id="countin"> 한 마디 세고 시작</label>
+          <label class="check"><input type="checkbox" id="padsnd" checked> 답 누를 때 소리</label>
         </div>
       </div>
     </div>
@@ -368,6 +370,7 @@ const store={get(k,d){try{const v=localStorage.getItem('ear-'+k);return v==null?
 let sel=store.get('level',1); if(sel!==0&&!LEVELS[sel-1]) sel=1;     // sel 0 = 랜덤
 let keyName=store.get('key','C'); if(!KEYS[keyName]) keyName='C';
 let mode=store.get('mode','easy'); if(mode!=='hard') mode='easy';
+let padSound=store.get('padsnd',true);              // 답 누를 때 소리 (K 요청 2026-11-12, 처음엔 켜짐)
 let hint=store.get('hint',true);                  // 첫 음 듣기: 처음엔 켜짐 (K 요청)
 let tempo=60;
 let done=store.get('done',null); if(!done||typeof done!=='object'||!done.easy) done={easy:{},hard:{}};
@@ -694,6 +697,8 @@ function buildUI(){
   on('keys',v=>{keyName=v;store.set('key',keyName)});
   $('tempo').value=tempo; $('tempoOut').textContent='♩ = '+tempo;
   $('tempo').addEventListener('input',e=>{tempo=+e.target.value;$('tempoOut').textContent='♩ = '+tempo});
+  $('padsnd').checked=padSound;
+  $('padsnd').addEventListener('change',e=>{padSound=e.target.checked;store.set('padsnd',padSound)});
   $('hint').checked=hint;
   $('hint').addEventListener('change',e=>{hint=e.target.checked;store.set('hint',hint)});
   // 음이름 버튼: 지금 칸에 넣고 다음 칸으로 (누른 음은 소리도 남)
@@ -701,7 +706,7 @@ function buildUI(){
     const b=e.target.closest('button'); if(!b||checked) return;
     const p=padNotes[+b.dataset.i]; ans[cur]={name:p.name,pc:p.pc};
     const near=song.notes[cur].midi, m=p.pc+12*Math.round((near-p.pc)/12);    // 문제 음과 같은 높이 근처에서 소리
-    audio(); ready().then(()=>tone(m,audio().currentTime+0.02,0.6,0.8));
+    if(padSound){ audio(); ready().then(()=>tone(m,audio().currentTime+0.02,0.6,0.8)); }
     const empty=ans.findIndex((a,i)=>!a&&!false);
     if(empty>=0) cur=empty; else if(cur<3) cur++;
     syncSlots();

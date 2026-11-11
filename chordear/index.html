@@ -259,7 +259,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 .setbox.off #keys button .ks{color:#A9B0BC}
 .optlist .check.off{opacity:.45;pointer-events:none;cursor:default}
 .stage[data-v="1"] .hardtag .short{font-family:var(--f-body);font-size:1em;font-weight:700}   /* 좁을 때 "7th"는 보통 글꼴로 */
-#pads{margin-top:16px}   /* 답 칸과 선택지 버튼 사이 띄우기 (K 요청: 너무 붙어 있음) */
+#pads{margin-top:28px}   /* 답 칸과 선택지 버튼 사이 띄우기 (K 요청: 너무 붙어 있음) */
 .pad.qt{padding:0} .pad.qt button{background:var(--bg)} .pad.qt button .cn{white-space:normal;word-break:keep-all;text-align:center}
 @media (max-width:720px){ #levels{grid-template-columns:repeat(3,minmax(0,1fr))} .pad.qt{grid-template-columns:repeat(3,minmax(0,1fr))} .pad.p7{grid-template-columns:repeat(4,minmax(0,1fr))} .pad button{min-height:56px} .pad button .cn{font-size:17px} .pad button .cr{font-size:12px} .slot .sv{font-size:18px} }   /* 휴대폰: 이름이 길어서 한 줄 4칸 */
 </style>
@@ -310,6 +310,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
           <label class="check"><input type="checkbox" id="hint" checked> 첫 음 듣기</label>
           <label class="check"><input type="checkbox" id="firstc"> 첫 코드 알려주기</label>
           <label class="check"><input type="checkbox" id="countin"> 한 마디 세고 시작</label>
+          <label class="check"><input type="checkbox" id="padsnd" checked> 답 누를 때 소리</label>
         </div>
       </div>
     </div>
@@ -422,6 +423,7 @@ let sel=store.get('level2',1); if(!LEVELS[sel-1]) sel=1;
 let keyName=store.get('key','C'); if(!KEYS[keyName]) keyName='C';
 let mode=store.get('mode','easy'); if(mode!=='hard') mode='easy';
 let firstc=store.get('firstc',false);                // 첫 코드 알려주기: 첫 코드를 미리 보여 줌 (코드 초견처럼, K 요청 2026-11-12)
+let padSound=store.get('padsnd',true);              // 답 누를 때 소리 (K 요청 2026-11-12, 처음엔 켜짐)
 let hint=store.get('hint',true);                  // 첫 음 듣기: 처음엔 켜짐 (K 요청)
 let tempo=40;                                      // 코드 청음 기본 빠르기 40 (K 요청 2026-11-12)
 let done=store.get('done',null); if(!done||typeof done!=='object'||!done.easy) done={easy:{},hard:{}};
@@ -743,13 +745,15 @@ function buildUI(){
   $('tempo').addEventListener('input',e=>{tempo=+e.target.value;$('tempoOut').textContent='♩ = '+tempo});
   $('firstc').checked=firstc;
   $('firstc').addEventListener('change',e=>{firstc=e.target.checked;store.set('firstc',firstc);fresh()});
+  $('padsnd').checked=padSound;
+  $('padsnd').addEventListener('change',e=>{padSound=e.target.checked;store.set('padsnd',padSound)});
   $('hint').checked=hint;
   $('hint').addEventListener('change',e=>{hint=e.target.checked;store.set('hint',hint)});
   // 코드 버튼: 지금 칸에 넣고 다음 칸으로 (누른 코드는 소리도 남)
   $('pads').addEventListener('click',e=>{
     const b=e.target.closest('button'); if(!b||checked) return;
     const p=padChords[+b.dataset.i], ch=p.chord(cur); ans[cur]={name:p.label,id:p.id};
-    audio(); ready().then(()=>strike(ch,audio().currentTime+0.02,0.8,0.8));
+    if(padSound){ audio(); ready().then(()=>strike(ch,audio().currentTime+0.02,0.8,0.8)); }
     const empty=ans.findIndex((a,i)=>!a&&!(fc()&&i===0));
     if(empty>=0) cur=empty; else if(cur<song.chords.length-1) cur++;
     syncSlots();
