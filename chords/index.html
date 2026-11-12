@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script src="../theme.js"></script>
+<link rel="stylesheet" href="../theme.css">
 <meta name="description" content="기타 코드표 — 기본 코드(메이저·마이너·7th), 하이 코드(바레), 7th 코드, 빈 코드표">
 <title>코드표 | 기타 MasTer</title>
 <link rel="icon" href="../favicon.ico" sizes="any">
@@ -240,17 +242,24 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
     b.innerHTML='<span class="no">'+it.no+'</span><span class="tt">'+it.title+'</span><span class="ar">'+it.artist+'</span>';
     list.appendChild(b);
   });
+  const dark=()=>document.documentElement.getAttribute('data-theme')==='dark';   // 다크 모드면 어두운 코드표 (K 요청 2026-11-12)
+  const im=it=>dark()?it.img.replace('c','d'):it.img;
+  let curId=null;
   function show(id,scroll){
-    const i=Math.max(0,ITEMS.findIndex(x=>x.id===id)), it=ITEMS[i];
-    const dl=t=>'<a class="bk-dl" href="img/'+it.img+'.png" download="기타MasTer_코드표_'+it.no+'_'+(it.title+' '+it.artist).replace(/[^0-9A-Za-z가-힣♭]+/g,'_')+'.png">'+t+'</a>';   // 저장 버튼 (이전/다음 사이)
+    const i=Math.max(0,ITEMS.findIndex(x=>x.id===id)), it=ITEMS[i]; curId=it.id;
+    const dl=t=>'<a class="bk-dl" href="img/'+im(it)+'.png" download="기타MasTer_코드표_'+it.no+'_'+(it.title+' '+it.artist).replace(/[^0-9A-Za-z가-힣♭]+/g,'_')+(dark()?'_다크':'')+'.png">'+t+'</a>';   // 저장 버튼 (이전/다음 사이)
     list.querySelectorAll('.bk-card').forEach(b=>b.setAttribute('aria-pressed',b.dataset.id===it.id));
     view.innerHTML='<div class="bk-title"><h3>'+it.title+'</h3><span>'+it.artist+'</span></div>'
-      +'<div class="bk-pages"><img src="img/'+it.img+'.webp" width="1242" height="1956" alt="'+it.title+' '+it.artist+' 코드표"></div>'
+      +'<div class="bk-pages"><img src="img/'+im(it)+'.webp" width="1242" height="1956" alt="'+it.title+' '+it.artist+' 코드표"></div>'
       +'<div class="bk-step"><button type="button" data-go="'+(i-1)+'"'+(i===0?' disabled':'')+'>← 이전</button>'+dl('이미지 저장')+'<button type="button" data-go="'+(i+1)+'"'+(i===ITEMS.length-1?' disabled':'')+'>다음 →</button></div>';
     if(scroll) view.scrollIntoView({behavior:'smooth',block:'start'});
   }
   list.addEventListener('click',e=>{ const b=e.target.closest('.bk-card'); if(!b) return; history.replaceState(null,'','#'+b.dataset.id); show(b.dataset.id,true); });
   view.addEventListener('click',e=>{ const b=e.target.closest('[data-go]'); if(!b||b.disabled) return; const it=ITEMS[+b.dataset.go]; history.replaceState(null,'','#'+it.id); show(it.id,true); });
+  const allDl=document.querySelector('.bk-dl.all');
+  function syncAll(){ allDl.href=dark()?'img/guitar-master-chords-dark.pdf':'img/guitar-master-chords.pdf'; allDl.setAttribute('download',dark()?'기타MasTer_코드표_전체_다크.pdf':'기타MasTer_코드표_전체.pdf'); }
+  document.addEventListener('gm-theme',()=>{ syncAll(); if(curId) show(curId,false); });
+  syncAll();
   show(location.hash.slice(1)||'major',false);
   window.addEventListener('hashchange',()=>show(location.hash.slice(1)||'major',true));
 })();

@@ -1,0 +1,31 @@
+/* 다크 모드 (K 요청 2026-11-12) — 모든 페이지 공통. 메인 색은 노랑, 악보 상자(.sheet)는 흰 종이 그대로 */
+html[data-theme="dark"]{
+  --bg:#16181D; --ink:#ECEEF2; --muted:#A2A9B5; --line:#323843; --tile:#1F232A;
+  --accent:#F2C230; --accent-soft:rgba(242,194,48,.14); --accent-shadow:rgba(242,194,48,.28); --accent-glow:rgba(242,194,48,.18);
+  --hard:#FF7A50; --hard-soft:rgba(255,122,80,.35); --hard-bg:rgba(255,122,80,.14); --star:#F2C230; --star-off:#3A404B;
+  color-scheme:dark;
+}
+/* 카드 오른쪽 위 회색 기호 · 흐린 키 버튼 */
+html[data-theme="dark"] .stage .sym, html[data-theme="dark"] .stage .pic{color:#5E6672}
+html[data-theme="dark"] .stage[aria-pressed="true"] .sym, html[data-theme="dark"] .stage[aria-pressed="true"] .pic{color:var(--accent)}
+html[data-theme="dark"] .setbox.off #keys button, html[data-theme="dark"] .setbox.off #keys button .ks{color:#565D69}
+
+/* 메뉴에서 지금 페이지는 노랑, 스위치 동그라미는 밝게 (꺼져 있어도 보이게) */
+html[data-theme="dark"] .nav a[aria-current="page"]{background:var(--accent);color:#16181D}
+html[data-theme="dark"] .check input::after, html[data-theme="dark"] .sw input::after{background:#E4E7EC}
+html[data-theme="dark"] .check input:checked::after, html[data-theme="dark"] .sw input:checked::after{background:#16181D}
+
+/* 악보 상자 = 흰 종이 (오선 · 답 칸 · 버튼까지). 강조색은 흰 바탕에서 잘 보이는 진한 노랑 */
+html[data-theme="dark"] .sheet{
+  --bg:#FFFFFF; --ink:#18202E; --muted:#5B6372; --line:#DCE1E8; --tile:#F3F5F8;
+  --accent:#A87A00; --accent-soft:#FFF4D4; --accent-shadow:rgba(168,122,0,.28); --accent-glow:rgba(168,122,0,.16);
+  --hard:#E8461F; --hard-soft:#FFD2C6; --hard-bg:#FFF1EC; --star:#FFB400; --star-off:#DDE2EA;
+  color-scheme:light; color:var(--ink); background:var(--bg); border-color:transparent;
+}
+html[data-theme="dark"] .hard .sheet{--accent:#E8461F; --accent-soft:#FFF1EC; --accent-shadow:rgba(232,70,31,.28); --accent-glow:rgba(232,70,31,.16)}
+
+/* 라이트 · 다크 버튼 (맨 위 메뉴 오른쪽) */
+.theme-btn{order:3;flex:none;width:46px;height:46px;margin-left:10px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);display:grid;place-items:center;cursor:pointer;padding:0}
+.theme-btn svg{width:22px;height:22px;fill:currentColor}
+html[data-theme="dark"] .theme-btn{color:var(--accent)}
+@media (max-width:720px){ .band .nav{order:4} .theme-btn{order:2;width:44px;height:44px} }   /* 휴대폰: 로고 줄 오른쪽 */
