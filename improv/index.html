@@ -148,6 +148,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 .legend i{display:inline-block;width:16px;height:16px;border-radius:50%;border:1.5px solid var(--accent);background:var(--accent-soft);flex:none}
 .legend i.lr{background:var(--accent)} .legend>span{display:inline-flex;align-items:center;gap:8px;margin-right:12px}
 /* 기타 지판 (K 요청 2026-11-13): 0~15프렛 전체 + 포지션 1~5, 점 글자는 도수 / 음이름 */
+#scaleRows{border-top:1.5px solid var(--line)}   /* 음이름 칸 · 듣기는 상자 맨 아래 (K 요청 2026-11-13) */
 .scsel{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;padding:4px 0 12px}
 .fbctl{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;padding:14px 0 10px;border-top:1.5px solid var(--line)}
 .fbctl .seg button{min-width:52px}
@@ -281,7 +282,6 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
     <h2>즉흥연주 스케일</h2>
     <p class="hint" id="scaleHint"></p>
     <div class="scsel field"><span class="label">스케일</span><div class="seg" id="scSel" role="group" aria-label="스케일 고르기"></div></div>
-    <div id="scaleRows"></div>
     <div class="fbctl">
       <div class="field"><span class="label">포지션</span><div class="seg" id="fbPos" role="group" aria-label="포지션">
         <button type="button" data-v="0">전체</button><button type="button" data-v="1">1</button><button type="button" data-v="2">2</button><button type="button" data-v="3">3</button><button type="button" data-v="4">4</button><button type="button" data-v="5">5</button>
@@ -293,6 +293,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
     <div class="fbwrap" id="fbWrap"><svg id="fb" role="img" aria-label="기타 지판 위 스케일 음"></svg></div>
     <div class="scrollhint" id="fbHint" hidden>← 지판을 옆으로 밀어서 보세요 →</div>
     <div class="legend"><span><i class="lr"></i>근음</span><span><i></i>블루 노트 — 살짝 걸쳤다가 옆 음으로 풀면 블루스 느낌이 나요</span><span>점을 누르면 그 음이 나요</span></div>
+    <div id="scaleRows"></div>
   </section>
 
   <aside class="ad ad-bottom" aria-label="광고">광고<small>320×100</small></aside>
