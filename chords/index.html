@@ -6,7 +6,7 @@
 <script src="../theme.js"></script>
 <link rel="stylesheet" href="../theme.css">
 <meta name="description" content="기타 코드표 — 기본 코드(메이저·마이너·7th), 하이 코드(바레), 7th 코드, 빈 코드표">
-<title>코드표 | 기타 MasTer</title>
+<title>코드표 | 기타MT</title>
 <link rel="icon" href="../favicon.ico?v=6" sizes="any">
 <link rel="icon" type="image/png" href="../favicon.png?v=6">
 <link rel="apple-touch-icon" href="../apple-touch-icon.png?v=6">
@@ -197,7 +197,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 <body class="ads-off">
 <div class="band"><div class="in">
   <a class="brand" href="../">
-    <div><h1 class="logo"><img src="../logo.png" alt="기타 MasTer (Guitar MasTer)" width="190" height="100"></h1></div>
+    <div><h1 class="logo"><img src="../logo.png" alt="기타MT" width="190" height="100"></h1></div>
   </a>
   <nav class="nav" aria-label="메뉴">
     <a href="../">멜로디 초견</a>
@@ -218,7 +218,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
     <span class="bk-vol">CHORD SHEET</span>
     <h2>코드표</h2>
     <p>기본 코드 · 하이 코드 · 7th 코드. 누르면 아래에 코드표가 나와요.</p>
-    <a class="bk-dl all" href="img/guitar-master-chords.pdf" download="기타MasTer_코드표_전체.pdf">코드표 전체 받기 (PDF · 6장)</a>
+    <a class="bk-dl all" href="img/guitar-master-chords.pdf" download="기타MT_코드표_전체.pdf">코드표 전체 받기 (PDF · 6장)</a>
   </section>
   <div class="bk-grid" id="list"></div>
   <section class="bk-view" id="view" aria-live="polite"></section>
@@ -247,7 +247,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
   let curId=null;
   function show(id,scroll){
     const i=Math.max(0,ITEMS.findIndex(x=>x.id===id)), it=ITEMS[i]; curId=it.id;
-    const dl=t=>'<a class="bk-dl" href="img/'+im(it)+'.png" download="기타MasTer_코드표_'+it.no+'_'+(it.title+' '+it.artist).replace(/[^0-9A-Za-z가-힣♭]+/g,'_')+(dark()?'_다크':'')+'.png">'+t+'</a>';   // 저장 버튼 (이전/다음 사이)
+    const dl=t=>'<a class="bk-dl" href="img/'+im(it)+'.png" download="기타MT_코드표_'+it.no+'_'+(it.title+' '+it.artist).replace(/[^0-9A-Za-z가-힣♭]+/g,'_')+(dark()?'_다크':'')+'.png">'+t+'</a>';   // 저장 버튼 (이전/다음 사이)
     list.querySelectorAll('.bk-card').forEach(b=>b.setAttribute('aria-pressed',b.dataset.id===it.id));
     view.innerHTML='<div class="bk-title"><h3>'+it.title+'</h3><span>'+it.artist+'</span></div>'
       +'<div class="bk-pages"><img src="img/'+im(it)+'.webp" width="1242" height="1956" alt="'+it.title+' '+it.artist+' 코드표"></div>'
@@ -257,13 +257,13 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
   list.addEventListener('click',e=>{ const b=e.target.closest('.bk-card'); if(!b) return; history.replaceState(null,'','#'+b.dataset.id); show(b.dataset.id,true); });
   view.addEventListener('click',e=>{ const b=e.target.closest('[data-go]'); if(!b||b.disabled) return; const it=ITEMS[+b.dataset.go]; history.replaceState(null,'','#'+it.id); show(it.id,true); });
   const allDl=document.querySelector('.bk-dl.all');
-  function syncAll(){ allDl.href=dark()?'img/guitar-master-chords-dark.pdf':'img/guitar-master-chords.pdf'; allDl.setAttribute('download',dark()?'기타MasTer_코드표_전체_다크.pdf':'기타MasTer_코드표_전체.pdf'); }
+  function syncAll(){ allDl.href=dark()?'img/guitar-master-chords-dark.pdf':'img/guitar-master-chords.pdf'; allDl.setAttribute('download',dark()?'기타MT_코드표_전체_다크.pdf':'기타MT_코드표_전체.pdf'); }
   document.addEventListener('gm-theme',()=>{ syncAll(); if(curId) show(curId,false); });
   syncAll();
   show(location.hash.slice(1)||'major',false);
   window.addEventListener('hashchange',()=>show(location.hash.slice(1)||'major',true));
 })();
 </script>
-<footer class="site-foot"><div class="in"><span>기타 MT 관리자 : 고주한</span><a href="../privacy/#contact">문의</a><a href="../privacy/">개인정보 처리방침</a></div></footer>
+<footer class="site-foot"><div class="in"><span>기타MT 관리자 : 고주한</span><a href="../privacy/#contact">문의</a><a href="../privacy/">개인정보 처리방침</a></div></footer>
 </body>
 </html>
