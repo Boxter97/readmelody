@@ -205,7 +205,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
   .scales{padding:14px 14px 4px}
   .note{min-width:46px;padding:5px 6px 4px} .note b{font-size:18px}
   .sbtn{padding:0 14px}
-  .scsel .seg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));flex:1} .scsel .seg button{padding:6px 4px;font-size:15.5px;line-height:1.25;word-break:keep-all}
+  .scsel .seg{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);flex:1} .scsel .seg button{padding:6px 4px;font-size:15.5px;line-height:1.25;word-break:keep-all}
   .scsel .seg button:last-child{border-right:0}
   #fb{min-width:900px}   /* 휴대폰: 점 글씨가 작아지지 않게 실제 크기로 두고 옆으로 밀기 */
   .fbctl{gap:10px} .fbctl .field{width:100%} .fbctl .seg{flex:1;display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr)} .fbctl .seg button{min-width:0;padding:8px 4px}
@@ -336,8 +336,7 @@ const PROGS=[
      return [I,I,I,I, IV,IV,I,I, v==='v'?V:VI, v==='v'?IV:V, I,V];},
    scales:[
      {name:'마이너 펜타토닉',sub:'처음엔 이것 하나로',iv:[[0,0,'1'],[2,3,'♭3'],[3,5,'4'],[4,7,'5'],[6,10,'♭7']]},
-     {name:'블루스 스케일',sub:'펜타토닉 + ♭5',iv:[[0,0,'1'],[2,3,'♭3'],[3,5,'4'],[4,6,'♭5',1],[4,7,'5'],[6,10,'♭7']]},
-     {name:'내추럴 마이너',sub:'에올리안 · 멜로디를 길게',iv:[[0,0,'1'],[1,2,'2'],[2,3,'♭3'],[3,5,'4'],[4,7,'5'],[5,8,'♭6'],[6,10,'♭7']]}],
+     {name:'블루스 스케일',sub:'펜타토닉 + ♭5',iv:[[0,0,'1'],[2,3,'♭3'],[3,5,'4'],[4,6,'♭5',1],[4,7,'5'],[6,10,'♭7']]}],   // 내추럴 마이너는 뺌 (K 요청 2026-11-13)
    hint:'마이너 펜타토닉 하나로 12마디 내내 칠 수 있어요. Ⅴ7 마디에서는 그 코드의 3음(이끎음)을 노려 보세요'},
   {id:'blues',name:'메이저 블루스',tag:'12마디',minor:false,key:'A',sub:'Ⅰ7 · Ⅳ7 · Ⅴ7',
    desc:'코드 세 개(Ⅰ7 Ⅳ7 Ⅴ7)로 12마디를 도는 가장 기본 블루스',
