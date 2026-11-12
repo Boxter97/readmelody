@@ -380,20 +380,21 @@ const ROMAN=['Ⅰ','Ⅱ','Ⅲ','Ⅳ','Ⅴ','Ⅵ','Ⅶ'];
 const ROMAN_Q={'':'','m':'m','dim':'°','7':'7','maj7':'M7','m7':'m7','m7♭5':'ø7','sus4':'sus4','7sus4':'7sus4','6':'6','m6':'m6','aug':'+','dim7':'°7'};
 const accTxt=a=>a>0?'♯'.repeat(a):a<0?'♭'.repeat(-a):'';
 const C=(deg,q,o={})=>({deg,q,alt:0,...o});
-const idOf=c=>c.deg+'|'+(c.alt||0)+'|'+c.q;
+const idOf=c=>c.deg+'|'+(c.alt||0)+'|'+c.q+(c.inv?'/'+c.inv:'');
+function bassOf(c,key){ const r=rootOf(c,key), li=(r.li+c.inv*2)%7, pc=(r.pc+QUAL[c.q][c.inv])%12, acc=((pc-SEMI[li])%12+18)%12-6; return {letter:LETTERS[li],acc,pc}; }   // 분수코드 베이스음
 function rootOf(c,key){ const li=(key.letter+c.deg)%7, L=LETTERS[li], acc=(key.acc[L]||0)+(c.alt||0); return {li,acc,pc:((SEMI[li]+acc)%12+12)%12}; }
-function chordParts(c,key){ const r=rootOf(c,key), p=[[LETTERS[r.li],'r']]; if(r.acc) p.push([accTxt(r.acc),'acc']); if(c.q){ const i=c.q.search(/[♭♯]/); if(i<0) p.push([c.q,'q']); else { p.push([c.q.slice(0,i),'q']); p.push([c.q[i],'acc']); p.push([c.q.slice(i+1),'q']); } } return p; }
+function chordParts(c,key){ const r=rootOf(c,key), p=[[LETTERS[r.li],'r']]; if(r.acc) p.push([accTxt(r.acc),'acc']); if(c.q){ const i=c.q.search(/[♭♯]/); if(i<0) p.push([c.q,'q']); else { p.push([c.q.slice(0,i),'q']); p.push([c.q[i],'acc']); p.push([c.q.slice(i+1),'q']); } } if(c.inv){ const b=bassOf(c,key); p.push(['/'+b.letter,'r']); if(b.acc) p.push([accTxt(b.acc),'acc']); } return p; }
 function chordName(c,key){ return chordParts(c,key).map(x=>x[0]).join(''); }
-function romanOf(c){ if(c.sec!=null) return 'Ⅴ7/'+ROMAN[c.sec]; return accTxt(c.alt||0)+ROMAN[c.deg]+ROMAN_Q[c.q]; }
+function romanOf(c){ if(c.sec!=null) return 'Ⅴ7/'+ROMAN[c.sec]; return accTxt(c.alt||0)+ROMAN[c.deg]+ROMAN_Q[c.q]+(c.inv?'/'+ROMAN[(c.deg+c.inv*2)%7]:''); }
 
 /* 단계 = 들리는 코드의 종류 */
 /* 단계 (K 요청 2026-11-12): 1 = 코드 종류 맞히기, 2~5 = 코드 진행 (예전 1~4단계를 한 칸씩 뒤로) */
-const LEVELS=[
-  {n:1,sym:'종류',name:'코드 종류',desc:'메이저 · 마이너 · sus4 · 디미니쉬 · 어그먼트',hdesc:'+ 7th 코드 (maj7 · 7 · m7 · m7♭5 · dim7)',tag:'+ 7th',tagS:'7th'},
+const LEVELS=[   // K 요청 2026-11-12: 1 코드 종류 맞추기 · 2 주요 3화음 · 3 트라이어드 · 4 다이어토닉 · 5 분수코드 · R 랜덤
+  {n:1,sym:'종류',name:'코드 종류 맞추기',desc:'메이저 · 마이너 · sus4 · 디미니쉬 · 어그먼트',hdesc:'+ 7th 코드 (maj7 · 7 · m7 · m7♭5 · dim7)',tag:'+ 7th',tagS:'7th'},
   {n:2,sym:'Ⅰ Ⅳ Ⅴ',name:'주요 3화음',desc:'Ⅰ · Ⅳ · Ⅴ 3화음',tag:'+ 부속·차용',tagS:'+α'},
-  {n:3,sym:'Ⅱ Ⅲ Ⅵ',name:'마이너 추가',desc:'Ⅰ · Ⅱm · Ⅲm · Ⅳ · Ⅴ · Ⅵm 3화음',tag:'+ 부속·차용',tagS:'+α'},
-  {n:4,sym:'3화음',name:'모든 3화음',desc:'다이아토닉 3화음 7개 (Ⅶ° 추가)',tag:'+ 부속·차용',tagS:'+α'},
-  {n:5,sym:'7th',name:'7th 코드',desc:'다이아토닉 7th 코드 7개 (M7 · m7 · 7 · ø7)',tag:'+ 부속·차용',tagS:'+α'},
+  {n:3,sym:'3화음',name:'트라이어드',desc:'다이어토닉 3화음 7개 (Ⅰ · Ⅱm · Ⅲm · Ⅳ · Ⅴ · Ⅵm · Ⅶ°)',tag:'+ 부속·차용',tagS:'+α'},
+  {n:4,sym:'7th',name:'다이어토닉',desc:'다이어토닉 7th 코드 7개 (M7 · m7 · 7 · ø7)',tag:'+ 부속·차용',tagS:'+α'},
+  {n:5,sym:'분수',name:'분수코드',desc:'3화음 + 분수코드 (Ⅰ/Ⅲ · Ⅰ/Ⅴ · Ⅱm/Ⅳ · Ⅳ/Ⅵ · Ⅴ/Ⅶ · Ⅵm/Ⅲ)',tag:'+ 부속·차용',tagS:'+α'},
 ];
 const Q_EASY=[{q:'',ko:'메이저',sym:'M'},{q:'m',ko:'마이너',sym:'m'},{q:'sus4',ko:'서스포',sym:'sus4'},{q:'dim',ko:'디미니쉬',sym:'dim'},{q:'aug',ko:'어그먼트',sym:'aug'}];
 const Q_HARD=[{q:'maj7',ko:'메이저7',sym:'maj7'},{q:'7',ko:'도미넌트7',sym:'7'},{q:'m7',ko:'마이너7',sym:'m7'},{q:'m7♭5',ko:'하프 디미니쉬',sym:'m7♭5'},{q:'dim7',ko:'디미니쉬7',sym:'dim7'}];
@@ -401,19 +402,19 @@ const qPool=()=>mode==='hard'?Q_EASY.concat(Q_HARD):Q_EASY;      // Hard: 3화�
 const fc=()=>firstc&&sel!==1;                      // 첫 코드 알려주기는 코드 진행(2~5단계)에서만
 const ROOTS=[[0,0],[1,-1],[1,0],[2,-1],[2,0],[3,0],[3,1],[4,0],[5,-1],[5,0],[6,-1],[6,0]];   // 1단계 근음 12개 (C 기준 이름)
 const progLv=()=>sel===0?0:sel-1;                       // 코드 진행 단계 (예전 단계 번호 1~4, 0 = 랜덤)
+const SLASH=[[0,1],[0,2],[1,1],[3,1],[4,1],[5,2]];   // 분수코드: Ⅰ/Ⅲ · Ⅰ/Ⅴ · Ⅱm/Ⅳ · Ⅳ/Ⅵ · Ⅴ/Ⅶ · Ⅵm/Ⅲ (코드 초견 분수코드와 같은 종류)
 const DEGS=[[0,3,4],[0,1,2,3,4,5],[0,1,2,3,4,5,6]];   // 3단계에 Ⅲm도 (K 요청 2026-11-12)
 function vocab(lv){                                    // 답 버튼 (Easy)
   const tri=d=>C(d,TRIAD_Q[d]), sev=d=>C(d,SEV_Q[d]);
   const extra=[C(4,'sus4'),C(4,'7sus4'),C(0,'6'),C(3,'6'),C(1,'m6')];
   if(lv===1) return DEGS[0].map(tri);
-  if(lv===2) return DEGS[1].map(tri);
-  if(lv===3) return DEGS[2].map(tri);
-  if(lv===4) return DEGS[2].map(sev);
-  if(lv===5) return DEGS[2].map(sev).concat(extra);
+  if(lv===2) return DEGS[2].map(tri);
+  if(lv===3) return DEGS[2].map(sev);
+  if(lv===4) return DEGS[2].map(tri).concat(SLASH.map(([d,v])=>C(d,TRIAD_Q[d],{inv:v})));   // 분수코드: 3화음 줄 + 분수코드 줄
   return DEGS[2].map(tri).concat(DEGS[2].map(sev));   // 랜덤: 3화음 7개 + 7th 7개 (2~5단계 코드)
 }
 function hardVocab(lv){                                // Hard: 부속화음 · 차용화음
-  const sev=lv>=4, both=lv===0, out=[C(0,'7',{sec:3}),C(1,'7',{sec:4})];
+  const sev=lv===3, both=lv===0, out=[C(0,'7',{sec:3}),C(1,'7',{sec:4})];
   if(lv!==1) out.push(C(5,'7',{sec:1}),C(2,'7',{sec:5}));
   if(both||!sev) out.push(C(3,'m',{bor:1}),C(6,'',{alt:-1,bor:1}));
   if(both||sev) out.push(C(3,'m7',{bor:1}),C(6,'7',{alt:-1,bor:1}));
@@ -431,6 +432,10 @@ let padSound=store.get('padsnd',true);              // 답 누를 때 소리 (K 
 let hint=store.get('hint',true);                  // 첫 음 듣기: 처음엔 켜짐 (K 요청)
 let tempo=40;                                      // 코드 청음 기본 빠르기 40 (K 요청 2026-11-12)
 let done=store.get('done',null); if(!done||typeof done!=='object'||!done.easy) done={easy:{},hard:{}};
+if(!store.get('lv2611',false)){                    // 단계 구성 바뀜 (2026-11-12): 예전 3·4 → 3, 예전 5 → 4, 5는 새 단계(분수코드)
+  ['easy','hard'].forEach(m=>{ const d=done[m]||(done[m]={}), a=(d[3]||0)+(d[4]||0), b=d[5]||0; d[3]=a; d[4]=b; d[5]=0; });
+  store.set('done',done); if(sel===4) sel=3; else if(sel===5) sel=4; store.set('level2',sel); store.set('lv2611',true);
+}
 let song=null, ans=[], cur=0, checked=false;
 
 const $=id=>document.getElementById(id);
@@ -451,15 +456,19 @@ function makeQ(){                                     // 1단계: 코드 하나�
 }
 function makeSong(){
   if(sel===1) return makeQ();
-  const key=KEYS[keyName], L=progLv(), allowed=L===0||L>=3?DEGS[2]:DEGS[L-1];
+  const key=KEYS[keyName], L=progLv(), allowed=L===1?DEGS[0]:DEGS[2];
   for(let k=0;k<500;k++){
     const pat=rnd(PATTERNS);
     if(!pat.every(d=>allowed.includes(d))) continue;
-    if(L===2&&!pat.some(d=>d===1||d===2||d===5)) continue;            // 그 단계에서 새로 나온 코드가 꼭 한 번
-    if(L===3&&!pat.some(d=>d===6)) continue;
+    if(L===2&&!pat.some(d=>d===1||d===2||d===5||d===6)) continue;     // 트라이어드: 주요 3화음 말고 다른 3화음이 꼭 한 번
     let chords;
-    if(L>=1&&L<=3) chords=pat.map(d=>C(d,TRIAD_Q[d]));
-    else if(L===4) chords=pat.map(d=>C(d,SEV_Q[d]));
+    if(L===1||L===2) chords=pat.map(d=>C(d,TRIAD_Q[d]));
+    else if(L===3) chords=pat.map(d=>C(d,SEV_Q[d]));
+    else if(L===4){                                              // 분수코드 1~2개 (베이스가 이어지게 많이 쓰는 자리)
+      chords=pat.map(d=>C(d,TRIAD_Q[d]));
+      const spots=shuffle(chords.map((c,i)=>i).filter(i=>[0,1,3,4,5].includes(chords[i].deg))), want=Math.random()<0.5?2:1;
+      spots.slice(0,want).forEach(i=>{ const d=chords[i].deg, nx=chords[i+1]; const v=d===0?(nx&&nx.deg===4&&Math.random()<0.6?2:1):d===5?2:1; chords[i]=C(d,TRIAD_Q[d],{inv:v}); });
+    }
     else {
       chords=pat.map(d=>L===0&&Math.random()<0.5?C(d,TRIAD_Q[d]):C(d,SEV_Q[d]));
       const spots=shuffle(chords.map((c,i)=>i).filter(i=>[0,1,3,4].includes(chords[i].deg)));
@@ -470,7 +479,7 @@ function makeSong(){
     }
     if(mode==='hard'){                                           // 부속화음 · 차용화음 1~2개
       const hv=hardVocab(L).map(idOf), opts=[];
-      const sev=()=>L===0?Math.random()<0.5:L>=4;
+      const sev=()=>L===0?Math.random()<0.5:L===3;
       chords.forEach((c,i)=>{
         const nx=chords[i+1];
         if(nx&&[1,3,4,5].includes(nx.deg)) opts.push({i,c:C((nx.deg+4)%7,'7',{sec:nx.deg})});      // 다음 코드의 Ⅴ7 (부속화음)
@@ -482,6 +491,7 @@ function makeSong(){
       for(const o of ok){ if(n>=want) break; if(used.has(o.i)||used.has(o.i-1)||used.has(o.i+1)) continue; chords[o.i]=o.c; used.add(o.i); n++; }
       if(n<1) continue;
     }
+    if(L===4&&!chords.some(c=>c.inv)) continue;                       // 분수코드 단계: 분수코드가 꼭 한 번
     if(chords.some((c,i)=>i&&idOf(c)===idOf(chords[i-1]))) continue;   // 같은 코드 연달아 안 나오게
     chords.forEach(c=>{ c.name=chordName(c,key); c.label=c.name; c.rom=romanOf(c); c.id=idOf(c); });
     return {key,chords};
@@ -580,7 +590,7 @@ function click(t,lv){
 }
 function voicing(c,key){
   const r=rootOf(c,key); let root=48+r.pc; while(root<55) root+=12;
-  let bass=36+r.pc; if(bass<40) bass+=12;
+  let bass=36+(c.inv?bassOf(c,key).pc:r.pc); if(bass<40) bass+=12;
   return {upper:QUAL[c.q].map(s=>root+s),bass};
 }
 function strike(c,t,len,vol=1){ const v=voicing(c,c.k||song.key); tone(v.bass,t,len,0.75*vol); v.upper.forEach((m,i)=>tone(m,t+0.012*(i+1),len,0.5*vol)); }
