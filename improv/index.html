@@ -144,8 +144,26 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 .note.blue{border-color:var(--accent);background:var(--accent-soft)} .note.blue b,.note.blue span{color:var(--accent)}
 .note.on{background:var(--accent);border-color:var(--accent)} .note.on b,.note.on span{color:var(--bg)}
 .sbtn{min-height:46px;padding:0 18px;font-size:17px}
-.legend{display:flex;align-items:center;gap:8px;padding:10px 0 12px;border-top:1.5px solid var(--line);font-size:15px;color:var(--muted)}
-.legend i{display:inline-block;width:16px;height:16px;border-radius:5px;border:1.5px solid var(--accent);background:var(--accent-soft)}
+.legend{display:flex;align-items:center;flex-wrap:wrap;gap:6px 8px;padding:10px 0 12px;border-top:1.5px solid var(--line);font-size:15px;color:var(--muted)}
+.legend i{display:inline-block;width:16px;height:16px;border-radius:50%;border:1.5px solid var(--accent);background:var(--accent-soft);flex:none}
+.legend i.lr{background:var(--accent)} .legend>span{display:inline-flex;align-items:center;gap:8px;margin-right:12px}
+/* 기타 지판 (K 요청 2026-11-13): 0~15프렛 전체 + 포지션 1~5, 점 글자는 도수 / 음이름 */
+.scsel{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;padding:4px 0 12px}
+.fbctl{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;padding:14px 0 10px;border-top:1.5px solid var(--line)}
+.fbctl .seg button{min-width:52px}
+.fbwrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+#fb{display:block;width:100%;min-width:760px;height:auto}
+#fb .fstr{stroke:var(--muted)} #fb .ffret{stroke:var(--line);stroke-width:2} #fb .fnut{stroke:var(--ink);stroke-width:5}
+#fb .fmark{fill:var(--line)} #fb .fnum{fill:var(--muted);font-size:15px;font-weight:700;text-anchor:middle;font-family:var(--f-body)}
+#fb .fband{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5;stroke-dasharray:5 4}
+#fb .fdot{cursor:pointer}
+#fb .fdot .bk{fill:var(--bg)}
+#fb .fdot .c{fill:var(--bg);stroke:var(--ink);stroke-width:1.6}
+#fb .fdot text{fill:var(--ink);font-size:14px;font-weight:700;text-anchor:middle;dominant-baseline:central;font-family:var(--f-body);pointer-events:none}
+#fb .fdot.root .c{fill:var(--accent);stroke:var(--accent)} #fb .fdot.root text{fill:var(--bg)}
+#fb .fdot.blue .c{fill:var(--accent-soft);stroke:var(--accent)} #fb .fdot.blue text{fill:var(--accent)}
+#fb .fdot.dim .c,#fb .fdot.dim text{opacity:.28}
+#fb .fdot.on .c{fill:var(--ink);stroke:var(--ink)} #fb .fdot.on text{fill:var(--bg)} #fb .fdot.on .c,#fb .fdot.on text{opacity:1}
 
 /* 광고 자리: 컴퓨터는 양옆 세로(160×600), 휴대폰·태블릿은 버튼 아래 가로(320×100). ads-off면 숨김 */
 .layout{max-width:1448px;margin:0 auto}
@@ -186,6 +204,10 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
   .scales{padding:14px 14px 4px}
   .note{min-width:46px;padding:5px 6px 4px} .note b{font-size:18px}
   .sbtn{padding:0 14px}
+  .scsel .seg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));flex:1} .scsel .seg button{padding:6px 4px;font-size:15.5px;line-height:1.25;word-break:keep-all}
+  .scsel .seg button:last-child{border-right:0}
+  #fb{min-width:900px}   /* 휴대폰: 점 글씨가 작아지지 않게 실제 크기로 두고 옆으로 밀기 */
+  .fbctl{gap:10px} .fbctl .field{width:100%} .fbctl .seg{flex:1;display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr)} .fbctl .seg button{min-width:0;padding:8px 4px}
 }
 @media (prefers-reduced-motion:reduce){ *{transition:none!important} }
 
@@ -258,8 +280,19 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
   <section class="scales" aria-label="즉흥연주 스케일">
     <h2>즉흥연주 스케일</h2>
     <p class="hint" id="scaleHint"></p>
+    <div class="scsel field"><span class="label">스케일</span><div class="seg" id="scSel" role="group" aria-label="스케일 고르기"></div></div>
     <div id="scaleRows"></div>
-    <div class="legend"><i></i>블루 노트 — 살짝 걸쳤다가 옆 음으로 풀면 블루스 느낌이 나요</div>
+    <div class="fbctl">
+      <div class="field"><span class="label">포지션</span><div class="seg" id="fbPos" role="group" aria-label="포지션">
+        <button type="button" data-v="0">전체</button><button type="button" data-v="1">1</button><button type="button" data-v="2">2</button><button type="button" data-v="3">3</button><button type="button" data-v="4">4</button><button type="button" data-v="5">5</button>
+      </div></div>
+      <div class="field"><span class="label">표시</span><div class="seg" id="fbLab" role="group" aria-label="점에 쓸 글자">
+        <button type="button" data-v="deg">도수</button><button type="button" data-v="name">음이름</button>
+      </div></div>
+    </div>
+    <div class="fbwrap" id="fbWrap"><svg id="fb" role="img" aria-label="기타 지판 위 스케일 음"></svg></div>
+    <div class="scrollhint" id="fbHint" hidden>← 지판을 옆으로 밀어서 보세요 →</div>
+    <div class="legend"><span><i class="lr"></i>근음</span><span><i></i>블루 노트 — 살짝 걸쳤다가 옆 음으로 풀면 블루스 느낌이 나요</span><span>점을 누르면 그 음이 나요</span></div>
   </section>
 
   <aside class="ad ad-bottom" aria-label="광고">광고<small>320×100</small></aside>
@@ -348,6 +381,9 @@ let vars=store.get('vars',{}); if(!vars||typeof vars!=='object') vars={};   // �
 let showDeg=store.get('deg',false), showTones=store.get('tones',false);
 let targets=store.get('targets',[]); if(!Array.isArray(targets)) targets=[];   // 켜 둔 타겟 노트 도수 (1 · 3 · 5 · 7)
 const TGT_IDX={1:0,3:1,5:2,7:3};
+let scSel=store.get('scsel',{}); if(!scSel||typeof scSel!=='object') scSel={};   // 진행마다 지판에 띄울 스케일
+let fbPos=store.get('fbpos',0); if(!(fbPos>=0&&fbPos<=5)) fbPos=0;               // 0 = 전체, 1~5 = 포지션
+let fbLab=store.get('fblab','deg'); if(fbLab!=='name') fbLab='deg';
 const $=id=>document.getElementById(id);
 const P=()=>PROGS.find(p=>p.id===progId);
 let song=null;
@@ -560,8 +596,8 @@ async function playScale(i,btn){
   const seq=sc.iv.map((x,k)=>[base+x[1],k]).concat([[base+12,0]]);          // 올라가서 옥타브 위 으뜸음까지
   let t=c.currentTime+0.08;
   seq.forEach(([m,k],j)=>{ tone(m,t+j*step,step*0.95,0.8);
-    at(c,t+j*step,()=>{ notes.forEach(n=>n.classList.remove('on')); notes[k].classList.add('on'); }); });
-  at(c,t+seq.length*step,()=>notes.forEach(n=>n.classList.remove('on')));
+    at(c,t+j*step,()=>{ fbOn(notes,k); }); });
+  at(c,t+seq.length*step,()=>fbOn(notes,-1));
 }
 
 /* ---------- 화면 ---------- */
@@ -570,12 +606,64 @@ function updateMeta(){
   $('meta').innerHTML=`<span>진행 <b>${song.p.name}</b></span><span>키 <b>${k.label}</b>${kn?' ('+(ksh?'♯':'♭')+kn+')':''}</span><span>박자 <b>4/4</b></span><span><b>12마디</b> 반복</span>`;
   $('lvdesc').textContent=song.p.desc;
 }
+const curSc=()=>{const i=scSel[progId]; return i>=0&&i<song.p.scales.length?i:0;};
+function fbOn(notes,k){                       // 듣기: 글자 칸과 지판 점을 함께 켬
+  notes.forEach(n=>n.classList.remove('on')); if(k>=0&&notes[k]) notes[k].classList.add('on');
+  document.querySelectorAll('#fb .fdot').forEach(g=>g.classList.toggle('on',+g.dataset.k===k));
+}
+/* 지판: 위가 1번 줄(높은 미), 0~15프렛. 포지션 = 펜타토닉 박스 1~5 (6번 줄의 펜타토닉 음 k번째에서 시작, 한 줄에 두 음)
+   펜타토닉이 아닌 음(♭5 · 7음 스케일의 나머지 음)은 그 박스 칸 안에 있는 자리에 넣음 */
+const OPEN=[40,45,50,55,59,64], FRETS=15;
+function fbBoxes(sc,rpc){
+  const semis=sc.iv.map(x=>x[1]), A=semis.includes(3)?[0,3,5,7,10]:[0,2,4,7,9];   // 단3도가 있으면 마이너 펜타토닉, 아니면 메이저 펜타토닉 박스
+  const rf=((rpc-4)%12+12)%12, extra=semis.filter(x=>!A.includes(x));
+  return [0,1,2,3,4].map(k=>{
+    let notes=[];
+    for(let j=0;j<12;j++){ const st=j>>1, m=40+rf+A[(k+j)%5]+12*Math.floor((k+j)/5); notes.push([st,m-OPEN[st]]); }
+    let lo=Math.min(...notes.map(n=>n[1])), hi=Math.max(...notes.map(n=>n[1]));
+    let sh=0; if(hi>FRETS&&lo-12>=0) sh=-12; if(lo<0) sh=12;
+    notes=notes.map(([st,f])=>[st,f+sh]); lo+=sh; hi+=sh;
+    const first=st=>OPEN[st]+notes.find(n=>n[0]===st)[1];
+    for(let st=0;st<6;st++) for(let f=lo;f<=hi;f++){ const m=OPEN[st]+f;
+      if(!extra.includes(((m-40-rf)%12+12)%12)) continue;
+      if(st>0&&m<=first(st)) continue; if(st<5&&m>=first(st+1)) continue;
+      notes.push([st,f]); }
+    return {lo,hi,set:new Set(notes.map(n=>n[0]+'-'+n[1]))};
+  });
+}
+function drawFB(){
+  const sc=song.p.scales[curSc()], r=rootOf({deg:0},song.key), map={};
+  sc.iv.forEach(([k,s,d,blue],i)=>{ map[(r.pc+s)%12]={i,d,blue,root:s===0,name:krName(spell(r,k,s))}; });
+  const X0=50, W=58, T=28, G=36, H=T+5*G+48, WD=X0+FRETS*W+16;
+  const fx=f=>f===0?24:X0+(f-.5)*W, sy=st=>T+(5-st)*G;
+  const box=fbPos?fbBoxes(sc,r.pc)[fbPos-1]:null;
+  let h='';
+  if(box){ const x1=box.lo===0?4:X0+(box.lo-1)*W+3, x2=X0+box.hi*W-3; h+=`<rect class="fband" x="${x1}" y="${T-20}" width="${x2-x1}" height="${5*G+40}" rx="12"/>`; }
+  [3,5,7,9,15].forEach(f=>h+=`<circle class="fmark" cx="${X0+(f-.5)*W}" cy="${T+2.5*G}" r="7"/>`);
+  h+=`<circle class="fmark" cx="${X0+11.5*W}" cy="${T+1.5*G}" r="7"/><circle class="fmark" cx="${X0+11.5*W}" cy="${T+3.5*G}" r="7"/>`;
+  for(let f=1;f<=FRETS;f++){ h+=`<line class="ffret" x1="${X0+f*W}" y1="${T}" x2="${X0+f*W}" y2="${T+5*G}"/><text class="fnum" x="${X0+(f-.5)*W}" y="${T+5*G+36}">${f}</text>`; }
+  for(let st=0;st<6;st++) h+=`<line class="fstr" x1="${X0}" y1="${sy(st)}" x2="${WD-8}" y2="${sy(st)}" stroke-width="${(1+st*.3).toFixed(1)}"/>`;
+  h+=`<line class="fnut" x1="${X0}" y1="${T-2}" x2="${X0}" y2="${T+5*G+2}"/>`;
+  for(let st=0;st<6;st++) for(let f=0;f<=FRETS;f++){
+    const m=OPEN[st]+f, n=map[m%12]; if(!n) continue;
+    const cls='fdot'+(n.root?' root':n.blue?' blue':'')+(box&&!box.set.has(st+'-'+f)?' dim':'');
+    h+=`<g class="${cls}" data-m="${m}" data-k="${n.i}" transform="translate(${fx(f)} ${sy(st)})"><circle class="bk" r="15.5"/><circle class="c" r="15.5"/><text>${fbLab==='name'?n.name:n.d}</text></g>`;
+  }
+  const svg=$('fb'); svg.setAttribute('viewBox',`0 0 ${WD} ${H}`); svg.innerHTML=h;
+  const wrap=$('fbWrap');
+  requestAnimationFrame(()=>{ const over=wrap.scrollWidth>wrap.clientWidth+2; $('fbHint').hidden=!over;
+    if(over){ const k=svg.getBoundingClientRect().width/WD; wrap.scrollLeft=box?Math.max(0,(box.lo===0?0:X0+(box.lo-1)*W)*k-24):0; } });
+  $('fbPos').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.v===fbPos));
+  $('fbLab').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===fbLab));
+}
 function renderScales(){
-  const p=song.p, r=rootOf({deg:0},song.key);
+  const p=song.p, r=rootOf({deg:0},song.key), si=curSc();
   $('scaleHint').textContent=p.hint;
-  $('scaleRows').innerHTML=p.scales.map((sc,i)=>`<div class="srow"><div class="sname">${song.key.label.replace(/m$/,'')} ${sc.name}<small>${sc.sub}</small></div>
+  $('scSel').innerHTML=p.scales.map((sc,i)=>`<button type="button" data-v="${i}" aria-pressed="${i===si}">${sc.name}</button>`).join('');
+  $('scaleRows').innerHTML=[p.scales[si]].map((sc,_,__,i=si)=>`<div class="srow"><div class="sname">${song.key.label.replace(/m$/,'')} ${sc.name}<small>${sc.sub}</small></div>
     <div class="notes">${sc.iv.map(([k,s,d,blue])=>`<span class="note${blue?' blue':''}${s===0?' root':''}"><b>${krName(spell(r,k,s))}</b><span>${d}</span></span>`).join('')}</div>
     <button type="button" class="btn sbtn" data-i="${i}"><svg viewBox="0 0 16 16"><path d="M4 2l10 6-10 6z"/></svg>듣기</button></div>`).join('');
+  drawFB();
 }
 function updBacking(){
   const id=bkId(), bk=BACKING[id], ak=keyOf(P().key,P().minor).label, ok=have[id]&&onAudioKey();
@@ -617,7 +705,12 @@ function buildUI(){
   $('tones').addEventListener('change',e=>{showTones=e.target.checked;store.set('tones',showTones);stop();render()});
   $('playBtn').onclick=play;
   $('scaleRows').addEventListener('click',e=>{const b=e.target.closest('.sbtn'); if(b) playScale(+b.dataset.i,b);});
-  let rt; window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{stop();render()},150)});
+  $('scSel').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; stop(); scSel[progId]=+b.dataset.v; store.set('scsel',scSel); renderScales();});
+  $('fbPos').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; fbPos=+b.dataset.v; store.set('fbpos',fbPos); drawFB();});
+  $('fbLab').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; fbLab=b.dataset.v; store.set('fblab',fbLab); drawFB();});
+  $('fb').addEventListener('click',async e=>{const g=e.target.closest('.fdot'); if(!g) return; if(playing) stop(); audio(); await ready();
+    const c=audio(); tone(+g.dataset.m,c.currentTime+0.02,0.9,0.85); g.classList.add('on'); setTimeout(()=>g.classList.remove('on'),450);});
+  let rt; window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{stop();render();drawFB()},150)});
   sync();
 }
 checkBacking(); buildUI(); fresh();
