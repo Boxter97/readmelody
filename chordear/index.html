@@ -253,6 +253,10 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 .pad button .cn{font-size:19px;font-weight:700;line-height:1.15}
 .pad button .cr{font-size:13px;font-weight:500;color:var(--muted);line-height:1.15}
 .pad.px button{background:var(--tile)}
+.pad.vars{background:var(--tile);border-radius:14px;padding:10px;min-height:82px;align-items:center;margin-top:2px}   /* 근음을 누르면 뜨는 종류 줄 */
+.pad.vars .ph{font-size:16px;color:var(--muted)}
+.pad.vars button.hx{background:#E8ECF2}
+.pad button.on{border-color:var(--accent);background:var(--accent-soft)} .pad button.on .cn{color:var(--accent)}
 .slot .sv{white-space:nowrap}
 #levels{grid-template-columns:repeat(6,minmax(0,1fr))}   /* 코드 청음: 단계 5개 + 랜덤 */
 .setbox.off #keys button{background:var(--tile);color:#A9B0BC;pointer-events:none;cursor:default}   /* 1단계: 키 상관없어서 키 버튼만 회색 (K 요청: 상자 전체 말고 버튼만) */
@@ -264,7 +268,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 @media (max-width:720px){ #levels{grid-template-columns:repeat(3,minmax(0,1fr))} .pad.qt{grid-template-columns:repeat(3,minmax(0,1fr))} .pad.p7{grid-template-columns:repeat(4,minmax(0,1fr))} .pad button{min-height:56px} .pad button .cn{font-size:17px} .pad button .cr{font-size:12px} .slot .sv{font-size:18px} }   /* 휴대폰: 이름이 길어서 한 줄 4칸 */
 /* 답 버튼: 한 줄을 다 못 채우면 가운데로 모음 (K 요청 2026-11-12). 칸 너비는 그대로 */
 .pad.p7,.pad.qt{display:flex;flex-wrap:wrap;justify-content:center}
-.pad.p7 button{flex:0 0 calc((100% - 36px)/7)} .pad.qt button{flex:0 0 calc((100% - 24px)/5)}
+.pad.p7 button{flex:0 0 calc((100% - 36px)/7)} .pad.p8 button{flex-basis:calc((100% - 42px)/8)}   /* Hard: 근음 8개(♭Ⅶ 포함)도 한 줄 */ .pad.qt button{flex:0 0 calc((100% - 24px)/5)}
 @media (max-width:720px){ .pad.p7 button{flex-basis:calc((100% - 12px)/4)} .pad.qt button{flex-basis:calc((100% - 8px)/3)} }
 </style>
 </head>
@@ -658,9 +662,25 @@ function buildPads(){
   const key=KEYS[keyName], L=progLv(), base=vocab(L), hard=mode==='hard'?hardVocab(L):[];
   padChords=base.concat(hard).map(c=>({label:chordName(c,key),id:idOf(c),chord:()=>c}));
   const btn=(c,i)=>`<button type="button" data-i="${i}"><span class="cn">${chordName(c,key)}</span><span class="cr">${romanOf(c)}</span></button>`;
+  openRoot=null;
+  if(padChords.length>7){                                // 버튼이 한 줄을 넘으면: 근음 7개 → 누르면 그 코드의 종류 (K 확정 2026-11-12, 시안 1)
+    const all=base.concat(hard), rk=c=>c.deg+'|'+(c.alt||0);
+    groups=[]; all.forEach((c,i)=>{ let g=groups.find(g=>g.k===rk(c)); if(!g){ g={k:rk(c),deg:c.deg,alt:c.alt||0,items:[]}; groups.push(g); } g.items.push(i); });
+    groups.sort((a,b)=>a.deg-b.deg||(a.alt===0?-1:b.alt===0?1:a.alt-b.alt));   // 같은 자리면 다이어토닉 먼저 (Bdim 다음 B♭)
+    $('pads').innerHTML='<div class="pad p7'+(groups.length>7?' p8':'')+'">'+groups.map((g,gi)=>{ const c=all[g.items[0]]; return `<button type="button" data-g="${gi}"><span class="cn">${chordName(c,key)}</span><span class="cr">${romanOf(c)}</span></button>`; }).join('')+'</div>'
+      +'<div class="pad p7 vars" id="vars"><span class="ph">위에서 코드를 누르세요</span></div>';
+    return;
+  }
   const rows=[]; for(let i=0;i<base.length;i+=7) rows.push('<div class="pad p7">'+base.slice(i,i+7).map((c,j)=>btn(c,i+j)).join('')+'</div>');
   if(hard.length) rows.push('<div class="pad p7 px">'+hard.map((c,j)=>btn(c,base.length+j)).join('')+'</div>');
   $('pads').innerHTML=rows.join('');
+}
+let groups=[], openRoot=null;
+function showVars(gi){                                   // 근음을 누르면 아래 줄에 그 코드의 종류 (3화음 · 7th · 분수코드 · 부속·차용)
+  openRoot=gi; const key=KEYS[keyName], L=progLv(), nb=vocab(L).length;
+  document.querySelectorAll('#pads [data-g]').forEach(b=>b.classList.toggle('on',+b.dataset.g===gi));
+  const v=$('vars'); if(gi==null){ v.innerHTML='<span class="ph">위에서 코드를 누르세요</span>'; return; }
+  v.innerHTML=groups[gi].items.map(i=>{ const c=padChords[i].chord(); return `<button type="button" data-i="${i}"${i>=nb?' class="hx"':''}><span class="cn">${chordName(c,key)}</span><span class="cr">${romanOf(c)}</span></button>`; }).join('');
 }
 function syncSlots(){
   $('slots').style.gridTemplateColumns=song.single?'minmax(0,260px)':''; $('slots').style.justifyContent=song.single?'center':'';   // 1단계 답 칸은 가운데
@@ -764,6 +784,8 @@ function buildUI(){
   // 코드 버튼: 지금 칸에 넣고 다음 칸으로 (누른 코드는 소리도 남)
   $('pads').addEventListener('click',e=>{
     const b=e.target.closest('button'); if(!b||checked) return;
+    if(b.dataset.g!=null){ const g=groups[+b.dataset.g]; if(g.items.length>1){ showVars(openRoot===+b.dataset.g?null:+b.dataset.g); return; } b.dataset.i=g.items[0]; }   // 종류가 하나뿐이면 바로 넣음
+    if($('vars')) showVars(null);
     const p=padChords[+b.dataset.i], ch=p.chord(cur); ans[cur]={name:p.label,id:p.id};
     if(padSound){ audio(); ready().then(()=>strike(ch,audio().currentTime+0.02,0.8,0.8)); }
     const empty=ans.findIndex((a,i)=>!a&&!(fc()&&i===0));
