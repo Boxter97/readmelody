@@ -210,6 +210,14 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 .nav a[aria-current="page"]{background:var(--ink);color:var(--bg)}
 .nav a:focus-visible,.brand:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 @media (max-width:720px){ .nav{width:100%;box-sizing:border-box;gap:2px} .nav a{flex:1 1 0;min-width:0;padding:4px 2px;font-size:15px;line-height:1.2;white-space:normal;text-align:center;word-break:keep-all} }   /* 메뉴 5칸: 휴대폰은 두 줄 글씨 허용 */
+/* 컴퓨터 카드 오른쪽 위 그림 (K 요청 2026-11-12, 다른 페이지처럼). 휴대폰은 이름 대신 글자 기호 그대로 */
+.stage .pic{position:absolute;right:12px;top:10px;color:#B7BFCD;line-height:0;pointer-events:none}
+.stage .pic svg{height:32px;width:auto;fill:currentColor;display:block}
+.stage .pic.t{font-family:var(--f-body);font-size:17px;font-weight:700;line-height:1;top:14px}
+.stage[aria-pressed="true"] .pic{color:var(--accent)}
+.stage.txt.rnd .sym{display:block}   /* 랜덤 카드는 컴퓨터에서도 글자 기호 (멜로디 초견 1~5처럼) */
+@media (max-width:720px){ .stage .pic{display:none} }
+@media (min-width:721px){ @container card (max-width:215px){ .hardtag .full{display:none} .hardtag .short{display:inline} } }   /* 오른쪽 위 기호와 "+ 부속·차용"이 겹치면 짧게 "+α" */
 .stage.txt .sym{display:none}   /* 컴퓨터: 이름에 도수가 있어서 오른쪽 위 글자는 뺌 (휴대폰만 보임) */
 @media (max-width:720px){ .stage.txt .sym{display:block;font-family:var(--f-body);font-size:16px;font-weight:700;line-height:26px} }
 /* 청음: 답 칸 · 답 버튼 */
@@ -394,11 +402,11 @@ function romanOf(c){ if(c.sec!=null) return 'Ⅴ7/'+ROMAN[c.sec]; return accTxt(
 /* 단계 = 들리는 코드의 종류 */
 /* 단계 (K 요청 2026-11-12): 1 = 코드 종류 맞히기, 2~5 = 코드 진행 (예전 1~4단계를 한 칸씩 뒤로) */
 const LEVELS=[   // K 요청 2026-11-12: 1 코드 종류 맞추기 · 2 주요 3화음 · 3 트라이어드 · 4 다이어토닉 · 5 분수코드 · R 랜덤
-  {n:1,sym:'종류',name:'코드 종류',desc:'메이저 · 마이너 · sus4 · 디미니쉬 · 어그먼트',hdesc:'+ 7th 코드 (maj7 · 7 · m7 · m7♭5 · dim7)',tag:'+ 7th',tagS:'7th'},
-  {n:2,sym:'Ⅰ Ⅳ Ⅴ',name:'주요 3화음',desc:'Ⅰ · Ⅳ · Ⅴ 3화음',tag:'+ 부속·차용',tagS:'+α'},
-  {n:3,sym:'3화음',name:'트라이어드',desc:'다이어토닉 3화음 7개 (Ⅰ · Ⅱm · Ⅲm · Ⅳ · Ⅴ · Ⅵm · Ⅶ°)',tag:'+ 부속·차용',tagS:'+α'},
-  {n:4,sym:'7th',name:'다이어토닉',desc:'다이어토닉 7th 코드 7개 (M7 · m7 · 7 · ø7)',tag:'+ 부속·차용',tagS:'+α'},
-  {n:5,sym:'분수',name:'분수코드',desc:'3화음 + 분수코드 (Ⅰ/Ⅲ · Ⅰ/Ⅴ · Ⅱm/Ⅳ · Ⅳ/Ⅵ · Ⅴ/Ⅶ · Ⅵm/Ⅲ)',tag:'+ 부속·차용',tagS:'+α'},
+  {n:1,sym:'종류',pc:'M m',name:'코드 종류',desc:'메이저 · 마이너 · sus4 · 디미니쉬 · 어그먼트',hdesc:'+ 7th 코드 (maj7 · 7 · m7 · m7♭5 · dim7)',tag:'+ 7th',tagS:'7th'},
+  {n:2,sym:'Ⅰ Ⅳ Ⅴ',pc:'Ⅰ Ⅳ Ⅴ',name:'주요 3화음',desc:'Ⅰ · Ⅳ · Ⅴ 3화음',tag:'+ 부속·차용',tagS:'+α'},
+  {n:3,sym:'3화음',pc:'Ⅰ~Ⅶ',name:'트라이어드',desc:'다이어토닉 3화음 7개 (Ⅰ · Ⅱm · Ⅲm · Ⅳ · Ⅴ · Ⅵm · Ⅶ°)',tag:'+ 부속·차용',tagS:'+α'},
+  {n:4,sym:'7th',pc:'7',name:'다이어토닉',desc:'다이어토닉 7th 코드 7개 (M7 · m7 · 7 · ø7)',tag:'+ 부속·차용',tagS:'+α'},
+  {n:5,sym:'분수',pc:'C/E',name:'분수코드',desc:'3화음 + 분수코드 (Ⅰ/Ⅲ · Ⅰ/Ⅴ · Ⅱm/Ⅳ · Ⅳ/Ⅵ · Ⅴ/Ⅶ · Ⅵm/Ⅲ)',tag:'+ 부속·차용',tagS:'+α'},
 ];
 const Q_EASY=[{q:'',ko:'메이저',sym:'M'},{q:'m',ko:'마이너',sym:'m'},{q:'sus4',ko:'서스포',sym:'sus4'},{q:'dim',ko:'디미니쉬',sym:'dim'},{q:'aug',ko:'어그먼트',sym:'aug'}];
 const Q_HARD=[{q:'maj7',ko:'메이저7',sym:'maj7'},{q:'7',ko:'도미넌트7',sym:'7'},{q:'m7',ko:'마이너7',sym:'m7'},{q:'m7♭5',ko:'하프 디미니쉬',sym:'m7♭5'},{q:'dim7',ko:'디미니쉬7',sym:'dim7'}];
@@ -727,7 +735,7 @@ function buildCards(){
   const box=$('levels');
   LEVELS.forEach(L=>{
     const b=document.createElement('button'); b.type='button'; b.className='stage txt'; b.dataset.v=L.n;
-    b.innerHTML='<span class="top"><span class="num">'+L.n+'</span><span class="hardtag" aria-hidden="true"><span class="full">'+L.tag+'</span><span class="short">'+L.tagS+'</span></span></span><span class="sym" aria-hidden="true"></span><span class="name"></span><span class="stars" aria-hidden="true">'+STAR3+'</span><span class="prog"><span class="pbar"><i></i></span><span class="cnt"></span></span>';
+    b.innerHTML='<span class="top"><span class="num">'+L.n+'</span><span class="hardtag" aria-hidden="true"><span class="full">'+L.tag+'</span><span class="short">'+L.tagS+'</span></span></span><span class="sym" aria-hidden="true"></span><span class="pic" aria-hidden="true"></span><span class="name"></span><span class="stars" aria-hidden="true">'+STAR3+'</span><span class="prog"><span class="pbar"><i></i></span><span class="cnt"></span></span>';
     box.appendChild(b);
   });
   const r=box.lastElementChild.cloneNode(true); r.dataset.v=0; r.classList.add('rnd'); r.querySelector('.num').textContent='R'; box.appendChild(r);   // 랜덤 카드 (K 요청 2026-11-12, 5단계 카드를 본떠서)
@@ -736,7 +744,7 @@ function syncCards(){
   $('levels').querySelectorAll('.stage').forEach(b=>{
     const n=+b.dataset.v, inf=levelInfo(n), name=n?LEVELS[n-1].name:'랜덤';
     b.setAttribute('aria-pressed',n===sel);
-    b.querySelector('.sym').textContent=n?LEVELS[n-1].sym:'2~5';
+    b.querySelector('.sym').textContent=n?LEVELS[n-1].sym:'2~5'; const pc=b.querySelector('.pic'); pc.textContent=n?LEVELS[n-1].pc:''; pc.classList.add('t');
     b.querySelector('.name').textContent=name;
     b.querySelectorAll('.stars svg').forEach((s,k)=>s.classList.toggle('on',k<n));
     b.querySelector('.cnt').textContent=inf.c+'문제';

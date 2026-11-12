@@ -210,6 +210,13 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 .nav a[aria-current="page"]{background:var(--ink);color:var(--bg)}
 .nav a:focus-visible,.brand:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 @media (max-width:720px){ .nav{width:100%;box-sizing:border-box;gap:2px} .nav a{flex:1 1 0;min-width:0;padding:4px 2px;font-size:15px;line-height:1.2;white-space:normal;text-align:center;word-break:keep-all} }   /* 메뉴 5칸: 휴대폰은 두 줄 글씨 허용 */
+/* 컴퓨터 카드 오른쪽 위 그림 (K 요청 2026-11-12, 다른 페이지처럼). 휴대폰은 이름 대신 글자 기호 그대로 */
+.stage .pic{position:absolute;right:12px;top:10px;color:#B7BFCD;line-height:0;pointer-events:none}
+.stage .pic svg{height:32px;width:auto;fill:currentColor;display:block}
+.stage .pic.t{font-family:var(--f-body);font-size:17px;font-weight:700;line-height:1;top:14px}
+.stage[aria-pressed="true"] .pic{color:var(--accent)}
+.stage.txt.rnd .sym{display:block}   /* 랜덤 카드는 컴퓨터에서도 글자 기호 (멜로디 초견 1~5처럼) */
+@media (max-width:720px){ .stage .pic{display:none} }
 .stage.txt .sym{display:none}   /* 컴퓨터: 이름에 도수가 있어서 오른쪽 위 글자는 뺌 (휴대폰만 보임) */
 @media (max-width:720px){ .stage.txt .sym{display:block;font-family:var(--f-body);font-size:16px;font-weight:700;line-height:26px} }
 /* 청음: 답 칸 · 음이름 버튼 */
@@ -652,11 +659,15 @@ function fresh(){
 function updDesc(){ $('lvdesc').textContent='4분음표 한 마디를 듣고 음이름 맞히기 · '+(sel===0?'1~'+LEVELS.length+'단계 도약이 한 문제에 섞여 나와요':LEVELS[sel-1].pitch)+(mode==='hard'?' · 반음계 추가':''); }
 const STAR3=[0,1,2,3,4].map(()=>'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.2 6.6.7-5 4.5 1.4 6.6L12 17.3 6.1 20.5l1.4-6.6-5-4.5 6.6-.7z"/></svg>').join('');
 function levelInfo(n){ const c=(done[mode]||{})[n===0?'R':n]||0; return {c,pct:Math.min(100,Math.round(c/20*100))}; }
+function ivPic(s){                                   // 카드 그림: 4분음표 두 개, 오른쪽 음이 s칸(2도=1칸 … 6도=5칸) 높음
+  const y2=27-s*2.5, head=(x,y)=>`<ellipse cx="${x}" cy="${y}" rx="5" ry="3.6" transform="rotate(-22 ${x} ${y})"/><rect x="${x+3.9}" y="${y-15}" width="1.7" height="15"/>`;
+  return `<svg viewBox="0 -3 32 34">${head(6,27)}${head(23,y2)}</svg>`;
+}
 function buildCards(){
   const box=$('levels');
   LEVELS.forEach(L=>{
     const b=document.createElement('button'); b.type='button'; b.className='stage txt'; b.dataset.v=L.n;
-    b.innerHTML='<span class="top"><span class="num">'+L.n+'</span><span class="hardtag" aria-hidden="true"><span class="full">+ 반음계</span><span class="short">♯♭</span></span></span><span class="sym" aria-hidden="true"></span><span class="name"></span><span class="stars" aria-hidden="true">'+STAR3+'</span><span class="prog"><span class="pbar"><i></i></span><span class="cnt"></span></span>';
+    b.innerHTML='<span class="top"><span class="num">'+L.n+'</span><span class="hardtag" aria-hidden="true"><span class="full">+ 반음계</span><span class="short">♯♭</span></span></span><span class="sym" aria-hidden="true"></span><span class="pic" aria-hidden="true"></span><span class="name"></span><span class="stars" aria-hidden="true">'+STAR3+'</span><span class="prog"><span class="pbar"><i></i></span><span class="cnt"></span></span>';
     box.appendChild(b);
   });
   const r=box.lastElementChild.cloneNode(true); r.dataset.v=0; r.classList.add('rnd'); r.querySelector('.num').textContent='R'; box.appendChild(r);
@@ -665,7 +676,7 @@ function syncCards(){
   $('levels').querySelectorAll('.stage').forEach(b=>{
     const n=+b.dataset.v, inf=levelInfo(n), name=n?LEVELS[n-1].name:'랜덤';
     b.setAttribute('aria-pressed',n===sel);
-    b.querySelector('.sym').textContent=n?LEVELS[n-1].iv:'2~6도';
+    b.querySelector('.sym').textContent=n?LEVELS[n-1].iv:'2~6'; b.querySelector('.pic').innerHTML=n?ivPic(LEVELS[n-1].leap):'';
     b.querySelector('.name').textContent=name;
     b.querySelectorAll('.stars svg').forEach((s,k)=>s.classList.toggle('on',k<n));
     b.querySelector('.cnt').textContent=inf.c+'문제';
