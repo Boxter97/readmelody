@@ -8,9 +8,9 @@
   if(saved==='dark') root.setAttribute('data-theme','dark');
   function isDark(){ return root.getAttribute('data-theme')==='dark'; }
   function paint(){
-    if(!btn) return;
     var d=isDark();
     document.querySelectorAll('.logo img').forEach(function(i){ var src=i.getAttribute('src'); i.setAttribute('src',d?src.replace(/logo\.png$/,'logo-dark.png'):src.replace(/logo-dark\.png$/,'logo.png')); });   // 다크면 노란 로고
+    if(!btn) return;
     btn.innerHTML=d?SUN:MOON;                          // 지금 다크면 해(→ 라이트), 라이트면 달(→ 다크)
     btn.setAttribute('aria-pressed',d?'true':'false');
     btn.setAttribute('aria-label',d?'라이트 모드로 바꾸기':'다크 모드로 바꾸기');
@@ -22,11 +22,10 @@
     try{ document.dispatchEvent(new CustomEvent('gm-theme',{detail:v})); }catch(e){}
   }
   window.gmTheme={isDark:isDark,set:set};
-  function mount(){
-    var nav=document.querySelector('.band .nav'); if(!nav||btn) return;
-    btn=document.createElement('button'); btn.type='button'; btn.className='theme-btn';
-    btn.addEventListener('click',function(){ set(isDark()?'light':'dark'); });
-    nav.parentNode.insertBefore(btn,nav.nextSibling);
+  function mount(){   // K 요청 2026-11-13: 버튼 없이, 맨 위 로고를 누르면 다크 ↔ 라이트 (숨은 기능, 로고는 첫 페이지로 가지 않음)
+    var logo=document.querySelector('.band .brand')||document.querySelector('.band .logo'); if(!logo||logo.__gmTheme) return;
+    logo.__gmTheme=true;
+    logo.addEventListener('click',function(e){ e.preventDefault(); set(isDark()?'light':'dark'); });
     paint();
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',mount); else mount();
