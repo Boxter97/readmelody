@@ -231,10 +231,6 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
       </div>
       <div class="setbox" aria-label="연주 설정"><h3>연주</h3>
         <div class="binfo" id="binfo"></div>
-        <label class="tempo"><span class="label">볼륨</span>
-          <input type="range" id="vol" min="0" max="100" step="5" value="80">
-          <output id="volOut">80</output>
-        </label>
         <div class="optlist">
           <div class="pair">
             <label class="check"><input type="checkbox" id="deg"> 도수 보기</label>
@@ -349,7 +345,6 @@ const store={get(k,d){try{const v=localStorage.getItem('im-'+k);return v==null?d
 let progId=store.get('prog',PROGS[0].id); if(!PROGS.some(p=>p.id===progId)) progId=PROGS[0].id;   // 카드 순서: 마이너 · 메이저 · 재즈 블루스 (K 요청)
 let keys=store.get('keys',{}); if(!keys||typeof keys!=='object') keys={};
 let vars=store.get('vars',{}); if(!vars||typeof vars!=='object') vars={};   // 진행마다 고른 변형
-let vol=+store.get('vol',80); if(!(vol>=0&&vol<=100)) vol=80;
 let showDeg=store.get('deg',false), showTones=store.get('tones',false);
 let targets=store.get('targets',[]); if(!Array.isArray(targets)) targets=[];   // 켜 둔 타겟 노트 도수 (1 · 3 · 5 · 7)
 const TGT_IDX={1:0,3:1,5:2,7:3};
@@ -553,7 +548,7 @@ function play(){
   if(!have[id]){ $('status').textContent='이 진행의 백킹 음원은 아직 준비 중이에요'; return; }
   playing=true;
   $('playTxt').textContent='멈춤'; $('playIcon').innerHTML='<path d="M3 2h4v12H3zM9 2h4v12H9z"/>';
-  backingEl=new Audio(bk.src); backingEl.loop=true; backingEl.volume=vol/100;
+  backingEl=new Audio(bk.src); backingEl.loop=true; backingEl.volume=1;   // 소리 크기는 맨 위 마스터 볼륨으로 (K 요청 2026-11-13, 즉흥연주 볼륨 막대 없앰)
   backingEl.play().then(()=>{ $('status').textContent=''; if(bk.bpm>0) follow(bk); })
     .catch(()=>{ stop(); $('status').textContent='백킹 음원을 재생하지 못했어요. 다시 눌러 주세요'; });
 }
@@ -613,8 +608,6 @@ function buildUI(){
   on('progs',v=>{progId=v;store.set('prog',progId)});
   on('keys',v=>{keys[progId]=v;store.set('keys',keys)});
   on('vars',v=>{vars[progId]=v;store.set('vars',vars)});
-  $('vol').value=vol; $('volOut').textContent=vol;
-  $('vol').addEventListener('input',e=>{vol=+e.target.value;$('volOut').textContent=vol;store.set('vol',vol);if(backingEl)backingEl.volume=vol/100;});
   $('deg').checked=showDeg; $('tones').checked=showTones;
   $('deg').addEventListener('change',e=>{showDeg=e.target.checked;store.set('deg',showDeg);stop();render()});
   const syncT=()=>$('tgts').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',targets.includes(+b.dataset.v)));

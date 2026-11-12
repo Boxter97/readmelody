@@ -31,3 +31,64 @@
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',mount); else mount();
 })();
+
+/* 마스터 볼륨 (K 요청 2026-11-13 "홈페이지 전체 마스터 볼륨") — 모든 페이지 공통.
+   맨 위 다크 모드 버튼 왼쪽 스피커 버튼 → 누르면 볼륨 막대(0~100). 고른 값은 기억, 모든 페이지 같이.
+   페이지마다 만드는 소리(AudioContext)는 모두 이 볼륨을 거쳐서 나가고, 즉흥연주 백킹 음원(audio)에도 곱해짐 */
+(function(){
+  var KEY='gm-volume', vol=100, ctxs=[], medias=[];
+  try{ var v=parseInt(localStorage.getItem(KEY),10); if(v>=0&&v<=100) vol=v; }catch(e){}
+  var g=function(){ return vol/100; };
+  // 1) 소리 엔진: 새로 만드는 AudioContext의 destination을 마스터 볼륨 노드로 바꿔 둠
+  ['AudioContext','webkitAudioContext'].forEach(function(name){
+    var AC=window[name]; if(!AC||AC.__gmWrapped) return;
+    var W=function(opts){
+      var c=opts?new AC(opts):new AC();
+      try{ var m=c.createGain(); m.gain.value=g(); m.connect(c.destination);
+        Object.defineProperty(c,'destination',{value:m,configurable:true}); ctxs.push({c:c,m:m}); }catch(e){}
+      return c;
+    };
+    W.prototype=AC.prototype; W.__gmWrapped=true; window[name]=W;
+  });
+  // 2) 음원 파일(즉흥연주 백킹): 페이지가 정한 볼륨 × 마스터 볼륨
+  try{
+    var d=Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype,'volume');
+    if(d&&d.set&&!HTMLMediaElement.prototype.__gmVol){
+      Object.defineProperty(HTMLMediaElement.prototype,'volume',{configurable:true,
+        get:function(){ return this.__gmBase!=null?this.__gmBase:d.get.call(this); },
+        set:function(v){ this.__gmBase=v; if(medias.indexOf(this)<0) medias.push(this); d.set.call(this,Math.max(0,Math.min(1,v*g()))); }});
+      HTMLMediaElement.prototype.__gmVol=d;
+    }
+  }catch(e){}
+  function apply(){
+    ctxs.forEach(function(x){ try{ x.m.gain.setTargetAtTime(g(),x.c.currentTime,0.02); }catch(e){ x.m.gain.value=g(); } });
+    medias.forEach(function(a){ try{ HTMLMediaElement.prototype.__gmVol.set.call(a,Math.max(0,Math.min(1,(a.__gmBase==null?1:a.__gmBase)*g()))); }catch(e){} });
+  }
+  // 3) 맨 위 메뉴 아래 오른쪽(즉흥연주 · 화성학 · 메트로놈 밑) 볼륨 막대 — K 요청 2026-11-13
+  var ON='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h3.5L12 5v14l-4.5-4H4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.3 5.8a9 9 0 0 1 0 12.4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+  var OFF='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h3.5L12 5v14l-4.5-4H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+  var before=100;   // 스피커 버튼으로 끄기 전 값
+  function mount(){
+    var nav=document.querySelector('.band .nav'); if(!nav||document.querySelector('.vol-row')) return;
+    var col=document.createElement('div'); col.className='navcol';
+    nav.parentNode.insertBefore(col,nav); col.appendChild(nav);
+    var row=document.createElement('div'); row.className='vol-row';
+    row.innerHTML='<button type="button" class="vol-btn"></button><input type="range" min="0" max="100" step="5" aria-label="소리 크기"><b class="vol-num"></b>';
+    col.appendChild(row);
+    var btn=row.querySelector('.vol-btn'), rg=row.querySelector('input'), num=row.querySelector('.vol-num');
+    var paint=function(){ btn.innerHTML=vol?ON:OFF; btn.setAttribute('aria-label',vol?'소리 끄기':'소리 켜기'); rg.value=vol; num.textContent=vol; rg.style.setProperty('--p',vol+'%'); };
+    var setV=function(v){ vol=v; try{ localStorage.setItem(KEY,vol); }catch(e){} paint(); apply(); };
+    rg.addEventListener('input',function(){ setV(+rg.value); });
+    btn.addEventListener('click',function(){ if(vol){ before=vol; setV(0); } else setV(before||100); });
+    var fit=function(){   // 막대 너비 = 즉흥연주 칸 왼쪽 ~ 메뉴 오른쪽 끝
+      var a=nav.querySelectorAll('a')[4]; if(!a) return;   // 5번째 칸 = 즉흥연주
+      var w=nav.getBoundingClientRect().right-a.getBoundingClientRect().left;
+      if(w>0) row.style.width=Math.round(w/(parseFloat(getComputedStyle(document.documentElement).zoom)||1))+'px';
+    };
+    fit(); window.addEventListener('resize',fit); if(document.fonts&&document.fonts.ready) document.fonts.ready.then(fit);
+    window.__gmVolPaint=paint;
+    paint();
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',function(){ setTimeout(mount,0); }); else setTimeout(mount,0);
+  window.addEventListener('storage',function(e){ if(e.key===KEY){ var v=parseInt(e.newValue,10); if(v>=0&&v<=100){ vol=v; apply(); if(window.__gmVolPaint) window.__gmVolPaint(); } } });
+})();
