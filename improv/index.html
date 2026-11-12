@@ -332,11 +332,14 @@ const PROGS=[
 ];
 
 /* 백킹 음원 (K가 AI로 만든 것) — improv/backing/ 폴더에 이 이름으로 넣으면 바로 재생됨
+   변형마다 따로 (K 요청 2026-11-12 "변형 백킹까지 내가 만들게"). 이름: 진행id 또는 진행id-변형id
    bpm·intro(첫 마디 시작까지 초)를 적으면 재생 중 지금 마디를 따라가며 강조. 0이면 강조 없이 재생만 */
 const BACKING={
-  blues:{src:'backing/blues-A.mp3',bpm:0,intro:0},
-  minor:{src:'backing/minor-Am.mp3',bpm:0,intro:0},
-  jazz:{src:'backing/jazz-F.mp3',bpm:0,intro:0},
+  'blues':      {src:'backing/blues-A.mp3',bpm:0,intro:0},        // 메이저 블루스 기본
+  'blues-quick':{src:'backing/blues-A-quick.mp3',bpm:0,intro:0},  // 메이저 블루스 퀵 체인지
+  'minor':      {src:'backing/minor-Am.mp3',bpm:0,intro:0},       // 마이너 블루스 기본
+  'minor-v':    {src:'backing/minor-Am-v.mp3',bpm:0,intro:0},     // 마이너 블루스 Ⅴ7 → Ⅳm7
+  'jazz':       {src:'backing/jazz-F.mp3',bpm:0,intro:0},         // 재즈 블루스
 };
 
 /* ---------- 상태 ---------- */
@@ -354,7 +357,7 @@ const P=()=>PROGS.find(p=>p.id===progId);
 let song=null;
 const curKey=()=>MAJ[keys[progId]]?keys[progId]:P().key;          // 처음엔 음원 키 (블루스 A · 마이너 Am · 재즈 F)
 const curVar=()=>{const p=P(); if(!p.vars) return null; return p.vars.some(v=>v.id===vars[progId])?vars[progId]:p.vars[0].id;};
-const onBaseVar=()=>!P().vars||curVar()===P().vars[0].id;   // 백킹 음원은 기본 진행만
+const bkId=(p=P(),v=curVar())=>(!p.vars||v===p.vars[0].id)?p.id:p.id+'-'+v;   // 지금 진행·변형의 백킹 음원 이름
 const onAudioKey=()=>curKey()===P().key;
 function makeSong(){ const p=P(); return {p,key:keyOf(curKey(),p.minor),bars:p.bars(curVar())}; }
 
@@ -478,7 +481,7 @@ function render(){
 
 /* ---------- 소리 (코드 초견과 같은 피아노) ---------- */
 let ctx=null, master=null, buffers=null, loading=null, playing=false, timers=[], nodes=[], backingEl=null, raf=0;
-const have={};                     // 백킹 음원이 실제로 있는지 (진행별)
+const have={};                     // 백킹 음원이 실제로 있는지 (진행·변형별)
 function makeCtx(){
   if(ctx) return ctx;
   ctx=new (window.AudioContext||window.webkitAudioContext)();
@@ -544,10 +547,9 @@ function follow(bk){              // bpm을 알면 음원 위치로 지금 마�
 }
 function play(){
   if(playing){stop();return}
-  const bk=BACKING[progId];
-  if(!onBaseVar()){ $('status').textContent='백킹 음원은 기본 진행만 있어요. 변형을 "기본"으로 바꾸면 들을 수 있어요'; return; }
+  const id=bkId(), bk=BACKING[id];
   if(!onAudioKey()){ $('status').textContent='백킹 음원은 '+keyOf(P().key,P().minor).label+'키만 있어요. 키를 '+keyOf(P().key,P().minor).label+'로 바꾸면 들을 수 있어요'; return; }
-  if(!have[progId]){ $('status').textContent='이 진행의 백킹 음원은 아직 준비 중이에요'; return; }
+  if(!have[id]){ $('status').textContent='이 진행의 백킹 음원은 아직 준비 중이에요'; return; }
   playing=true;
   $('playTxt').textContent='멈춤'; $('playIcon').innerHTML='<path d="M3 2h4v12H3zM9 2h4v12H9z"/>';
   backingEl=new Audio(bk.src); backingEl.loop=true; backingEl.volume=vol/100;
@@ -580,14 +582,14 @@ function renderScales(){
     <button type="button" class="btn sbtn" data-i="${i}"><svg viewBox="0 0 16 16"><path d="M4 2l10 6-10 6z"/></svg>듣기</button></div>`).join('');
 }
 function updBacking(){
-  const bk=BACKING[progId], ak=keyOf(P().key,P().minor).label, ok=have[progId]&&onAudioKey()&&onBaseVar();
-  const chip=!have[progId]?'음원 준비 중':!onAudioKey()?'음원은 '+ak+'키만':!onBaseVar()?'음원은 기본 진행만':'음원 있음';
-  $('binfo').innerHTML=`<span>백킹 <b>${ak}키</b></span><span>빠르기 <b>${have[progId]&&bk.bpm?'♩ = '+bk.bpm:'음원 그대로'}</b></span><span class="chip${ok?' ok':''}">${chip}</span>`;
+  const id=bkId(), bk=BACKING[id], ak=keyOf(P().key,P().minor).label, ok=have[id]&&onAudioKey();
+  const chip=!have[id]?'음원 준비 중':!onAudioKey()?'음원은 '+ak+'키만':'음원 있음';
+  $('binfo').innerHTML=`<span>백킹 <b>${ak}키</b></span><span>빠르기 <b>${have[id]&&bk.bpm?'♩ = '+bk.bpm:'음원 그대로'}</b></span><span class="chip${ok?' ok':''}">${chip}</span>`;
   $('playBtn').setAttribute('aria-disabled',ok?'false':'true');
 }
 function checkBacking(){            // 음원 파일이 올라와 있는지 확인 (없으면 '준비 중')
-  PROGS.forEach(p=>{ if(have[p.id]!=null) return; have[p.id]=false;
-    fetch(BACKING[p.id].src,{method:'HEAD'}).then(r=>{ have[p.id]=r.ok; if(song&&song.p.id===p.id) updBacking(); }).catch(()=>{}); });
+  Object.keys(BACKING).forEach(id=>{ if(have[id]!=null) return; have[id]=false;
+    fetch(BACKING[id].src,{method:'HEAD'}).then(r=>{ have[id]=r.ok; if(song&&bkId()===id) updBacking(); }).catch(()=>{}); });
 }
 function fresh(){ stop(); song=makeSong(); updateMeta(); render(); renderScales(); updBacking(); }
 function buildUI(){
