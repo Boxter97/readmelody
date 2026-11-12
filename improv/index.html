@@ -76,6 +76,9 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 .scorebody{flex:1;display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px}
 .varfield{align-items:center;flex:none}
 .keyfield{align-items:stretch;flex:1 1 300px;min-width:0}
+#vars{display:flex;flex-direction:column} #vars button{border-right:0;border-bottom:1.5px solid var(--line);text-align:left;line-height:1.3} #vars button:last-child{border-bottom:0}
+#vars .vs{display:block;font-size:14px;font-weight:500;color:var(--muted)} #vars button[aria-pressed="true"] .vs{color:var(--bg)}
+.varfield{align-items:center;flex:none}
 .keyfield .label{align-self:center;min-width:0}
 .keys{display:flex;gap:8px;align-items:stretch;min-width:0;flex:1}
 .keys .kc{display:flex} .keys .kc button{flex:1;height:auto;padding-left:8px;padding-right:8px}
@@ -172,6 +175,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
   .seg button{padding:8px 12px}
   .setbox{padding:12px 12px 14px} .setbox .label{min-width:40px}
   .scorebody{flex-direction:column;align-items:stretch}
+  .varfield #vars{flex-direction:row;flex:1} .varfield #vars button{flex:1;border-bottom:0;border-right:1.5px solid var(--line);text-align:center} .varfield #vars button:last-child{border-right:0}
   .keyfield{flex:none;flex-direction:column;align-items:stretch;gap:8px} .keyfield .label{align-self:flex-start}   /* 휴대폰: 키 버튼을 넓게 (F♯m 같은 이름이 들어가게) */
   .varfield #vars{flex-direction:row;flex:1} .varfield #vars button{flex:1;border-bottom:0;border-right:1.5px solid var(--line);text-align:center} .varfield #vars button:last-child{border-right:0}
   #keys button{padding:6px 6px;min-width:36px}
@@ -192,10 +196,6 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 .nav a:focus-visible,.brand:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 @media (max-width:720px){ .nav{width:100%;box-sizing:border-box;gap:2px} .nav a{flex:1 1 0;min-width:0;padding:4px 2px;font-size:15px;line-height:1.2;white-space:normal;text-align:center;word-break:keep-all} }   /* 메뉴 5칸: 휴대폰은 두 줄 글씨 허용 */
 
-/* 넓은 화면: 화면 전체를 10~20%만 키움 (K 요청 2026-11-11) */
-@media (min-width:1400px){ body.ads-off .wrap, body.ads-off .band .in{max-width:1300px} }   /* 넓은 화면 기본 너비 (K 요청 2026-11-11: 악보가 넓어진 크기를 기본으로) */
-@media (min-width:1400px){ html{zoom:1.05} }   /* FHD 쪽은 105% (K 확정 2026-11-12, 광고 자리 여유) */
-@media (min-width:2200px){ html{zoom:1.2} }    /* UHD 쪽(2560 등)은 120% 그대로 */
 </style>
 </head>
 <body class="ads-off">
@@ -224,6 +224,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
       <div class="setbox" aria-label="악보 설정"><h3>악보</h3>
         <div class="scorebody">
           <div class="field keyfield"><span class="label">키</span><div class="keys" id="keys"><div class="krows"></div></div></div>
+          <div class="field varfield" id="varfield"><span class="label">변형</span><div class="seg" id="vars"></div></div>
         </div>
       </div>
       <div class="setbox" aria-label="연주 설정"><h3>연주</h3>
@@ -299,8 +300,9 @@ const C_=(deg,q,rom,alt)=>({deg,q,rom,alt});   // 한 마디에 코드 2개면 [
 const PROGS=[
   {id:'minor',name:'마이너 블루스',tag:'12마디',minor:true,key:'C',sub:'Ⅰm7 · Ⅳm7 · Ⅴ7',
    desc:'Ⅰm7 Ⅳm7로 어둡게 돌고, 9~10마디에서 Ⅴ7로 긴장을 만드는 블루스',
+   vars:[{id:'b6',name:'기본',sub:'9마디 ♭Ⅵ7'},{id:'v',name:'Ⅴ7 → Ⅳm7',sub:'9마디 Ⅴ7'}],   // 변형 되살림 (K 요청 2026-11-12)
    bars:v=>{const I=C_(0,'m7','Ⅰm7'),IV=C_(3,'m7','Ⅳm7'),V=C_(4,'7','Ⅴ7'),VI=C_(5,'7','♭Ⅵ7');
-     return [I,I,I,I, IV,IV,I,I, VI,V,I,V];},
+     return [I,I,I,I, IV,IV,I,I, v==='v'?V:VI, v==='v'?IV:V, I,V];},
    scales:[
      {name:'마이너 펜타토닉',sub:'처음엔 이것 하나로',iv:[[0,0,'1'],[2,3,'♭3'],[3,5,'4'],[4,7,'5'],[6,10,'♭7']]},
      {name:'블루스 스케일',sub:'펜타토닉 + ♭5',iv:[[0,0,'1'],[2,3,'♭3'],[3,5,'4'],[4,6,'♭5',1],[4,7,'5'],[6,10,'♭7']]},
@@ -308,8 +310,9 @@ const PROGS=[
    hint:'마이너 펜타토닉 하나로 12마디 내내 칠 수 있어요. Ⅴ7 마디에서는 그 코드의 3음(이끎음)을 노려 보세요'},
   {id:'blues',name:'메이저 블루스',tag:'12마디',minor:false,key:'A',sub:'Ⅰ7 · Ⅳ7 · Ⅴ7',
    desc:'코드 세 개(Ⅰ7 Ⅳ7 Ⅴ7)로 12마디를 도는 가장 기본 블루스',
+   vars:[{id:'basic',name:'기본',sub:'2마디 Ⅰ7'},{id:'quick',name:'퀵 체인지',sub:'2마디 Ⅳ7'}],
    bars:v=>{const I=C_(0,'7','Ⅰ7'),IV=C_(3,'7','Ⅳ7'),V=C_(4,'7','Ⅴ7');
-     return [I,I,I,I, IV,IV,I,I, V,IV,I,V];},
+     return [I,v==='quick'?IV:I,I,I, IV,IV,I,I, V,IV,I,V];},
    scales:[
      {name:'마이너 펜타토닉',sub:'블루스 기타의 기본',iv:[[0,0,'1'],[2,3,'♭3'],[3,5,'4'],[4,7,'5'],[6,10,'♭7']]},
      {name:'블루스 스케일',sub:'펜타토닉 + ♭5',iv:[[0,0,'1'],[2,3,'♭3'],[3,5,'4'],[4,6,'♭5',1],[4,7,'5'],[6,10,'♭7']]},
@@ -341,6 +344,7 @@ const store={get(k,d){try{const v=localStorage.getItem('im-'+k);return v==null?d
              set(k,v){try{localStorage.setItem('im-'+k,JSON.stringify(v))}catch(e){}}};
 let progId=store.get('prog',PROGS[0].id); if(!PROGS.some(p=>p.id===progId)) progId=PROGS[0].id;   // 카드 순서: 마이너 · 메이저 · 재즈 블루스 (K 요청)
 let keys=store.get('keys',{}); if(!keys||typeof keys!=='object') keys={};
+let vars=store.get('vars',{}); if(!vars||typeof vars!=='object') vars={};   // 진행마다 고른 변형
 let vol=+store.get('vol',80); if(!(vol>=0&&vol<=100)) vol=80;
 let showDeg=store.get('deg',false), showTones=store.get('tones',false);
 let targets=store.get('targets',[]); if(!Array.isArray(targets)) targets=[];   // 켜 둔 타겟 노트 도수 (1 · 3 · 5 · 7)
@@ -349,8 +353,10 @@ const $=id=>document.getElementById(id);
 const P=()=>PROGS.find(p=>p.id===progId);
 let song=null;
 const curKey=()=>MAJ[keys[progId]]?keys[progId]:P().key;          // 처음엔 음원 키 (블루스 A · 마이너 Am · 재즈 F)
+const curVar=()=>{const p=P(); if(!p.vars) return null; return p.vars.some(v=>v.id===vars[progId])?vars[progId]:p.vars[0].id;};
+const onBaseVar=()=>!P().vars||curVar()===P().vars[0].id;   // 백킹 음원은 기본 진행만
 const onAudioKey=()=>curKey()===P().key;
-function makeSong(){ const p=P(); return {p,key:keyOf(curKey(),p.minor),bars:p.bars()}; }
+function makeSong(){ const p=P(); return {p,key:keyOf(curKey(),p.minor),bars:p.bars(curVar())}; }
 
 /* 음 이름 */
 function rootOf(c,key){ const li=(key.letter+c.deg)%7, L=LETTERS[li], acc=(key.acc[L]||0)+(c.alt||0); return {li,acc,pc:((SEMI[li]+acc)%12+12)%12}; }
@@ -539,6 +545,7 @@ function follow(bk){              // bpm을 알면 음원 위치로 지금 마�
 function play(){
   if(playing){stop();return}
   const bk=BACKING[progId];
+  if(!onBaseVar()){ $('status').textContent='백킹 음원은 기본 진행만 있어요. 변형을 "기본"으로 바꾸면 들을 수 있어요'; return; }
   if(!onAudioKey()){ $('status').textContent='백킹 음원은 '+keyOf(P().key,P().minor).label+'키만 있어요. 키를 '+keyOf(P().key,P().minor).label+'로 바꾸면 들을 수 있어요'; return; }
   if(!have[progId]){ $('status').textContent='이 진행의 백킹 음원은 아직 준비 중이에요'; return; }
   playing=true;
@@ -573,8 +580,8 @@ function renderScales(){
     <button type="button" class="btn sbtn" data-i="${i}"><svg viewBox="0 0 16 16"><path d="M4 2l10 6-10 6z"/></svg>듣기</button></div>`).join('');
 }
 function updBacking(){
-  const bk=BACKING[progId], ak=keyOf(P().key,P().minor).label, ok=have[progId]&&onAudioKey();
-  const chip=!have[progId]?'음원 준비 중':onAudioKey()?'음원 있음':'음원은 '+ak+'키만';
+  const bk=BACKING[progId], ak=keyOf(P().key,P().minor).label, ok=have[progId]&&onAudioKey()&&onBaseVar();
+  const chip=!have[progId]?'음원 준비 중':!onAudioKey()?'음원은 '+ak+'키만':!onBaseVar()?'음원은 기본 진행만':'음원 있음';
   $('binfo').innerHTML=`<span>백킹 <b>${ak}키</b></span><span>빠르기 <b>${have[progId]&&bk.bpm?'♩ = '+bk.bpm:'음원 그대로'}</b></span><span class="chip${ok?' ok':''}">${chip}</span>`;
   $('playBtn').setAttribute('aria-disabled',ok?'false':'true');
 }
@@ -596,10 +603,13 @@ function buildUI(){
       b.setAttribute('aria-pressed',b.dataset.v===curKey());
     });
     $('progs').querySelectorAll('.pcard').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===progId));
+    const p=P(); $('varfield').hidden=!p.vars;   // 변형 버튼 (재즈 블루스는 없음)
+    $('vars').innerHTML=p.vars?p.vars.map(v=>`<button type="button" data-v="${v.id}" aria-pressed="${v.id===curVar()}">${v.name}<span class="vs">${v.sub}</span></button>`).join(''):'';
   };
   const on=(id,fn)=>$(id).addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;fn(b.dataset.v);sync();fresh();});
   on('progs',v=>{progId=v;store.set('prog',progId)});
   on('keys',v=>{keys[progId]=v;store.set('keys',keys)});
+  on('vars',v=>{vars[progId]=v;store.set('vars',vars)});
   $('vol').value=vol; $('volOut').textContent=vol;
   $('vol').addEventListener('input',e=>{vol=+e.target.value;$('volOut').textContent=vol;store.set('vol',vol);if(backingEl)backingEl.volume=vol/100;});
   $('deg').checked=showDeg; $('tones').checked=showTones;
