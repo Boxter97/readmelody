@@ -363,7 +363,7 @@ if(keyName==='rand'){ randOn=true; keyName='C'; }        // 예전 '랜덤(모�
 if(!KEYS[keyName]) keyName='C';
 if(!Array.isArray(randSet)) randSet=randOn?KEY_ORDER.slice():[keyName];
 randSet=randSet.filter(k=>KEYS[k]); if(!randSet.length) randSet=[keyName];
-let lastRandKey=null, randFresh=false;
+let lastRandKey=null;
 let mode=store.get('mode','easy'); if(mode!=='hard') mode='easy';
 let tempo=60;
 let showNames=store.get('names',false);
@@ -909,9 +909,8 @@ function buildUI(){
   on('modes',v=>{mode=v;store.set('mode',mode)});
   on('meters',v=>{meter=v;store.set('meter',meter)});
   on('keys',v=>{
-    if(v==='rand'){ randOn=!randOn; if(randOn){ randSet=[keyName]; randFresh=true; store.set('kset',randSet); } store.set('krand',randOn); return; }
-    if(randOn&&randFresh){ randFresh=false; randSet=[v]; store.set('kset',randSet); }   // 랜덤을 켠 뒤 처음 누른 키부터 새로 고르기
-    else if(randOn){ const i=randSet.indexOf(v); if(i>=0){ if(randSet.length>1) randSet.splice(i,1); } else randSet.push(v); store.set('kset',randSet); }   // 랜덤 중: 키를 누를 때마다 넣고 빼기 (최소 1개)
+    if(v==='rand'){ randOn=!randOn; if(randOn){ randSet=[keyName]; store.set('kset',randSet); } store.set('krand',randOn); return; }   // 켜면 지금 눌려 있던 키에서 시작, 누르는 키를 더함
+    if(randOn){ const i=randSet.indexOf(v); if(i>=0){ if(randSet.length>1) randSet.splice(i,1); } else randSet.push(v); store.set('kset',randSet); }   // 랜덤 중: 키를 누를 때마다 넣고 빼기 (최소 1개)
     keyName=v; store.set('key',keyName);
   });
   on('bars',v=>{bars=+v;store.set('bars',bars)});
