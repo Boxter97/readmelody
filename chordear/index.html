@@ -643,7 +643,7 @@ let padChords=[];
 function buildPads(){
   if(sel===1){                                          // 1단계: 코드 종류 버튼 (이름 + 기호)
     padChords=qPool().map(t=>({label:t.ko,id:t.q,chord:i=>{ const o=song.chords[i]; const c=C(o.deg,t.q,{alt:o.alt}); c.k=o.k; return c; }}));
-    const btn=(t,i)=>`<button type="button" data-i="${i}"><span class="cn">${t.ko}</span><span class="cr">${t.sym}</span></button>`;
+    const btn=(t,i)=>`<button type="button" data-i="${i}"><span class="cn">${t.sym}</span><span class="cr">${t.ko}</span></button>`;
     $('pads').innerHTML='<div class="pad p5 qt">'+Q_EASY.map(btn).join('')+'</div>'+(mode==='hard'?'<div class="pad p5 qt">'+Q_HARD.map((t,i)=>btn(t,5+i)).join('')+'</div>':'');   // 3화음 줄 · 7th 줄
     return;
   }
