@@ -115,7 +115,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 #score .barhl{fill:var(--accent-soft);opacity:0}
 #score .bar.on .barhl{opacity:1}
 #score .bar.on .cname{fill:var(--accent)}
-.actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px -14px -14px;padding:14px;border-top:1.5px solid var(--line);background:var(--tile)}
+.actions{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;margin:10px -14px -14px;padding:14px;border-top:1.5px solid var(--line);background:var(--tile)}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:56px;padding:0 16px;border-radius:14px;border:1.5px solid var(--line);background:var(--bg);font-size:18px;font-weight:700;color:var(--ink);white-space:nowrap}
 .btn svg{width:18px;height:18px;fill:currentColor;flex:none}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--bg)}
@@ -250,7 +250,6 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
     <div class="scorewrap"><svg id="score" role="img" aria-label="코드 진행 악보"></svg></div>
     <div class="scrollhint" id="scrollHint" hidden>← 악보를 옆으로 밀어서 보세요 →</div>
     <div class="actions">
-      <button type="button" class="btn" id="refBtn"><svg viewBox="0 0 16 16"><path d="M3 2h2v12H3zM7 4h2v10H7zM11 6h2v8h-2z"/></svg>기준음 듣기</button>
       <button type="button" class="btn primary" id="playBtn"><svg viewBox="0 0 16 16" id="playIcon"><path d="M4 2l10 6-10 6z"/></svg><span id="playTxt">백킹 재생</span></button>
     </div>
   </section>
@@ -548,15 +547,6 @@ function play(){
   backingEl.play().then(()=>{ $('status').textContent=''; if(bk.bpm>0) follow(bk); })
     .catch(()=>{ stop(); $('status').textContent='백킹 음원을 재생하지 못했어요. 다시 눌러 주세요'; });
 }
-async function playRef(){
-  if(playing) stop();
-  audio(); await ready();
-  const c=audio(), t=c.currentTime+0.1, I=[].concat(song.bars[0])[0], v=voicing(I,song.key);
-  tone(v.bass,t,2.6,0.7); v.upper.forEach((m,i)=>tone(m,t+i*0.28,2.4-i*0.28,0.55));
-  strike(I,t+1.3,1.4,1);
-  $('status').textContent=`${song.key.label} 키 으뜸화음 (${chordName(I,song.key)})`;
-  timers.push(setTimeout(()=>{ if(!playing) $('status').textContent='' },3400));
-}
 async function playScale(i,btn){
   if(playing) stop();
   audio(); await ready();
@@ -619,7 +609,7 @@ function buildUI(){
     targets=targets.includes(v)?targets.filter(x=>x!==v):targets.concat(v).sort(); store.set('targets',targets); syncT(); render(); });
   syncT();
   $('tones').addEventListener('change',e=>{showTones=e.target.checked;store.set('tones',showTones);stop();render()});
-  $('playBtn').onclick=play; $('refBtn').onclick=playRef;
+  $('playBtn').onclick=play;
   $('scaleRows').addEventListener('click',e=>{const b=e.target.closest('.sbtn'); if(b) playScale(+b.dataset.i,b);});
   let rt; window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{stop();render()},150)});
   sync();
