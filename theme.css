@@ -29,3 +29,9 @@ html[data-theme="dark"] .hard .sheet{--accent:#E8461F; --accent-soft:#FFF1EC; --
 .theme-btn svg{width:22px;height:22px;fill:currentColor}
 html[data-theme="dark"] .theme-btn{color:var(--accent)}
 @media (max-width:720px){ .band .nav{order:4} .theme-btn{order:2;width:44px;height:44px} }   /* 휴대폰: 로고 줄 오른쪽 */
+
+/* 다크: 악보 상자 안 큰 버튼(정답 듣기 등)은 밝은 노랑 + 어두운 글자 (K 2026-11-12 "색 이상해") */
+html[data-theme="dark"] .sheet .btn.primary{background:#F2C230;border-color:#F2C230;color:#16181D;box-shadow:0 8px 18px rgba(242,194,48,.30)}
+html[data-theme="dark"] .hard .sheet .btn.primary{background:#E8461F;border-color:#E8461F;color:#FFFFFF;box-shadow:0 8px 18px rgba(232,70,31,.28)}
+/* 다크: 로고도 노랑 */
+html[data-theme="dark"] .logo img{content:url("logo-dark.png")}
