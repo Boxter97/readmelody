@@ -594,6 +594,14 @@ async function playScale(i,btn){
   audio(); await ready();
   const c=audio(), sc=song.p.scales[i], tp=tonicPc(song.key), base=60+(tp>6?tp-12:tp);
   const notes=btn.closest('.srow').querySelectorAll('.note'), step=0.32;
+  if(fbPos){                                   // 포지션을 골랐으면 그 박스 안에서 낮은 음 → 높은 음 → 다시 내려옴 (K 요청 2026-11-13)
+    const box=fbBoxes(sc,tp)[fbPos-1], seen=new Set();
+    const up=[...box.set].map(x=>x.split('-').map(Number)).map(([st,f])=>[OPEN[st]+f,st,f])
+      .sort((a,b)=>a[0]-b[0]||a[1]-b[1]).filter(x=>!seen.has(x[0])&&seen.add(x[0]));
+    const seq=up.concat(up.slice(0,-1).reverse()), st2=0.28; let t=c.currentTime+0.08;
+    seq.forEach(([m,st,f],j)=>{ tone(m,t+j*st2,st2*0.95,0.8); at(c,t+j*st2,()=>fbOnAt(notes,st+'-'+f)); });
+    at(c,t+seq.length*st2,()=>fbOn(notes,-1)); return;
+  }
   const seq=sc.iv.map((x,k)=>[base+x[1],k]).concat([[base+12,0]]);          // 올라가서 옥타브 위 으뜸음까지
   let t=c.currentTime+0.08;
   seq.forEach(([m,k],j)=>{ tone(m,t+j*step,step*0.95,0.8);
@@ -611,6 +619,11 @@ const curSc=()=>{const i=scSel[progId]; return i>=0&&i<song.p.scales.length?i:0;
 function fbOn(notes,k){                       // 듣기: 글자 칸과 지판 점을 함께 켬
   notes.forEach(n=>n.classList.remove('on')); if(k>=0&&notes[k]) notes[k].classList.add('on');
   document.querySelectorAll('#fb .fdot').forEach(g=>g.classList.toggle('on',+g.dataset.k===k));
+}
+function fbOnAt(notes,pos){                  // 포지션 듣기: 지판 점 하나와 그 음의 글자 칸을 켬
+  const g=document.querySelector('#fb .fdot[data-p="'+pos+'"]'), k=g?+g.dataset.k:-1;
+  notes.forEach(n=>n.classList.remove('on')); if(k>=0&&notes[k]) notes[k].classList.add('on');
+  document.querySelectorAll('#fb .fdot').forEach(x=>x.classList.toggle('on',x===g));
 }
 /* 지판: 위가 1번 줄(높은 미), 0~15프렛. 포지션 = 펜타토닉 박스 1~5 (6번 줄의 펜타토닉 음 k번째에서 시작, 한 줄에 두 음)
    펜타토닉이 아닌 음(♭5 · 7음 스케일의 나머지 음)은 그 박스 칸 안에 있는 자리에 넣음 */
@@ -648,7 +661,7 @@ function drawFB(){
   for(let st=0;st<6;st++) for(let f=0;f<=FRETS;f++){
     const m=OPEN[st]+f, n=map[m%12]; if(!n) continue;
     const cls='fdot'+(n.root?' root':n.blue?' blue':'')+(box&&!box.set.has(st+'-'+f)?' dim':'');
-    h+=`<g class="${cls}" data-m="${m}" data-k="${n.i}" transform="translate(${fx(f)} ${sy(st)})"><circle class="bk" r="15.5"/><circle class="c" r="15.5"/><text>${fbLab==='name'?n.name:n.d}</text></g>`;
+    h+=`<g class="${cls}" data-m="${m}" data-k="${n.i}" data-p="${st}-${f}" transform="translate(${fx(f)} ${sy(st)})"><circle class="bk" r="15.5"/><circle class="c" r="15.5"/><text>${fbLab==='name'?n.name:n.d}</text></g>`;
   }
   const svg=$('fb'); svg.setAttribute('viewBox',`0 0 ${WD} ${H}`); svg.innerHTML=h;
   const wrap=$('fbWrap');
