@@ -212,7 +212,10 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 @media (max-width:720px){ .nav{width:100%;box-sizing:border-box;gap:2px} .nav a{flex:1 1 0;min-width:0;padding:4px 2px;font-size:15px;line-height:1.2;white-space:normal;text-align:center;word-break:keep-all} }   /* 메뉴 5칸: 휴대폰은 두 줄 글씨 허용 */
 /* 컴퓨터 카드 오른쪽 위 그림 (K 요청 2026-11-12, 다른 페이지처럼). 휴대폰은 이름 대신 글자 기호 그대로 */
 .stage .pic{position:absolute;right:12px;top:10px;color:#B7BFCD;line-height:0;pointer-events:none}
-.stage .pic svg{height:32px;width:auto;fill:currentColor;display:block}
+.stage .pic svg{height:32px;width:auto;fill:currentColor;display:block;overflow:visible}
+.stage .pic svg.iv{height:38px;margin-top:-3px}   /* 멜로디 청음 음정 그림은 오선이 있어서 조금 크게 */
+@container card (max-width:98px){ .stage .pic svg.iv{height:32px;margin-top:0} }
+@media (min-width:721px){ @container card (max-width:92px){ .stage .pic svg.iv{height:27px;margin-top:2px} } @container card (max-width:95px){ .hard .stage.txt.rnd .sym{display:none} } }   /* 아주 좁을 때 (1000px 안팎) */   /* 카드가 좁으면 "♯♭"와 안 겹치게 조금 작게 */
 .stage .pic.t{font-family:var(--f-body);font-size:17px;font-weight:700;line-height:1;top:14px}
 .stage[aria-pressed="true"] .pic{color:var(--accent)}
 .stage.txt.rnd .sym{display:block}   /* 랜덤 카드는 컴퓨터에서도 글자 기호 (멜로디 초견 1~5처럼) */
@@ -659,9 +662,10 @@ function fresh(){
 function updDesc(){ $('lvdesc').textContent='4분음표 한 마디를 듣고 음이름 맞히기 · '+(sel===0?'1~'+LEVELS.length+'단계 도약이 한 문제에 섞여 나와요':LEVELS[sel-1].pitch)+(mode==='hard'?' · 반음계 추가':''); }
 const STAR3=[0,1,2,3,4].map(()=>'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.2 6.6.7-5 4.5 1.4 6.6L12 17.3 6.1 20.5l1.4-6.6-5-4.5 6.6-.7z"/></svg>').join('');
 function levelInfo(n){ const c=(done[mode]||{})[n===0?'R':n]||0; return {c,pct:Math.min(100,Math.round(c/20*100))}; }
-function ivPic(s){                                   // 카드 그림: 4분음표 두 개, 오른쪽 음이 s칸(2도=1칸 … 6도=5칸) 높음
-  const y2=27-s*2.5, head=(x,y)=>`<ellipse cx="${x}" cy="${y}" rx="5" ry="3.6" transform="rotate(-22 ${x} ${y})"/><rect x="${x+3.9}" y="${y-15}" width="1.7" height="15"/>`;
-  return `<svg viewBox="0 -3 32 34">${head(6,27)}${head(23,y2)}</svg>`;
+function ivPic(s){                                   // 카드 그림: 짧은 오선 위 온음표 두 개, 아래 음은 첫째 줄, 위 음은 s칸 위 (2도=1칸 … 6도=5칸) — 줄·칸을 세면 몇 도인지 보임 (K 요청 2026-11-12)
+  const lines=[4,10,16,22,28].map(y=>`<rect x="0" y="${y-0.5}" width="31" height="1" opacity=".5"/>`).join('');
+  const note=(x,y)=>`<ellipse cx="${x}" cy="${y}" rx="4.4" ry="3.3" transform="rotate(-20 ${x} ${y})"/>`;
+  return `<svg class="iv" viewBox="0 0 31 32">${lines}${note(8,28)}${note(23,28-s*3)}</svg>`;
 }
 function buildCards(){
   const box=$('levels');
