@@ -38,3 +38,9 @@ html[data-theme="dark"] .sheet .btn.primary{background:#F2C230;border-color:#F2C
 html[data-theme="dark"] .hard .sheet .btn.primary{background:#E8461F;border-color:#E8461F;color:#FFFFFF;box-shadow:0 8px 18px rgba(232,70,31,.28)}
 /* 다크: 로고도 노랑 */
 html[data-theme="dark"] .logo img{content:url("logo-dark.png")}
+
+/* 맨 아래 꼬리말: 운영자 · 문의 · 개인정보처리방침 (K 요청 2026-11-12, 애드센스 준비) — 모든 페이지 공통 */
+.site-foot{border-top:1.5px solid var(--line);margin-top:8px}
+.site-foot .in{max-width:1080px;margin:0 auto;padding:20px max(16px,env(safe-area-inset-right,0px)) 28px max(16px,env(safe-area-inset-left,0px));display:flex;flex-wrap:wrap;gap:6px 20px;font-size:15px;color:var(--muted)}
+.site-foot a{color:var(--muted);text-decoration:underline;text-underline-offset:3px}
+.site-foot a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
