@@ -201,14 +201,6 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 #subs .nt{height:30px;width:auto;fill:currentColor;display:block} #subs .nt3{height:36px}
 @media (max-width:720px){ .metro{padding:22px 14px;gap:16px} .round{width:48px;height:48px} .bigplay{width:88px;height:88px} .presets button{min-width:56px} }
 @media (prefers-reduced-motion:reduce){ #bpm.pulse{animation:none} }
-/* 넓은 화면: 두 칸 (K 확정 2026-11-12, FHD에서 스크롤 없이) — 왼쪽 빠르기 · 오른쪽 박 점 · 재생 · 소리 · 박자 · 음표. 좁은 화면은 한 칸 그대로 */
-.col{display:contents}
-@media (min-width:1400px){
-  .metro{flex-direction:row;align-items:center;max-width:1120px;gap:0;padding:34px 30px}
-  .col{display:flex;flex-direction:column;align-items:center;gap:18px;flex:1 1 0;min-width:0;padding:0 28px}
-  .col.cr{border-left:1.5px solid var(--line)}
-  .sndrow{margin-top:6px}
-}
 
 /* 넓은 화면: 화면 전체를 10~20%만 키움 (K 요청 2026-11-11) */
 @media (min-width:1400px){ body.ads-off .wrap, body.ads-off .band .in{max-width:1300px} }   /* 넓은 화면 기본 너비 (K 요청 2026-11-11: 악보가 넓어진 크기를 기본으로) */
@@ -236,7 +228,6 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 <aside class="ad ad-side" aria-label="광고">광고<small>160×600</small></aside>
 <div class="wrap">
   <section class="metro" aria-label="메트로놈">
-    <div class="col cl">
     <div class="term"><b id="termIt">Largo</b><span id="termKo">아주 느리고 폭넓게</span></div>
     <div class="bpmbox"><output id="bpm" aria-live="polite">60</output><span class="unit" id="unit">BPM · ♩ 기준</span></div>
     <div class="slide">
@@ -245,8 +236,6 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
       <button type="button" class="round" id="plus" aria-label="1 빠르게">+</button>
     </div>
     <div class="presets" id="presets"></div>
-    </div>
-    <div class="col cr">
     <div class="beatbox"><div class="beats" id="beats"></div><div class="beathint">큰 점을 누르면 강박이 바뀌어요</div></div>
     <div class="ctrl">
       <button type="button" class="side" id="tap"><span class="ic"><svg viewBox="0 0 24 24"><path d="M9 11V5.5a2 2 0 1 1 4 0V10l4.6 1.2a2.4 2.4 0 0 1 1.8 2.6l-.7 5.4A3 3 0 0 1 15.7 22h-4.2a3 3 0 0 1-2.4-1.2L5.4 16a1.8 1.8 0 0 1 2.7-2.4L9 14.6z"/></svg></span>탭</button>
@@ -256,7 +245,6 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
     <div class="meterrow sndrow"><span class="label">소리</span><div class="seg" id="sounds"></div></div>
     <div class="meterrow"><span class="label">박자</span><div class="seg" id="meters"></div></div>
     <div class="meterrow"><span class="label">음표</span><div class="seg" id="subs"></div></div>
-    </div>
   </section>
   <aside class="ad ad-bottom" aria-label="광고">광고<small>320×100</small></aside>
 </div>
