@@ -390,7 +390,7 @@ function romanOf(c){ if(c.sec!=null) return 'Ⅴ7/'+ROMAN[c.sec]; return accTxt(
 /* 단계 = 들리는 코드의 종류 */
 /* 단계 (K 요청 2026-11-12): 1 = 코드 종류 맞히기, 2~5 = 코드 진행 (예전 1~4단계를 한 칸씩 뒤로) */
 const LEVELS=[   // K 요청 2026-11-12: 1 코드 종류 맞추기 · 2 주요 3화음 · 3 트라이어드 · 4 다이어토닉 · 5 분수코드 · R 랜덤
-  {n:1,sym:'종류',name:'코드 종류 맞추기',desc:'메이저 · 마이너 · sus4 · 디미니쉬 · 어그먼트',hdesc:'+ 7th 코드 (maj7 · 7 · m7 · m7♭5 · dim7)',tag:'+ 7th',tagS:'7th'},
+  {n:1,sym:'종류',name:'코드 종류',desc:'메이저 · 마이너 · sus4 · 디미니쉬 · 어그먼트',hdesc:'+ 7th 코드 (maj7 · 7 · m7 · m7♭5 · dim7)',tag:'+ 7th',tagS:'7th'},
   {n:2,sym:'Ⅰ Ⅳ Ⅴ',name:'주요 3화음',desc:'Ⅰ · Ⅳ · Ⅴ 3화음',tag:'+ 부속·차용',tagS:'+α'},
   {n:3,sym:'3화음',name:'트라이어드',desc:'다이어토닉 3화음 7개 (Ⅰ · Ⅱm · Ⅲm · Ⅳ · Ⅴ · Ⅵm · Ⅶ°)',tag:'+ 부속·차용',tagS:'+α'},
   {n:4,sym:'7th',name:'다이어토닉',desc:'다이어토닉 7th 코드 7개 (M7 · m7 · 7 · ø7)',tag:'+ 부속·차용',tagS:'+α'},
@@ -411,7 +411,7 @@ function vocab(lv){                                    // 답 버튼 (Easy)
   if(lv===2) return DEGS[2].map(tri);
   if(lv===3) return DEGS[2].map(sev);
   if(lv===4) return DEGS[2].map(tri).concat(SLASH.map(([d,v])=>C(d,TRIAD_Q[d],{inv:v})));   // 분수코드: 3화음 줄 + 분수코드 줄
-  return DEGS[2].map(tri).concat(DEGS[2].map(sev));   // 랜덤: 3화음 7개 + 7th 7개 (2~5단계 코드)
+  return DEGS[2].map(tri).concat(DEGS[2].map(sev),SLASH.map(([d,v])=>C(d,TRIAD_Q[d],{inv:v})));   // 랜덤: 2~5단계 코드 전부 (3화음 7 · 7th 7 · 분수코드 6, K 요청 2026-11-12)
 }
 function hardVocab(lv){                                // Hard: 부속화음 · 차용화음
   const sev=lv===3, both=lv===0, out=[C(0,'7',{sec:3}),C(1,'7',{sec:4})];
@@ -469,13 +469,11 @@ function makeSong(){
       const spots=shuffle(chords.map((c,i)=>i).filter(i=>[0,1,3,4,5].includes(chords[i].deg))), want=Math.random()<0.5?2:1;
       spots.slice(0,want).forEach(i=>{ const d=chords[i].deg, nx=chords[i+1]; const v=d===0?(nx&&nx.deg===4&&Math.random()<0.6?2:1):d===5?2:1; chords[i]=C(d,TRIAD_Q[d],{inv:v}); });
     }
-    else {
-      chords=pat.map(d=>L===0&&Math.random()<0.5?C(d,TRIAD_Q[d]):C(d,SEV_Q[d]));
-      const spots=shuffle(chords.map((c,i)=>i).filter(i=>[0,1,3,4].includes(chords[i].deg)));
-      const want=L===5?(Math.random()<0.5?2:1):L===0?0:(Math.random()<0.6?1:0);   // 랜덤엔 sus4·6코드 안 넣음 (지금 단계에 없음)
-      spots.slice(0,want).forEach(i=>{ const d=chords[i].deg; chords[i]=C(d,d===4?rnd(['sus4','7sus4']):d===1?'m6':'6'); });
-      if(L===5&&!chords.some(c=>/sus4|6/.test(c.q))) continue;
-      if(L===0){ const kinds=new Set(chords.map(c=>/sus4|6/.test(c.q)?'x':QUAL[c.q].length===3?'t':'s')); if(kinds.size<2) continue; }
+    else {                                                       // 랜덤: 3화음 · 7th · 분수코드가 한 문제에 꼭 같이 (K 요청 2026-11-12 "랜덤은 무조건 전부 섞기")
+      chords=pat.map(d=>Math.random()<0.5?C(d,TRIAD_Q[d]):C(d,SEV_Q[d]));
+      const tri=shuffle(chords.map((c,i)=>i).filter(i=>QUAL[chords[i].q].length===3&&[0,1,3,4,5].includes(chords[i].deg)));
+      if(tri.length){ const i=tri[0], d=chords[i].deg, nx=chords[i+1]; chords[i]=C(d,TRIAD_Q[d],{inv:d===0?(nx&&nx.deg===4&&Math.random()<0.6?2:1):d===5?2:1}); }
+      const kinds=new Set(chords.map(c=>c.inv?'x':QUAL[c.q].length===3?'t':'s')); if(kinds.size<3) continue;
     }
     if(mode==='hard'){                                           // 부속화음 · 차용화음 1~2개
       const hv=hardVocab(L).map(idOf), opts=[];
@@ -703,7 +701,7 @@ function fresh(){
   $('result').textContent=''; $('result').classList.remove('good');
   updateMeta(); render(); syncSlots(); stop();
 }
-function updDesc(){ const L=LEVELS[sel-1]; $('lvdesc').textContent=sel===0?'코드 진행 4개를 듣고 맞히기 · 2~5단계 코드(3화음 · 7th)가 한 문제에 섞여 나와요'+(mode==='hard'?' · 부속·차용화음 추가':''):sel===1?'코드 하나를 듣고 코드 종류(색깔) 맞히기 · '+L.desc+(mode==='hard'?' '+L.hdesc:''):'코드 진행 4개를 듣고 맞히기 · '+L.desc+(mode==='hard'?' · 부속·차용화음 추가':''); }
+function updDesc(){ const L=LEVELS[sel-1]; $('lvdesc').textContent=sel===0?'코드 진행 4개를 듣고 맞히기 · 2~5단계 코드(3화음 · 7th · 분수코드)가 한 문제에 섞여 나와요'+(mode==='hard'?' · 부속·차용화음 추가':''):sel===1?'코드 하나를 듣고 코드 종류(색깔) 맞히기 · '+L.desc+(mode==='hard'?' '+L.hdesc:''):'코드 진행 4개를 듣고 맞히기 · '+L.desc+(mode==='hard'?' · 부속·차용화음 추가':''); }
 const STAR3=[0,1,2,3,4].map(()=>'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.2 6.6.7-5 4.5 1.4 6.6L12 17.3 6.1 20.5l1.4-6.6-5-4.5 6.6-.7z"/></svg>').join('');
 function levelInfo(n){ const c=(done[mode]||{})[n===0?'R':n]||0; return {c,pct:Math.min(100,Math.round(c/20*100))}; }
 function buildCards(){
