@@ -357,8 +357,13 @@ let sel=store.get('level',1), bars=store.get('bars',4), meter=store.get('meter',
 if(sel!==0&&!LEVELS[sel-1]) sel=1;
 let level=sel||LEVELS.length;                       // sel 0 = 랜덤 (한 곡 안에 1~5단계를 섞어서)
 if(!METERS[meter]) meter='4/4';
-if(!KEYS[keyName]&&keyName!=='rand') keyName='C';
-let lastRandKey=null;
+// 키 랜덤 (K 요청 2026-11-13): 랜덤 버튼을 켜고 키를 여러 개 고르면, 새 멜로디마다 고른 키 중 하나로
+let randOn=!!store.get('krand',false), randSet=store.get('kset',null);
+if(keyName==='rand'){ randOn=true; keyName='C'; }        // 예전 '랜덤(모든 키)' 저장값 옮기기
+if(!KEYS[keyName]) keyName='C';
+if(!Array.isArray(randSet)) randSet=randOn?KEY_ORDER.slice():[keyName];
+randSet=randSet.filter(k=>KEYS[k]); if(!randSet.length) randSet=[keyName];
+let lastRandKey=null, randFresh=false;
 let mode=store.get('mode','easy'); if(mode!=='hard') mode='easy';
 let tempo=60;
 let showNames=store.get('names',false);
@@ -494,7 +499,7 @@ function markSigns(ms,key){                 // 마디 안에서 필요한 곳에
 function makeSong(){
   const L=levelOf(level), M=METERS[meter];
   let key;
-  if(keyName==='rand'){ const ks=KEY_ORDER.filter(x=>x!==lastRandKey); const kk=ks[Math.floor(Math.random()*ks.length)]; lastRandKey=kk; key=KEYS[kk]; }   // 키 랜덤: 앞 곡과 다른 키로
+  if(randOn){ const pool=randSet.length>1?randSet.filter(x=>x!==lastRandKey):randSet; const kk=pool[Math.floor(Math.random()*pool.length)]; lastRandKey=kk; key=KEYS[kk]; }   // 키 랜덤: 고른 키 중에서 (앞 곡과 다른 키로)
   else key=KEYS[keyName];
   const P=placeTonic(key.letter,L), tonic=P.t, lo=P.lo, hi=P.hi;
   const lvs=sel===0?mixLevels():null;        // 랜덤: 리듬은 마디마다 다른 단계, 음 도약·음역은 5단계 기준
@@ -883,7 +888,7 @@ function buildUI(){
   segButtons('meters',METER_ORDER,v=>v);
   KEY_GROUPS.forEach((g,i)=>{ const box=document.createElement('div'); box.className='seg'+(i?' krow':' kc'); box.id='keys'+i; (i?$('keys').querySelector('.krows'):$('keys')).insertAdjacentElement(i?'beforeend':'afterbegin',box); segButtons('keys'+i,g,v=>v==='rand'?'랜덤':KEYS[v].label); });
   $('keys').querySelectorAll('button').forEach(b=>{                 // 글자 아래에 조표 개수
-    if(b.dataset.v==='rand'){ b.innerHTML='<span class="kl">랜덤</span><span class="ks">모든 키</span>'; b.setAttribute('aria-label','키 랜덤, 새 멜로디마다 키가 바뀜'); return; }
+    if(b.dataset.v==='rand'){ b.innerHTML='<span class="kl">랜덤</span><span class="ks">키 선택</span>'; b.setAttribute('aria-label','키 랜덤 — 켜고 키를 여러 개 고르면 그 키 중에서 나와요'); return; }
     const k=KEYS[b.dataset.v], n=Object.keys(k.acc).length, sh=n&&k.acc[Object.keys(k.acc)[0]]>0;
     const sub=n?(sh?'♯':'♭')+n:'없음';
     b.innerHTML='<span class="kl">'+k.label+'</span><span class="ks">'+sub+'</span>';
@@ -894,7 +899,8 @@ function buildUI(){
     syncCards();
     $('modes').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===mode));
     $('meters').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===meter));
-    $('keys').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===keyName));
+    $('keys').querySelectorAll('button').forEach(b=>{ const v=b.dataset.v; b.setAttribute('aria-pressed',v==='rand'?randOn:randOn?randSet.includes(v):v===keyName); });
+    { const r=$('keys').querySelector('button[data-v="rand"] .ks'); if(r) r.textContent=randOn?randSet.length+'개 키':'키 선택'; }   // 랜덤 켜면 고른 키 수
     $('bars').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.v===bars));
     updDesc();
   };
@@ -902,7 +908,12 @@ function buildUI(){
   on('levels',v=>{sel=+v; if(sel) level=sel; store.set('level',sel)});
   on('modes',v=>{mode=v;store.set('mode',mode)});
   on('meters',v=>{meter=v;store.set('meter',meter)});
-  on('keys',v=>{keyName=v;store.set('key',keyName)});
+  on('keys',v=>{
+    if(v==='rand'){ randOn=!randOn; if(randOn){ randSet=[keyName]; randFresh=true; store.set('kset',randSet); } store.set('krand',randOn); return; }
+    if(randOn&&randFresh){ randFresh=false; randSet=[v]; store.set('kset',randSet); }   // 랜덤을 켠 뒤 처음 누른 키부터 새로 고르기
+    else if(randOn){ const i=randSet.indexOf(v); if(i>=0){ if(randSet.length>1) randSet.splice(i,1); } else randSet.push(v); store.set('kset',randSet); }   // 랜덤 중: 키를 누를 때마다 넣고 빼기 (최소 1개)
+    keyName=v; store.set('key',keyName);
+  });
   on('bars',v=>{bars=+v;store.set('bars',bars)});
   $('tempo').value=tempo; $('tempoOut').textContent='♩ = '+tempo;
   $('tempo').addEventListener('input',e=>{tempo=+e.target.value;$('tempoOut').textContent='♩ = '+tempo});
