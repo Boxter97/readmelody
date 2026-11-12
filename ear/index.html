@@ -680,8 +680,8 @@ function syncCards(){
     b.querySelector('.sym').textContent=n?LEVELS[n-1].iv:'2~6'; b.querySelector('.pic').innerHTML=n?ivPic(LEVELS[n-1].leap):'';
     b.querySelector('.name').textContent=name;
     b.querySelectorAll('.stars svg').forEach((s,k)=>s.classList.toggle('on',k<n));
-    b.querySelector('.cnt').textContent=inf.L.max?inf.c+'문제':inf.L.cur+'/'+inf.L.need+'문제';
-    b.querySelector('.lvl').innerHTML='<small>LV</small>'+inf.L.lv+(inf.L.max?'<span class="mx">MAX</span>':'');
+    b.querySelector('.cnt').textContent=inf.L.max?'총 '+inf.c+'문제':inf.L.cur+'/'+inf.L.need+'문제';
+    b.querySelector('.lvl').innerHTML='<small>LV</small>'+inf.L.lv+(inf.L.max?'<span class="mx">MAX</span>':'<span class="tot">총 '+inf.c+'문제</span>');   // MAX면 총 수는 막대 옆에   // 레벨 옆 지금까지 한 총 수 (K 요청 2026-11-13)
     b.querySelector('.pbar i').style.width=inf.pct+'%';
     b.setAttribute('aria-label',(n?n+'단계 ':'')+name+(mode==='hard'?' + 반음계':'')+', 난이도 별 '+n+'개, '+inf.c+'문제 연습, 레벨 '+inf.L.lv+(inf.L.max?' 최고':', 다음 레벨까지 '+(inf.L.need-inf.L.cur)+'문제'));
   });

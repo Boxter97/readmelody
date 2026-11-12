@@ -1025,8 +1025,8 @@ function syncCards(){
     b.querySelector('.sym').textContent=Lv.sym;
     b.querySelector('.name').textContent=name;
     b.querySelectorAll('.stars svg').forEach((s,k)=>s.classList.toggle('on',k<n));      // 별 = 난이도
-    b.querySelector('.cnt').textContent=inf.L.max?inf.c+'곡':inf.L.cur+'/'+inf.L.need+'곡';
-    b.querySelector('.lvl').innerHTML='<small>LV</small>'+inf.L.lv+(inf.L.max?'<span class="mx">MAX</span>':'');
+    b.querySelector('.cnt').textContent=inf.L.max?'총 '+inf.c+'곡':inf.L.cur+'/'+inf.L.need+'곡';
+    b.querySelector('.lvl').innerHTML='<small>LV</small>'+inf.L.lv+(inf.L.max?'<span class="mx">MAX</span>':'<span class="tot">총 '+inf.c+'곡</span>');   // MAX면 총 수는 막대 옆에   // 레벨 옆 지금까지 한 총 수 (K 요청 2026-11-13)
     b.querySelector('.pbar i').style.width=inf.pct+'%';
     b.setAttribute('aria-label',(n?n+'단계 ':'')+name+(mode==='hard'?' + 부속·차용 코드':'')+', 난이도 별 '+n+'개, '+inf.c+'곡 연습, 레벨 '+inf.L.lv+(inf.L.max?' 최고':', 다음 레벨까지 '+(inf.L.need-inf.L.cur)+'곡'));
   });
