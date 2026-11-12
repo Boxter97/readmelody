@@ -262,6 +262,10 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 #pads{margin-top:28px}   /* 답 칸과 선택지 버튼 사이 띄우기 (K 요청: 너무 붙어 있음) */
 .pad.qt{padding:0} .pad.qt button{background:var(--bg)} .pad.qt button .cn{white-space:normal;word-break:keep-all;text-align:center}
 @media (max-width:720px){ #levels{grid-template-columns:repeat(3,minmax(0,1fr))} .pad.qt{grid-template-columns:repeat(3,minmax(0,1fr))} .pad.p7{grid-template-columns:repeat(4,minmax(0,1fr))} .pad button{min-height:56px} .pad button .cn{font-size:17px} .pad button .cr{font-size:12px} .slot .sv{font-size:18px} }   /* 휴대폰: 이름이 길어서 한 줄 4칸 */
+/* 답 버튼: 한 줄을 다 못 채우면 가운데로 모음 (K 요청 2026-11-12). 칸 너비는 그대로 */
+.pad.p7,.pad.qt{display:flex;flex-wrap:wrap;justify-content:center}
+.pad.p7 button{flex:0 0 calc((100% - 36px)/7)} .pad.qt button{flex:0 0 calc((100% - 24px)/5)}
+@media (max-width:720px){ .pad.p7 button{flex-basis:calc((100% - 12px)/4)} .pad.qt button{flex-basis:calc((100% - 8px)/3)} }
 </style>
 </head>
 <body class="ads-off">
