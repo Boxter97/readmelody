@@ -91,3 +91,14 @@
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',function(){ setTimeout(mount,0); }); else setTimeout(mount,0);
   window.addEventListener('storage',function(e){ if(e.key===KEY){ var v=parseInt(e.newValue,10); if(v>=0&&v<=100){ vol=v; apply(); if(window.__gmVolPaint) window.__gmVolPaint(); } } });
 })();
+
+/* 단계 레벨 (K 요청 2026-11-13) — 단계마다 · Easy/Hard 따로, 연습한 곡(문제) 수가 경험치.
+   다음 레벨까지: LV1→2 2곡, 2→3 3곡 … LV10→11 11곡, 그 뒤로는 2레벨마다 1곡씩 늘어 LV49→50 30곡. 최고 LV 50 (모두 874곡) */
+window.gmLevel=function(c){
+  var MAX=50, lv=1, used=0;
+  var need=function(n){ return n<=10?n+1:11+Math.floor((n-10)/2); };
+  while(lv<MAX&&c-used>=need(lv)){ used+=need(lv); lv++; }
+  if(lv>=MAX) return {lv:MAX,cur:c-used,need:0,max:true,pct:100};
+  var cur=c-used, nd=need(lv);
+  return {lv:lv,cur:cur,need:nd,max:false,pct:Math.round(cur/nd*100)};
+};

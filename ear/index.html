@@ -658,7 +658,7 @@ function fresh(){
 }
 function updDesc(){ $('lvdesc').textContent='4분음표 한 마디를 듣고 음이름 맞히기 · '+(sel===0?'1~'+LEVELS.length+'단계 도약이 한 문제에 섞여 나와요':LEVELS[sel-1].pitch)+(mode==='hard'?' · 반음계 추가':''); }
 const STAR3=[0,1,2,3,4].map(()=>'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.2 6.6.7-5 4.5 1.4 6.6L12 17.3 6.1 20.5l1.4-6.6-5-4.5 6.6-.7z"/></svg>').join('');
-function levelInfo(n){ const c=(done[mode]||{})[n===0?'R':n]||0; return {c,pct:Math.min(100,Math.round(c/20*100))}; }
+function levelInfo(n){ const c=(done[mode]||{})[n===0?'R':n]||0; const L=window.gmLevel?gmLevel(c):{lv:1,cur:c,need:20,max:false,pct:Math.min(100,c*5)}; return {c,pct:L.pct,L}; }   // 막대 = 다음 레벨까지 경험치 (K 요청 2026-11-13)
 function ivPic(s){                                   // 카드 그림: 짧은 오선 위 온음표 두 개, 아래 음은 첫째 줄, 위 음은 s칸 위 (2도=1칸 … 6도=5칸) — 줄·칸을 세면 몇 도인지 보임 (K 요청 2026-11-12)
   const lines=[4,10,16,22,28].map(y=>`<rect x="0" y="${y-0.5}" width="31" height="1" opacity=".5"/>`).join('');
   const note=(x,y)=>`<ellipse cx="${x}" cy="${y}" rx="4.4" ry="3.3" transform="rotate(-20 ${x} ${y})"/>`;
@@ -668,7 +668,7 @@ function buildCards(){
   const box=$('levels');
   LEVELS.forEach(L=>{
     const b=document.createElement('button'); b.type='button'; b.className='stage txt'; b.dataset.v=L.n;
-    b.innerHTML='<span class="top"><span class="num">'+L.n+'</span><span class="hardtag" aria-hidden="true"><span class="full">+ 반음계</span><span class="short">♯♭</span></span></span><span class="sym" aria-hidden="true"></span><span class="pic" aria-hidden="true"></span><span class="name"></span><span class="stars" aria-hidden="true">'+STAR3+'</span><span class="prog"><span class="pbar"><i></i></span><span class="cnt"></span></span>';
+    b.innerHTML='<span class="top"><span class="num">'+L.n+'</span><span class="hardtag" aria-hidden="true"><span class="full">+ 반음계</span><span class="short">♯♭</span></span></span><span class="sym" aria-hidden="true"></span><span class="pic" aria-hidden="true"></span><span class="name"></span><span class="stars" aria-hidden="true">'+STAR3+'</span><span class="prog"><span class="pbar"><i></i></span><span class="cnt"></span></span><span class="lvl"></span>';
     box.appendChild(b);
   });
   const r=box.lastElementChild.cloneNode(true); r.dataset.v=0; r.classList.add('rnd'); r.querySelector('.num').textContent='R'; box.appendChild(r);
@@ -680,9 +680,10 @@ function syncCards(){
     b.querySelector('.sym').textContent=n?LEVELS[n-1].iv:'2~6'; b.querySelector('.pic').innerHTML=n?ivPic(LEVELS[n-1].leap):'';
     b.querySelector('.name').textContent=name;
     b.querySelectorAll('.stars svg').forEach((s,k)=>s.classList.toggle('on',k<n));
-    b.querySelector('.cnt').textContent=inf.c+'문제';
+    b.querySelector('.cnt').textContent=inf.L.max?inf.c+'문제':inf.L.cur+'/'+inf.L.need+'문제';
+    b.querySelector('.lvl').innerHTML='<small>LV</small>'+inf.L.lv+(inf.L.max?'<span class="mx">MAX</span>':'');
     b.querySelector('.pbar i').style.width=inf.pct+'%';
-    b.setAttribute('aria-label',(n?n+'단계 ':'')+name+(mode==='hard'?' + 반음계':'')+', 난이도 별 '+n+'개, '+inf.c+'문제 연습');
+    b.setAttribute('aria-label',(n?n+'단계 ':'')+name+(mode==='hard'?' + 반음계':'')+', 난이도 별 '+n+'개, '+inf.c+'문제 연습, 레벨 '+inf.L.lv+(inf.L.max?' 최고':', 다음 레벨까지 '+(inf.L.need-inf.L.cur)+'문제'));
   });
 }
 function segButtons(id,items,label){

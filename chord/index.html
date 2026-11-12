@@ -1006,14 +1006,14 @@ function fresh(){ stop(); if(sel===0) level=LEVELS.length; song=makeSong(); upda
 const STAR3=LEVELS.map(()=>'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.2 6.6.7-5 4.5 1.4 6.6L12 17.3 6.1 20.5l1.4-6.6-5-4.5 6.6-.7z"/></svg>').join('');
 function updDesc(){ const L=LEVELS[level-1]; $('lvdesc').textContent=(sel===0?'1~'+LEVELS.length+'단계 코드가 한 곡에 섞여 나와요':L.chords)+(mode==='hard'?' · 부속화음·차용화음 추가':''); }
 function levelInfo(n){
-  const c=(done[mode]||{})[n===0?'R':n]||0;                 // 막대: 연습한 곡 수 (20곡이면 가득)
-  return {c,pct:Math.min(100,Math.round(c/20*100))};
+  const c=(done[mode]||{})[n===0?'R':n]||0;                 
+  const L=window.gmLevel?gmLevel(c):{lv:1,cur:c,need:20,max:false,pct:Math.min(100,c*5)}; return {c,pct:L.pct,L};   // 막대 = 다음 레벨까지 경험치 (K 요청 2026-11-13)
 }
 function buildCards(){
   const box=$('levels');
   LEVELS.forEach(L=>{
     const b=document.createElement('button'); b.type='button'; b.className='stage'; b.dataset.v=L.n;
-    b.innerHTML='<span class="top"><span class="num">'+L.n+'</span><span class="hardtag" aria-hidden="true"><span class="full">+ 부속·차용</span><span class="short">+α</span></span></span><span class="sym" aria-hidden="true"></span><span class="name"></span><span class="stars" aria-hidden="true">'+STAR3+'</span><span class="prog"><span class="pbar"><i></i></span><span class="cnt"></span></span>';
+    b.innerHTML='<span class="top"><span class="num">'+L.n+'</span><span class="hardtag" aria-hidden="true"><span class="full">+ 부속·차용</span><span class="short">+α</span></span></span><span class="sym" aria-hidden="true"></span><span class="name"></span><span class="stars" aria-hidden="true">'+STAR3+'</span><span class="prog"><span class="pbar"><i></i></span><span class="cnt"></span></span><span class="lvl"></span>';
     box.appendChild(b);
   });
   const r=box.lastElementChild.cloneNode(true); r.dataset.v=0; r.classList.add('rnd'); r.querySelector('.num').textContent='R'; box.appendChild(r);   // 랜덤 단계 카드
@@ -1025,9 +1025,10 @@ function syncCards(){
     b.querySelector('.sym').textContent=Lv.sym;
     b.querySelector('.name').textContent=name;
     b.querySelectorAll('.stars svg').forEach((s,k)=>s.classList.toggle('on',k<n));      // 별 = 난이도
-    b.querySelector('.cnt').textContent=inf.c+'곡';
+    b.querySelector('.cnt').textContent=inf.L.max?inf.c+'곡':inf.L.cur+'/'+inf.L.need+'곡';
+    b.querySelector('.lvl').innerHTML='<small>LV</small>'+inf.L.lv+(inf.L.max?'<span class="mx">MAX</span>':'');
     b.querySelector('.pbar i').style.width=inf.pct+'%';
-    b.setAttribute('aria-label',(n?n+'단계 ':'')+name+(mode==='hard'?' + 부속·차용 코드':'')+', 난이도 별 '+n+'개, '+inf.c+'곡 연습');
+    b.setAttribute('aria-label',(n?n+'단계 ':'')+name+(mode==='hard'?' + 부속·차용 코드':'')+', 난이도 별 '+n+'개, '+inf.c+'곡 연습, 레벨 '+inf.L.lv+(inf.L.max?' 최고':', 다음 레벨까지 '+(inf.L.need-inf.L.cur)+'곡'));
   });
 }
 function segButtons(id,items,label){
