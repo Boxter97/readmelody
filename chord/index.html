@@ -906,23 +906,18 @@ function audio(){ const c=makeCtx(); if(c.state==='suspended') c.resume(); retur
 function loadPiano(){
   if(loading) return loading;
   let c; try{ c=makeCtx() }catch(e){ return Promise.resolve(null) }
-  loading=Promise.all(Object.keys(PIANO).map(m=>{
-    const bin=atob(PIANO[m]), bytes=new Uint8Array(bin.length);
-    for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
-    return new Promise((res,rej)=>c.decodeAudioData(bytes.buffer,res,rej)).then(buf=>[+m,buf]);
-  })).then(list=>(buffers=list)).catch(()=>(buffers=null));
+  loading=gmPianoLoad(c).then(list=>(buffers=list)).catch(()=>(buffers=null));   // 피아노 소리 파일은 piano/ 폴더 (piano.js 참고, 2026-11-13 새 소리)
   return loading;
 }
 function tone(midi,t,len,vol=1){
   const c=audio();
   if(!buffers) return synthTone(midi,t,len,vol);
-  let best=buffers[0];
-  for(const b of buffers) if(Math.abs(b[0]-midi)<Math.abs(best[0]-midi)) best=b;
+  const best=gmPianoPick(buffers,midi,vol);   // 가장 가까운 녹음 + 세기(멜로디 세게 · 코드 부드럽게)
   const src=c.createBufferSource(), g=c.createGain();
   src.buffer=best[1]; src.playbackRate.value=Math.pow(2,(midi-best[0])/12);
   const v=1.5*vol, end=t+Math.max(len,0.12);
   g.gain.setValueAtTime(v,t); g.gain.setValueAtTime(v,end); g.gain.setTargetAtTime(0,end,0.07);   // 건반에서 손을 떼는 느낌
-  src.connect(g); g.connect(master); src.start(t); src.stop(end+0.6); nodes.push(src);
+  src.connect(g); g.connect(gmPianoOut(c,master)); src.start(t); src.stop(end+0.6); nodes.push(src);
 }
 function synthTone(midi,t,len,vol){      // 피아노 소리를 못 불러왔을 때만 쓰는 대체음
   const c=audio(), f=440*Math.pow(2,(midi-69)/12), g=c.createGain(); g.connect(master);
