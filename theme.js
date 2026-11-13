@@ -134,3 +134,19 @@ window.gmLevelUp=function(c0,c1){
   }catch(e){}
   return true;
 };
+
+/* 한 마디 세고 시작: 오선 아래 빈칸 가운데에 큰 숫자 (K 요청 2026-11-13) — 초견·청음 4페이지 공통.
+   gmCount(1~4) 보이기, gmCount(0) 숨기기 */
+window.gmCount=function(n){
+  var svg=document.getElementById('score'), sheet=svg&&svg.closest('.sheet'); if(!sheet) return;
+  var el=sheet.querySelector('.countbig');
+  if(!n){ if(el) el.hidden=true; return; }
+  if(!el){ el=document.createElement('div'); el.className='countbig'; el.setAttribute('aria-hidden','true'); sheet.appendChild(el);
+    if(getComputedStyle(sheet).position==='static') sheet.style.position='relative'; }
+  var z=parseFloat(getComputedStyle(document.documentElement).zoom)||1;
+  var sr=sheet.getBoundingClientRect(), vr=svg.getBoundingClientRect(), bb=svg.getBBox(), vb=svg.viewBox.baseVal, k=vb&&vb.height?vr.height/vb.height:1;
+  var top=(vr.top-sr.top)/z+((bb.y+bb.height-(vb?vb.y:0))*k)/z, bottom=(vr.bottom-sr.top)/z, h=Math.max(44,bottom-top);   // 악보 내용 아래 ~ 오선지 칸 끝
+  el.style.top=top+'px'; el.style.height=h+'px'; el.style.fontSize=Math.min(72,Math.max(40,h*0.9))+'px';
+  el.textContent=n; el.hidden=false;
+  el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');
+};

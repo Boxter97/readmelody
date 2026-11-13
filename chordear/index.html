@@ -606,7 +606,7 @@ async function ready(){
   await loadPiano();
   $('status').textContent='';
 }
-function stop(){
+function stop(){ if(window.gmCount) gmCount(0);
   playing=false; timers.forEach(clearTimeout); timers=[];
   nodes.forEach(o=>{try{o.stop()}catch(e){}}); nodes=[];
   song&&song.chords.forEach(c=>c.ref&&c.ref.classList.remove('on'));
@@ -624,11 +624,11 @@ async function play(){
     t+=beat*2;
   }
   if($('countin').checked){
-    for(let b=0;b<4;b++){ click(t+b*beat,ACCENT[b]); timers.push(setTimeout(()=>$('status').textContent=`${b===0?'준비… ':''}${b+1}`,(t+b*beat-c.currentTime)*1000)); }
+    for(let b=0;b<4;b++){ click(t+b*beat,ACCENT[b]); timers.push(setTimeout(()=>{ $('status').textContent=`${b===0?'준비… ':''}${b+1}`; if(window.gmCount) gmCount(b+1); },(t+b*beat-c.currentTime)*1000)); }
     t+=4*beat;
   }
   const startT=t;
-  timers.push(setTimeout(()=>$('status').textContent='',(startT-c.currentTime)*1000));
+  timers.push(setTimeout(()=>{ $('status').textContent=''; if(window.gmCount) gmCount(0); },(startT-c.currentTime)*1000));   // 큰 숫자는 첫 박에 사라짐
   song.chords.forEach(ch=>{
     strike(ch,t,song.single?beat*2.5:beat*0.95);   // 1단계: 코드 하나를 길게
     const on=(t-c.currentTime)*1000;
