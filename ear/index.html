@@ -592,8 +592,8 @@ async function playRef(){
   const c=audio(), t=c.currentTime+0.1, p=d=>pitchOf(d,song.key).midi;
   [0,2,4].forEach((s,i)=>tone(p(song.tonic+s),t+i*0.3,1.8-i*0.3,0.7));
   tone(song.notes[0].midi,t+1.6,1.2,1);
-  $('status').textContent=`${song.key.label} 키 으뜸화음, 그리고 첫 음`;
-  timers.push(setTimeout(()=>{ if(!playing) $('status').textContent='' },3400));
+  if(window.gmCount) gmCount(`${song.key.label} 키 으뜸화음, 그리고 첫 음`);   // 아래 작은 글자 대신 큰 숫자 자리에 (K 요청 2026-11-13)
+  timers.push(setTimeout(()=>{ if(!playing&&window.gmCount) gmCount(0) },3400));
 }
 
 /* ---------- 답 ---------- */

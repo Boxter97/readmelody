@@ -147,7 +147,7 @@ window.gmCount=function(n){
   var sr=sheet.getBoundingClientRect(), vr=svg.getBoundingClientRect(), bb=svg.getBBox(), vb=svg.viewBox.baseVal, k=vb&&vb.height?vr.height/vb.height:1;
   var top=(vr.top-sr.top)/z+((bb.y+bb.height-(vb?vb.y:0))*k)/z, bottom=(vr.bottom-sr.top)/z, h=Math.max(44,bottom-top);   // 악보 내용 아래 ~ 오선지 칸 끝
   el.style.top=top+'px'; el.style.height=h+'px';
-  el.style.fontSize=(typeof n==='string'?Math.min(30,Math.max(22,h*0.4)):Math.min(72,Math.max(40,h*0.9)))+'px';   // 글자("첫 음 …")는 숫자보다 작게 (K 요청 2026-11-13)
+  el.style.fontSize=(typeof n==='string'?Math.min(30,Math.max(22,h*0.4),(sr.width/z-28)/(n.length*0.72)):Math.min(72,Math.max(40,h*0.9)))+'px';   // 긴 글자는 좁은 휴대폰에서 한 줄에 들어가게 줄임   // 글자("첫 음 …")는 숫자보다 작게 (K 요청 2026-11-13)
   el.textContent=n; el.hidden=false;
   el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');
 };
