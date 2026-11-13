@@ -624,7 +624,7 @@ async function play(){
     t+=beat*2;
   }
   if($('countin').checked){
-    for(let b=0;b<4;b++){ click(t+b*beat,ACCENT[b]); timers.push(setTimeout(()=>{ $('status').textContent=`${b===0?'준비… ':''}${b+1}`; if(window.gmCount) gmCount(b+1); },(t+b*beat-c.currentTime)*1000)); }
+    for(let b=0;b<4;b++){ click(t+b*beat,ACCENT[b]); timers.push(setTimeout(()=>{ if(window.gmCount) gmCount(b+1);   /* 아래 작은 "준비… 1" 글자는 뺌 — 큰 숫자만 (K 요청 2026-11-13) */ },(t+b*beat-c.currentTime)*1000)); }
     t+=4*beat;
   }
   const startT=t;
