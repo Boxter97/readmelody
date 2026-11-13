@@ -806,7 +806,8 @@ async function play(){
   audio(); playing=true;
   $('playTxt').textContent='멈춤'; $('playIcon').innerHTML='<path d="M3 2h4v12H3zM9 2h4v12H9z"/>';
   await ready(); if(!playing) return;
-  if(!song.counted){ song.counted=true; const d=done[mode]||(done[mode]={}), k=sel===0?'R':level, c0=d[k]||0; d[k]=c0+1; store.set('done2',done); if(window.gmLevelUp) gmLevelUp(c0,c0+1); syncCards(); }
+  if(!song.counted){ song.counted=true; const fr=store.get('done2',null); if(fr&&typeof fr==='object'&&fr.easy) done=fr;   // 다른 창에서 올린 기록을 덮어쓰지 않게 최신 기록에 더함 (K 제보 2026-11-13)
+  const d=done[mode]||(done[mode]={}), k=sel===0?'R':level, c0=d[k]||0; d[k]=c0+1; store.set('done2',done); if(window.gmLevelUp) gmLevelUp(c0,c0+1); syncCards(); }
   const c=audio(), M=song.M;
   const u=60/tempo/4, ci=M.click*u, nClick=M.len/M.click;   // u = 16분음표 길이(초)
   let t=c.currentTime+0.15;
@@ -853,6 +854,7 @@ const STAR_AT=[0,5,20,50];
 const SYM=['♩','♫','♩.','♬','♩‿♩'], LV_NAME=['4분음표','8분음표','점음표','16분음표','이음줄'];
 const STAR3=[0,1,2,3,4].map(()=>'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.2 6.6.7-5 4.5 1.4 6.6L12 17.3 6.1 20.5l1.4-6.6-5-4.5 6.6-.7z"/></svg>').join('');
 function updDesc(){ const L=levelOf(level); $('lvdesc').textContent=(sel===0?'1~'+LEVELS.length+'단계가 한 곡에 섞여 나와요 · '+L.pitch:L.rhythm[meter==='6/8'?1:0]+' · '+L.pitch)+(mode==='hard'?' · 임시표 추가':''); }
+window.addEventListener('storage',e=>{ if(e.key!=='sr-done2') return; try{ const v=JSON.parse(e.newValue); if(v&&typeof v==='object'&&v.easy){ done=v; syncCards(); } }catch(_){} });   // 다른 창에서 기록이 바뀌면 카드도 바로 맞춤
 function levelInfo(n){
   const c=(done[mode]||{})[n===0?'R':n]||0;                 
   const L=window.gmLevel?gmLevel(c):{lv:1,cur:c,need:20,max:false,pct:Math.min(100,c*5)}; return {c,pct:L.pct,L};   // 막대 = 다음 레벨까지 경험치 (K 요청 2026-11-13)
