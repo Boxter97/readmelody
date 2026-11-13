@@ -790,7 +790,7 @@ function buildUI(){
     if(b.dataset.g!=null){ const g=groups[+b.dataset.g]; if(g.items.length>1){ showVars(openRoot===+b.dataset.g?null:+b.dataset.g); return; } b.dataset.i=g.items[0]; }   // 종류가 하나뿐이면 바로 넣음
     if($('vars')) showVars(null);
     const p=padChords[+b.dataset.i], ch=p.chord(cur); ans[cur]={name:p.label,id:p.id};
-    if(padSound){ audio(); ready().then(()=>strike(ch,audio().currentTime+0.02,0.8,0.8)); }
+    if(padSound){ audio(); ready().then(()=>strike(ch,audio().currentTime+0.02,0.8,1)); }   // 문제 코드와 같은 소리(같은 크기) — K 2026-11-13
     const empty=ans.findIndex((a,i)=>!a&&!(fc()&&i===0));
     if(empty>=0) cur=empty; else if(cur<song.chords.length-1) cur++;
     syncSlots();

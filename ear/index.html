@@ -718,7 +718,7 @@ function buildUI(){
     const b=e.target.closest('button'); if(!b||checked) return;
     const p=padNotes[+b.dataset.i]; ans[cur]={name:p.name,pc:p.pc};
     const near=song.notes[cur].midi, m=p.pc+12*Math.round((near-p.pc)/12);    // 문제 음과 같은 높이 근처에서 소리
-    if(padSound){ audio(); ready().then(()=>tone(m,audio().currentTime+0.02,0.6,0.8)); }
+    if(padSound){ audio(); ready().then(()=>tone(m,audio().currentTime+0.02,0.6,1)); }   // 문제 음과 같은 소리(같은 녹음 · 같은 크기) — K 2026-11-13
     const empty=ans.findIndex((a,i)=>!a&&!false);
     if(empty>=0) cur=empty; else if(cur<3) cur++;
     syncSlots();
