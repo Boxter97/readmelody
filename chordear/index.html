@@ -615,7 +615,7 @@ async function play(){
   const c=audio(), beat=60/tempo;
   let t=c.currentTime+0.15;
   if(hint&&!song.single){                           // 첫 음 듣기 (1단계는 키와 상관없어서 안 침): 그 키의 첫 음(으뜸음)을 먼저 쳐 줌 (K 요청 2026-11-12)
-    tone(voicing(C(0,''),song.key).upper[0],t,beat*1.6,0.9);   /* 첫 음 = 코드가 울리는 높이의 으뜸음 (예전 60+음: G·A·B 키 등에서 코드보다 한 옥타브 높았음, K 제보 "옥타브가 다르게 들린다" 2026-11-13) */ if(window.gmCount) gmCount(`첫 음 (${song.key.label} 키 으뜸음)`);   // 아래 작은 글자 대신 큰 숫자 자리에 (K 요청 2026-11-13)
+    tone(voicing(C(0,''),song.key).upper[0],t,beat*1.6,0.9);   /* 첫 음 = 코드가 울리는 높이의 으뜸음 (예전 60+음: G·A·B 키 등에서 코드보다 한 옥타브 높았음, K 제보 "옥타브가 다르게 들린다" 2026-11-13) */ if(window.gmCount) gmCount(`첫 음 : ${song.key.label}`);   /* 짧게 (K 요청 2026-11-13, 예전 "첫 음 (C 키 으뜸음)") */   // 아래 작은 글자 대신 큰 숫자 자리에 (K 요청 2026-11-13)
     t+=beat*2;
   }
   if($('countin').checked){
@@ -637,7 +637,7 @@ async function playRef(){
   if(playing) stop();
   audio(); await ready();
   if(song.single){                                     // 1단계: 아르페지오로 듣기 — 그 코드를 아래음부터 한 음씩 (K 요청 2026-11-12)
-    const c0=audio(), t0=c0.currentTime+0.1, v=voicing(song.chords[0],song.chords[0].k), ns=[v.bass].concat(v.upper);
+    const c0=audio(), t0=c0.currentTime+0.1, v=voicing(song.chords[0],song.chords[0].k), ns=[v.bass].concat(v.upper.filter(m=>(m-v.bass)%12!==0));   /* 근음은 베이스로 한 번만 → 3화음은 3음, 7th는 4음 (K 요청 2026-11-13: 트라이어드인데 4음이 나옴) */
     ns.forEach((m,i)=>tone(m,t0+i*0.55,0.6,i?0.7:0.8));
     if(window.gmCount) gmCount('아르페지오 (한 음씩)');   // 아래 작은 글자 대신 큰 숫자 자리에 (K 요청 2026-11-13)
     timers.push(setTimeout(()=>{ if(!playing&&window.gmCount) gmCount(0) },ns.length*550+600));
@@ -645,7 +645,7 @@ async function playRef(){
   }
   const c=audio(), t=c.currentTime+0.1, I=C(0,''), v=voicing(I,song.key);
   v.upper.forEach((m,i)=>tone(m,t+i*0.3,1.8-i*0.3,0.7));   // 기준음 듣기 = 도미솔만 (K 요청 2026-11-12)
-  if(window.gmCount) gmCount(`${song.key.label} 키 으뜸화음 (${song.key.label})`);   // 아래 작은 글자 대신 큰 숫자 자리에 (K 요청 2026-11-13)
+  if(window.gmCount) gmCount(`기준음 : ${song.key.label}`);   /* 짧게 (K 요청 2026-11-13, 예전 "C 키 으뜸화음 (C)") */   // 아래 작은 글자 대신 큰 숫자 자리에 (K 요청 2026-11-13)
   timers.push(setTimeout(()=>{ if(!playing&&window.gmCount) gmCount(0) },3000));
 }
 
