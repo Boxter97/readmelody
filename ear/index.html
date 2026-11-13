@@ -573,7 +573,7 @@ async function play(){
   const c=audio(), beat=60/tempo;
   let t=c.currentTime+0.15;
   if(hint){                                          // 첫 음 듣기: 그 키의 첫 음(으뜸음)을 먼저 쳐 줌 (K 요청 2026-11-12)
-    tone(pitchOf(song.tonic,song.key).midi,t,beat*1.6,0.9); $('status').textContent=`첫 음 (${song.key.label} 키 으뜸음)`;
+    tone(pitchOf(song.tonic,song.key).midi,t,beat*1.6,0.9); if(window.gmCount) gmCount(`첫 음 (${song.key.label} 키 으뜸음)`);   // 아래 작은 글자 대신 큰 숫자 자리에 (K 요청 2026-11-13)
     t+=beat*2;
   }
   if($('countin').checked){

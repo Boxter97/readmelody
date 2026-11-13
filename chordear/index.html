@@ -620,7 +620,7 @@ async function play(){
   const c=audio(), beat=60/tempo;
   let t=c.currentTime+0.15;
   if(hint&&!song.single){                           // 첫 음 듣기 (1단계는 키와 상관없어서 안 침): 그 키의 첫 음(으뜸음)을 먼저 쳐 줌 (K 요청 2026-11-12)
-    tone(60+rootOf(C(0,''),song.key).pc,t,beat*1.6,0.9); $('status').textContent=`첫 음 (${song.key.label} 키 으뜸음)`;
+    tone(60+rootOf(C(0,''),song.key).pc,t,beat*1.6,0.9); if(window.gmCount) gmCount(`첫 음 (${song.key.label} 키 으뜸음)`);   // 아래 작은 글자 대신 큰 숫자 자리에 (K 요청 2026-11-13)
     t+=beat*2;
   }
   if($('countin').checked){
