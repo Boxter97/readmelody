@@ -1081,7 +1081,7 @@ function buildUI(){
   $('resetBtn').onclick=()=>{ clearTimeout(resetT); showReset(true,false); $('resetNo').focus(); };
   $('resetNo').onclick=()=>{ showReset(false,false); $('resetBtn').focus(); };
   $('resetYes').onclick=()=>{
-    done={easy:{},hard:{}}; store.set('done2',done); try{ localStorage.removeItem('sr-done'); }catch(e){}
+    done={easy:{},hard:{}}; store.set('done2',done); try{ localStorage.removeItem('ch-done'); }catch(e){}   // 예전엔 멜로디 초견 기록(sr-done)을 지웠음 — 고침
     syncCards(); showReset(false,true); $('resetBtn').focus();
     resetT=setTimeout(()=>{ $('resetMsg').hidden=true; },2500);
   };

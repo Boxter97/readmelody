@@ -707,8 +707,8 @@ function buildUI(){
   };
   const on=(id,fn)=>$(id).addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;fn(b.dataset.v);sync();fresh();});
   on('progs',v=>{progId=v;store.set('prog',progId)});
-  on('keys',v=>{keys[progId]=v;store.set('keys',keys)});
-  on('vars',v=>{vars[progId]=v;store.set('vars',vars)});
+  on('keys',v=>{keys=Object.assign({},store.get('keys',{}),{[progId]:v});store.set('keys',keys)});   // 다른 창에서 고른 진행별 값을 덮어쓰지 않게
+  on('vars',v=>{vars=Object.assign({},store.get('vars',{}),{[progId]:v});store.set('vars',vars)});
   $('deg').checked=showDeg; $('tones').checked=showTones;
   $('deg').addEventListener('change',e=>{showDeg=e.target.checked;store.set('deg',showDeg);stop();render()});
   const syncT=()=>$('tgts').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',targets.includes(+b.dataset.v)));
@@ -718,7 +718,7 @@ function buildUI(){
   $('tones').addEventListener('change',e=>{showTones=e.target.checked;store.set('tones',showTones);stop();render()});
   $('playBtn').onclick=play;
   $('scaleRows').addEventListener('click',e=>{const b=e.target.closest('.sbtn'); if(b) playScale(+b.dataset.i,b);});
-  $('scSel').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; stop(); scSel[progId]=+b.dataset.v; store.set('scsel',scSel); renderScales();});
+  $('scSel').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; stop(); scSel=Object.assign({},store.get('scsel',{}),{[progId]:+b.dataset.v}); store.set('scsel',scSel); renderScales();});
   $('fbPos').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; fbPos=+b.dataset.v; store.set('fbpos',fbPos); drawFB();});
   $('fbLab').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; fbLab=b.dataset.v; store.set('fblab',fbLab); drawFB();});
   $('fb').addEventListener('click',async e=>{const g=e.target.closest('.fdot'); if(!g) return; if(playing) stop(); audio(); await ready();

@@ -29,6 +29,9 @@
     paint();
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',mount); else mount();
+  window.addEventListener('storage',function(e){ if(e.key!==KEY) return;   // 다른 창에서 다크/라이트를 바꾸면 이 창도 같이 (2026-11-13)
+    if(e.newValue==='dark') root.setAttribute('data-theme','dark'); else root.removeAttribute('data-theme'); paint();
+    try{ document.dispatchEvent(new CustomEvent('gm-theme',{detail:e.newValue==='dark'?'dark':'light'})); }catch(x){} });
 })();
 
 /* 마스터 볼륨 (K 요청 2026-11-13 "홈페이지 전체 마스터 볼륨") — 모든 페이지 공통.
