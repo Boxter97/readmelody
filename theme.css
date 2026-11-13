@@ -52,10 +52,10 @@ html[data-theme="dark"] .logo img{content:url("logo-dark.png")}
 .vol-btn svg{width:22px;height:22px;fill:currentColor}
 .vol-row input{flex:1;min-width:0;accent-color:var(--accent);height:24px;margin:0}
 .vol-num{flex:none;font-size:16px;min-width:2.2em;text-align:right;color:var(--muted)}
-/* 레벨업 소리 켬/끔 (K 요청 2026-11-13) — 볼륨 숫자 오른쪽 */
-.lvsnd-btn{flex:none;height:36px;padding:0 12px;border-radius:10px;border:1.5px solid var(--line);background:var(--bg);color:var(--muted);font:inherit;font-size:15px;font-weight:700;white-space:nowrap;cursor:pointer}
-.lvsnd-btn b{margin-left:4px}
-.lvsnd-btn[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--ink)} .lvsnd-btn[aria-pressed="true"] b{color:var(--accent)}
+/* 레벨업 소리 ON/OFF (K 요청 2026-11-13) — 볼륨 숫자 오른쪽 */
+.lvsnd-btn{flex:none;height:36px;padding:0 12px;border-radius:10px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;font-size:15px;font-weight:700;white-space:nowrap;cursor:pointer}
+.lvsnd-btn b{display:inline-block;min-width:2.3em;margin-left:6px;text-align:left;color:var(--muted)}   /* ON/OFF 글자만 바뀌고 상자 색은 그대로 (K 요청) */
+.lvsnd-btn[aria-pressed="true"] b{color:var(--accent)}
 @media (max-width:720px){ .navcol{order:4;width:100%} .navcol .nav{order:0} .vol-row{width:100%!important} }   /* 휴대폰: 볼륨 줄은 한 줄 꽉 차게 (레벨업 소리 버튼 때문에) */
 
 /* 단계 카드 레벨 (K 요청 2026-11-13): 경험치 막대 아래 "LV 7" */

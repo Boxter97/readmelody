@@ -89,8 +89,8 @@
     };
     fit(); window.addEventListener('resize',fit); if(document.fonts&&document.fonts.ready) document.fonts.ready.then(fit);
     window.__gmVolPaint=paint;
-    var lb=row.querySelector('.lvsnd-btn');   // 레벨업 소리 켬/끔 (K 요청 2026-11-13, 처음엔 켬, 모든 페이지 같이 기억)
-    var lpaint=function(){ var on=window.gmLvSoundOn(); lb.innerHTML='레벨업 소리<b>'+(on?'켬':'끔')+'</b>'; lb.setAttribute('aria-pressed',on?'true':'false'); };
+    var lb=row.querySelector('.lvsnd-btn');   // 레벨업 소리 ON/OFF (K 요청 2026-11-13, 처음엔 ON, 모든 페이지 같이 기억)
+    var lpaint=function(){ var on=window.gmLvSoundOn(); lb.innerHTML='레벨업 소리<b>'+(on?'ON':'OFF')+'</b>'; lb.setAttribute('aria-pressed',on?'true':'false'); };
     lb.addEventListener('click',function(){ try{ localStorage.setItem('gm-lvsound',window.gmLvSoundOn()?'off':'on'); }catch(e){} lpaint(); });
     window.addEventListener('storage',function(e){ if(e.key==='gm-lvsound') lpaint(); });
     lpaint();
