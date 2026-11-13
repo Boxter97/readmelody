@@ -988,7 +988,7 @@ async function playRef(){
   const I=song.tonicChord, v=voicing(I,song.key);
   tone(v.bass,t,2.6,0.7); v.upper.forEach((m,i)=>tone(m,t+i*0.28,2.4-i*0.28,0.55));
   strike(I,t+1.3,1.4);
-  $('status').textContent=`${song.key.label} 키 으뜸화음 (${chordName(I,song.key)})`;
+  $('status').textContent=`기준음 : ${song.key.label}`;   /* 짧게 (2026-11-13) — 버튼은 지금 빠져 있음 */
   timers.push(setTimeout(()=>{ if(!playing) $('status').textContent='' },3400));
 }
 
