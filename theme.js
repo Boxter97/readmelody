@@ -75,20 +75,25 @@
     var col=document.createElement('div'); col.className='navcol';
     nav.parentNode.insertBefore(col,nav); col.appendChild(nav);
     var row=document.createElement('div'); row.className='vol-row';
-    row.innerHTML='<button type="button" class="vol-btn"></button><input type="range" min="0" max="100" step="5" aria-label="소리 크기"><b class="vol-num"></b>';
+    row.innerHTML='<button type="button" class="vol-btn"></button><input type="range" min="0" max="100" step="5" aria-label="소리 크기"><b class="vol-num"></b><button type="button" class="lvsnd-btn"></button>';
     col.appendChild(row);
     var btn=row.querySelector('.vol-btn'), rg=row.querySelector('input'), num=row.querySelector('.vol-num');
     var paint=function(){ btn.innerHTML=vol?ON:OFF; btn.setAttribute('aria-label',vol?'소리 끄기':'소리 켜기'); rg.value=vol; num.textContent=vol; rg.style.setProperty('--p',vol+'%'); };
     var setV=function(v){ vol=v; try{ localStorage.setItem(KEY,vol); }catch(e){} paint(); apply(); };
     rg.addEventListener('input',function(){ setV(+rg.value); });
     btn.addEventListener('click',function(){ if(vol){ before=vol; setV(0); } else setV(before||100); });
-    var fit=function(){   // 막대 너비 = 즉흥연주 칸 왼쪽 ~ 메뉴 오른쪽 끝
-      var a=nav.querySelectorAll('a')[4]; if(!a) return;   // 5번째 칸 = 즉흥연주
+    var fit=function(){   // 볼륨 줄 너비 = 코드 청음 칸 왼쪽 ~ 메뉴 오른쪽 끝
+      var a=nav.querySelectorAll('a')[3]; if(!a) return;   // 4번째 칸 = 코드 청음부터 (레벨업 소리 버튼이 들어가도 막대 길이 유지, 2026-11-13)
       var w=nav.getBoundingClientRect().right-a.getBoundingClientRect().left;
       if(w>0) row.style.width=Math.round(w/(parseFloat(getComputedStyle(document.documentElement).zoom)||1))+'px';
     };
     fit(); window.addEventListener('resize',fit); if(document.fonts&&document.fonts.ready) document.fonts.ready.then(fit);
     window.__gmVolPaint=paint;
+    var lb=row.querySelector('.lvsnd-btn');   // 레벨업 소리 켬/끔 (K 요청 2026-11-13, 처음엔 켬, 모든 페이지 같이 기억)
+    var lpaint=function(){ var on=window.gmLvSoundOn(); lb.innerHTML='레벨업 소리<b>'+(on?'켬':'끔')+'</b>'; lb.setAttribute('aria-pressed',on?'true':'false'); };
+    lb.addEventListener('click',function(){ try{ localStorage.setItem('gm-lvsound',window.gmLvSoundOn()?'off':'on'); }catch(e){} lpaint(); });
+    window.addEventListener('storage',function(e){ if(e.key==='gm-lvsound') lpaint(); });
+    lpaint();
     paint();
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',function(){ setTimeout(mount,0); }); else setTimeout(mount,0);
@@ -108,8 +113,10 @@ window.gmLevel=function(c){
 
 /* 레벨업 소리 "띠로리링~" (K 요청 2026-11-13) — 곡 수가 c0 → c1로 늘어서 레벨이 오르면 한 번 울림.
    소리 파일 없이 브라우저에서 합성, 맨 위 소리 크기를 따름 */
+window.gmLvSoundOn=function(){ try{ return localStorage.getItem('gm-lvsound')!=='off'; }catch(e){ return true; } };
 window.gmLevelUp=function(c0,c1){
   if(!window.gmLevel||gmLevel(c1).lv<=gmLevel(c0).lv) return false;
+  if(!window.gmLvSoundOn()) return true;   // 볼륨 옆 "레벨업 소리 끔"이면 소리만 안 냄
   try{
     var AC=window.AudioContext||window.webkitAudioContext; if(!AC) return true;
     var c=window.__gmLvCtx||(window.__gmLvCtx=new AC()); if(c.state==='suspended') c.resume();
