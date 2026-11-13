@@ -51,11 +51,10 @@ html[data-theme="dark"] .logo img{content:url("logo-dark.png")}
 .vol-btn{flex:none;width:36px;height:36px;border-radius:10px;border:0;background:transparent;color:var(--muted);display:grid;place-items:center;cursor:pointer;padding:0}
 .vol-btn svg{width:22px;height:22px;fill:currentColor}
 .vol-row input{flex:1;min-width:0;accent-color:var(--accent);height:24px;margin:0}
-.vol-num{flex:none;font-size:16px;min-width:2.2em;text-align:right;color:var(--muted)}
+.vol-num{flex:none;font-size:16px;min-width:2em;margin-left:-4px;text-align:left;color:var(--muted)}   /* 숫자를 막대 쪽에 붙임 (K 요청 2026-11-13) */
 /* 레벨업 소리 ON/OFF (K 요청 2026-11-13) — 볼륨 숫자 오른쪽 */
 .lvsnd-btn{flex:none;margin-left:12px;position:relative;height:36px;padding:0 12px;border-radius:10px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;font-size:15px;font-weight:700;white-space:nowrap;cursor:pointer}
 .lvsnd-btn b{margin-left:6px;color:var(--muted)}
-.lvsnd-btn::before{content:'';position:absolute;left:-13px;top:6px;bottom:6px;border-left:1.5px solid var(--line)}   /* 볼륨과 떨어뜨리는 세로선 — 볼륨이 레벨업 소리 것처럼 보이지 않게 (K 요청) */   /* ON/OFF 글자만 바뀌고 상자 색은 그대로 (K 요청) */
 .lvsnd-btn[aria-pressed="true"] b{color:var(--accent)}
 @media (max-width:720px){ .navcol{order:4;width:100%} .navcol .nav{order:0} .vol-row{width:100%!important} }   /* 휴대폰: 볼륨 줄은 한 줄 꽉 차게 (레벨업 소리 버튼 때문에) */
 
