@@ -637,7 +637,7 @@ async function playRef(){
   if(playing) stop();
   audio(); await ready();
   if(song.single){                                     // 1단계: 아르페지오로 듣기 — 그 코드를 아래음부터 한 음씩 (K 요청 2026-11-12)
-    const c0=audio(), t0=c0.currentTime+0.1, v=voicing(song.chords[0],song.chords[0].k), ns=[v.bass].concat(v.upper);   /* 베이스 근음 + 코드 음 (도 · 도 미 솔) — K 확정 2026-11-13 (3음만으로 바꿨다가 "도 도미솔이 맞네"로 되돌림) */
+    const c0=audio(), t0=c0.currentTime+0.1, v=voicing(song.chords[0],song.chords[0].k), ns=v.upper;   /* 아르페지오 = 오른손 코드 음만 한 번씩 (도 미 솔), 왼손 베이스는 안 침 — K 확정 2026-11-13 (베이스+도미솔 ↔ 도미솔 오갔다가 최종 도미솔) */
     ns.forEach((m,i)=>tone(m,t0+i*0.55,0.6,i?0.7:0.8));
     if(window.gmCount) gmCount('아르페지오 (한 음씩)');   // 아래 작은 글자 대신 큰 숫자 자리에 (K 요청 2026-11-13)
     timers.push(setTimeout(()=>{ if(!playing&&window.gmCount) gmCount(0) },ns.length*550+600));
