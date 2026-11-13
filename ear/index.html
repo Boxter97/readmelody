@@ -641,7 +641,7 @@ function check(){
   const from=0, n=4-from, right=song.notes.slice(from).filter((x,k)=>isRight(k+from)).length;
   $('result').textContent=right===n?`${n}개 모두 맞았어요`:`${n}개 중 ${right}개 맞았어요`;
   $('result').classList.toggle('good',right===n);
-  const d=done[mode]||(done[mode]={}); d[sel===0?'R':sel]=(d[sel===0?'R':sel]||0)+1; store.set('done',done); syncCards();
+  const d=done[mode]||(done[mode]={}), k=sel===0?'R':sel, c0=d[k]||0; d[k]=c0+1; store.set('done',done); if(window.gmLevelUp) gmLevelUp(c0,c0+1); syncCards();
   syncSlots(); render(); stop();
 }
 

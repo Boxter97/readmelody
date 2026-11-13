@@ -709,7 +709,7 @@ function check(){
   const N=song.chords.length, from=fc()?1:0, n=N-from; let right=0; for(let i=from;i<N;i++) if(isRight(i)) right++;
   $('result').textContent=N===1?(right?'맞았어요':`틀렸어요 — 정답은 ${song.chords[0].label}`):right===n?`${n}개 모두 맞았어요`:`${n}개 중 ${right}개 맞았어요`;
   $('result').classList.toggle('good',right===n);
-  const d=done[mode]||(done[mode]={}); d[sel===0?'R':sel]=(d[sel===0?'R':sel]||0)+1; store.set('done',done); syncCards();
+  const d=done[mode]||(done[mode]={}), k=sel===0?'R':sel, c0=d[k]||0; d[k]=c0+1; store.set('done',done); if(window.gmLevelUp) gmLevelUp(c0,c0+1); syncCards();
   syncSlots(); render(); stop();
 }
 

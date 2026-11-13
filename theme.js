@@ -102,3 +102,25 @@ window.gmLevel=function(c){
   var cur=c-used, nd=need(lv);
   return {lv:lv,cur:cur,need:nd,max:false,pct:Math.round(cur/nd*100)};
 };
+
+/* 레벨업 소리 "띠로리링~" (K 요청 2026-11-13) — 곡 수가 c0 → c1로 늘어서 레벨이 오르면 한 번 울림.
+   소리 파일 없이 브라우저에서 합성, 맨 위 소리 크기를 따름 */
+window.gmLevelUp=function(c0,c1){
+  if(!window.gmLevel||gmLevel(c1).lv<=gmLevel(c0).lv) return false;
+  try{
+    var AC=window.AudioContext||window.webkitAudioContext; if(!AC) return true;
+    var c=window.__gmLvCtx||(window.__gmLvCtx=new AC()); if(c.state==='suspended') c.resume();
+    var t0=c.currentTime+0.05, out=c.createGain(); out.gain.value=1; out.connect(c.destination);
+    // 띠 · 로 · 리 · 링~ : 솔 도 미 솔 (빠르게 올라가고) → 높은 도에서 길게 반짝
+    [[79,0,.16],[84,.09,.16],[88,.18,.16],[91,.27,.16],[96,.38,1.1]].forEach(function(n){
+      var f=440*Math.pow(2,(n[0]-69)/12), t=t0+n[1], len=n[2];
+      [[1,'triangle',.5],[2,'sine',.18],[3,'sine',.06]].forEach(function(h){   // 종소리처럼 배음 조금
+        var o=c.createOscillator(), g=c.createGain(); o.type=h[1]; o.frequency.value=f*h[0];
+        g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(h[2],t+0.008);
+        g.gain.exponentialRampToValueAtTime(0.0001,t+len);
+        o.connect(g); g.connect(out); o.start(t); o.stop(t+len+0.05);
+      });
+    });
+  }catch(e){}
+  return true;
+};
