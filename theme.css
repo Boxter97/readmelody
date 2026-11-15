@@ -72,3 +72,7 @@ html[data-theme="dark"] .stage .lvl .mx{color:#16181D}
 .countbig.pop{animation:gmcount .18s ease-out}
 @keyframes gmcount{from{transform:scale(1.25);opacity:.4}to{transform:scale(1);opacity:1}}
 @media (prefers-reduced-motion:reduce){ .countbig.pop{animation:none} }
+
+/* 메뉴 8칸 (K 요청 2026-11-16, 코드&스케일 추가): 컴퓨터에서 로고 옆 한 줄에 들어가게 칸 안쪽 여백만 줄임 (글씨 크기는 그대로) */
+@media (min-width:720.02px){ .band .nav a{padding:0 13px} }
+@media (max-width:720px){ .band .nav{gap:0} .band .nav a{font-size:14px;padding:4px 1px} }   /* 휴대폰 8칸: 글자가 옆 칸과 붙지 않게 */
