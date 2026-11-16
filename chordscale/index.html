@@ -285,7 +285,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 .itrow span{display:flex;gap:6px}
 .itrow i{font-style:normal;display:inline-flex;align-items:center;justify-content:center;flex:1;max-width:46px;min-width:0;height:38px;padding:0 4px;border:1.5px solid var(--line);border-radius:10px;font-weight:700;font-size:16px}
 .itrow i.r{background:var(--accent);border-color:var(--accent);color:var(--bg)}
-@media (max-width:720px){ .invtab{grid-template-columns:repeat(2,minmax(0,1fr))} .itrow{padding:10px} .itrow span{gap:4px} .itrow i{font-size:15px} #vsSel{grid-template-columns:repeat(var(--n,3),minmax(0,1fr))!important} #vsSel[data-n="2"]{--n:2} #vsSel[data-n="3"]{--n:3} #vqSel{grid-template-columns:repeat(var(--qn,5),minmax(0,1fr))!important} #vqSel[data-n="4"]{--qn:4} #vtSel{grid-template-columns:repeat(4,minmax(0,1fr))!important} #vrSel{grid-template-columns:repeat(7,minmax(0,1fr))!important} #vqSel{grid-template-columns:repeat(var(--qn,5),minmax(0,1fr))!important} .scales .scsel #vMultiBox{margin:0;grid-template-columns:minmax(0,1fr)} }
+@media (max-width:720px){ .invtab{grid-template-columns:repeat(2,minmax(0,1fr))} .itrow{padding:10px} .itrow span{gap:4px} .itrow i{font-size:15px} #vsSel{grid-template-columns:repeat(var(--n,3),minmax(0,1fr))!important} #vsSel[data-n="2"]{--n:2} #vsSel[data-n="3"]{--n:3} #vsSel[data-n="4"]{--n:2} #vqSel{grid-template-columns:repeat(var(--qn,5),minmax(0,1fr))!important} #vqSel[data-n="4"]{--qn:4} #vtSel{grid-template-columns:repeat(4,minmax(0,1fr))!important} #vrSel{grid-template-columns:repeat(7,minmax(0,1fr))!important} #vqSel{grid-template-columns:repeat(var(--qn,5),minmax(0,1fr))!important} .scales .scsel #vMultiBox{margin:0;grid-template-columns:minmax(0,1fr)} }
 
 .minis .none{grid-column:1 / -1;margin:8px 0;color:var(--muted);font-size:17px}
 .minis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:14px 0 16px;border-top:1.5px solid var(--line)}
@@ -741,10 +741,11 @@ const TYPES=[   // 줄 번호: 0 = 6번 줄 … 5 = 1번 줄
    sets:[{name:'6 · 4 · 3 · 2번 줄',shapes:INV4(D3,[0,2,3,4])},{name:'5 · 3 · 2 · 1번 줄',shapes:INV4(D3,[1,3,4,5])}]},
   {id:'d24',name:'드롭2&4',hint:'클로즈 보이싱에서 위에서 두 번째 · 네 번째 음을 한 옥타브씩 내린 모양이에요. 가운데 줄 하나를 건너뛰어요',
    sets:[{name:'6 · 5 · 3 · 2번 줄',shapes:INV4(D24,[0,1,3,4])},{name:'5 · 4 · 2 · 1번 줄',shapes:INV4(D24,[1,2,4,5])}]},
-  {id:'shell',name:'쉘',no:['m7b5'],hint:'근음 · 3음 · 7음 세 개만 치는 보이싱이에요. 5음은 빼요. 6번 줄 근음은 1 · 7 · 3, 5번 · 4번 줄 근음은 1 · 3 · 7 순서로 잡아요',
+  {id:'shell',name:'쉘',no:['m7b5'],hint:'근음 · 3음 · 7음 세 개만 치는 보이싱이에요. 5음은 빼요. 6번 줄 근음은 1 · 7 · 3, 5번 · 4번 · 3번 줄 근음은 1 · 3 · 7 순서로 잡아요',
    sets:[{name:'6번 줄 근음',shapes:[{name:'1 · 7 · 3',ord:[0,3,1],strs:[0,2,3]}]},     // K 확정 2026-11-17: 6번 줄 = 1 7 3
          {name:'5번 줄 근음',shapes:[{name:'1 · 3 · 7',ord:[0,1,3],strs:[1,2,3]}]},     // 5번 줄 = 1 3 7
-         {name:'4번 줄 근음',shapes:[{name:'1 · 3 · 7',ord:[0,1,3],strs:[2,3,4]}]}]},   // 4번 줄 = 1 3 7 (K 요청으로 추가, 순서는 Claude가 5번 줄과 같게)
+         {name:'4번 줄 근음',shapes:[{name:'1 · 3 · 7',ord:[0,1,3],strs:[2,3,4]}]},     // 4번 줄 = 1 3 7 (K 요청으로 추가, 순서는 Claude가 5번 줄과 같게)
+         {name:'3번 줄 근음',shapes:[{name:'1 · 3 · 7',ord:[0,1,3],strs:[3,4,5]}]}]},   // 3번 줄 = 1 3 7 (K 요청 2026-11-17, 1 7 3은 손이 안 닿아서 없음)
 ];
 let rL=store.get('vrl',0); if(!(rL>=0&&rL<7)) rL=0;
 let rA=store.get('vra',0); if(![-1,0,1].includes(rA)) rA=0;
