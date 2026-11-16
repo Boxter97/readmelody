@@ -236,7 +236,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 
 
 /* 코드&스케일 (K 요청 2026-11-16): 즉흥연주 스케일 상자와 같은 지판에 코드 · 스케일을 띄움 */
-#progs{grid-template-columns:repeat(2,minmax(0,1fr))}
+#progs{grid-template-columns:repeat(3,minmax(0,1fr))}
 .scales .scsel{padding:4px 0 10px}
 .scales .scsel .label,.fbctl .label{min-width:52px}
 #fb .fbarre{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5}
@@ -247,8 +247,6 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 .legend .lx{font-size:18px;color:var(--muted);line-height:1}
 .srow .sbtn{display:inline-flex;align-items:center}
 .flab{fill:var(--accent);font-size:15px;font-weight:700;text-anchor:middle;font-family:var(--f-body)}
-#tri{margin-top:10px;padding-top:18px;border-top:1.5px solid var(--line)}
-#tri h2{margin:0 0 2px}
 #trQual button{min-width:64px}
 #triRows{border-top:1.5px solid var(--line)}
 .minis .none{grid-column:1 / -1;margin:8px 0;color:var(--muted);font-size:17px}
@@ -271,7 +269,9 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 .minisvg .fdot.on .c{fill:var(--ink);stroke:var(--ink)} .minisvg .fdot.on text{fill:var(--bg)}
 @container (max-width:900px){ .minis{grid-template-columns:repeat(2,minmax(0,1fr))} }
 @container (max-width:560px){ .minis{grid-template-columns:minmax(0,1fr)} }
+@container (max-width:760px){ #progs{grid-template-columns:repeat(3,minmax(0,1fr))} }
 @media (max-width:720px){
+  #progs .pcard{padding:10px 8px} #progs .pcard .name{font-size:17px} #progs .pcard .sub{display:none}
   .scales .scsel{flex-direction:column;align-items:stretch;gap:6px}
   .scales .scsel .seg{display:grid;grid-auto-flow:row;grid-auto-columns:auto;grid-template-columns:repeat(4,minmax(0,1fr));flex:none}
   .scales .scsel .seg button{padding:6px 4px;font-size:16px;line-height:1.25;word-break:keep-all;border-right:1.5px solid var(--line);border-bottom:1.5px solid var(--line);margin:0 -1.5px -1.5px 0}
@@ -303,6 +303,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
   <section class="panel" aria-label="코드 · 스케일 고르기">
     <div id="progs" role="group" aria-label="코드 · 스케일">
       <button type="button" class="pcard" data-v="chord"><span class="tag">CHORD</span><span class="name">코드</span><span class="sub">기본 코드 · 하이 코드 · 7th 코드</span></button>
+      <button type="button" class="pcard" data-v="tri"><span class="tag">TRIAD</span><span class="name">트라이어드</span><span class="sub">기본 위치 · 1전위 · 2전위</span></button>
       <button type="button" class="pcard" data-v="scale"><span class="tag">SCALE</span><span class="name">스케일</span><span class="sub">메이저 · 마이너 · 펜타토닉 · 모드</span></button>
     </div>
   </section>
@@ -322,6 +323,12 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
       <div class="scsel field"><span class="label">모드</span><div class="seg" id="mdSel" role="group" aria-label="모드 고르기"></div></div>
     </div>
 
+    <div id="triCtl" hidden>
+      <div class="scsel field"><span class="label">근음</span><div class="seg" id="trRoot" role="group" aria-label="트라이어드 근음"></div></div>
+      <div class="scsel field"><span class="label">종류</span><div class="seg" id="trQual" role="group" aria-label="트라이어드 종류"></div></div>
+      <div class="scsel field"><span class="label">줄</span><div class="seg" id="trSet" role="group" aria-label="줄 묶음"></div></div>
+    </div>
+
     <div class="fbctl" id="fbctl">
       <div class="field" id="posField"><span class="label">포지션</span><div class="seg" id="fbPos" role="group" aria-label="포지션">
         <button type="button" data-v="0">전체</button><button type="button" data-v="1">1</button><button type="button" data-v="2">2</button><button type="button" data-v="3">3</button><button type="button" data-v="4">4</button><button type="button" data-v="5">5</button>
@@ -339,11 +346,6 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
     <div id="scaleRows"></div>
 
     <div id="tri" hidden>
-      <h2>트라이어드</h2>
-      <p class="hint">줄 세 개로 잡는 3화음이에요. 같은 코드를 기본 위치 · 1전위 · 2전위 세 가지 모양으로 지판 위에서 볼 수 있어요</p>
-      <div class="scsel field"><span class="label">근음</span><div class="seg" id="trRoot" role="group" aria-label="트라이어드 근음"></div></div>
-      <div class="scsel field"><span class="label">종류</span><div class="seg" id="trQual" role="group" aria-label="트라이어드 종류"></div></div>
-      <div class="scsel field"><span class="label">줄</span><div class="seg" id="trSet" role="group" aria-label="줄 묶음"></div></div>
       <div class="fbwrap" id="fb2Wrap"><svg id="fb2" role="img" aria-label="기타 지판 위 트라이어드"></svg></div>
       <div class="scrollhint" id="fb2Hint" hidden>← 지판을 옆으로 밀어서 보세요 →</div>
       <div class="legend"><span><i class="lr"></i>근음</span><span><b class="lx">×</b>안 치는 줄</span><span>점을 누르면 그 음이 나요</span></div>
@@ -395,6 +397,8 @@ const GROUPS=[
 const SCALES=[
   {id:'major',name:'메이저',sub:'밝은 기본 음계',iv:[[0,0,'1'],[1,2,'2'],[2,4,'3'],[3,5,'4'],[4,7,'5'],[5,9,'6'],[6,11,'7']]},
   {id:'minor',name:'내추럴 마이너',sub:'어두운 기본 음계',iv:[[0,0,'1'],[1,2,'2'],[2,3,'♭3'],[3,5,'4'],[4,7,'5'],[5,8,'♭6'],[6,10,'♭7']]},
+  {id:'harm',name:'하모닉 마이너',sub:'내추럴 마이너에서 7음을 반음 올림',iv:[[0,0,'1'],[1,2,'2'],[2,3,'♭3'],[3,5,'4'],[4,7,'5'],[5,8,'♭6'],[6,11,'7']]},
+  {id:'melo',name:'멜로딕 마이너',sub:'내추럴 마이너에서 6 · 7음을 반음 올림',iv:[[0,0,'1'],[1,2,'2'],[2,3,'♭3'],[3,5,'4'],[4,7,'5'],[5,9,'6'],[6,11,'7']]},
   {id:'majpent',name:'메이저 펜타토닉',sub:'메이저에서 4 · 7을 뺀 다섯 음',iv:[[0,0,'1'],[1,2,'2'],[2,4,'3'],[4,7,'5'],[5,9,'6']]},
   {id:'minpent',name:'마이너 펜타토닉',sub:'마이너에서 2 · ♭6을 뺀 다섯 음',iv:[[0,0,'1'],[2,3,'♭3'],[3,5,'4'],[4,7,'5'],[6,10,'♭7']]},
   {id:'blues',name:'블루스 스케일',sub:'마이너 펜타토닉 + ♭5',mark:'블루 노트 — 살짝 걸쳤다가 옆 음으로 풀면 블루스 느낌이 나요',iv:[[0,0,'1'],[2,3,'♭3'],[3,5,'4'],[4,6,'♭5',1],[4,7,'5'],[6,10,'♭7']]},
@@ -428,7 +432,7 @@ const INV=['기본 위치','1전위','2전위'];
 const store={get(k,d){try{const v=localStorage.getItem('cs-'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},
              set(k,v){try{localStorage.setItem('cs-'+k,JSON.stringify(v))}catch(e){}}};
 const $=id=>document.getElementById(id);
-let tab=store.get('tab','chord'); if(tab!=='scale') tab='chord';
+let tab=store.get('tab','chord'); if(tab!=='scale'&&tab!=='tri') tab='chord';
 if(new URLSearchParams(location.search).get('tab')) tab=new URLSearchParams(location.search).get('tab');
 /* 코드 찾기 (K 요청 2026-11-16 "종류별로 모아 놓으면 찾기 힘들다"): 근음을 누르면 그 근음의 코드가 작은 그림으로 모두 나옴 */
 const FLAT=GROUPS.flatMap(g=>g.chords.map(c=>Object.assign(c,{grp:g.title.replace(/ \(.*/,'')})));
@@ -506,10 +510,17 @@ function fbBoxes(sc,rpc){
     let sh=0; if(hi>FRETS&&lo-12>=0) sh=-12; if(lo<0) sh=12;
     notes=notes.map(([st,f])=>[st,f+sh]); lo+=sh; hi+=sh;
     const first=st=>OPEN[st]+notes.find(n=>n[0]===st)[1];
-    for(let st=0;st<6;st++) for(let f=lo;f<=hi;f++){ const m=OPEN[st]+f;
-      if(!extra.includes(((m-40-rf)%12+12)%12)) continue;
-      if(st>0&&m<=first(st)) continue; if(st<5&&m>=first(st+1)) continue;
-      notes.push([st,f]); }
+    // 펜타토닉이 아닌 음: 박스 안에 자리가 있으면 거기, 없으면 박스에서 가장 가까운 자리 (스케일 음이 빠지지 않게 — 7음 스케일은 박스가 넓어질 수 있음)
+    const isX=m=>extra.includes(((m-40-rf)%12+12)%12), has=m=>notes.some(n=>OPEN[n[0]]+n[1]===m);
+    for(let f=lo;f<=hi;f++){ let m=OPEN[0]+f; if(isX(m)&&m<first(0)) notes.push([0,f]); m=OPEN[5]+f; if(isX(m)&&m>first(5)&&!has(m)) notes.push([5,f]); }   // 맨 아래 · 맨 위 줄의 바깥쪽 음
+    const ps=notes.map(n=>OPEN[n[0]]+n[1]), pmin=Math.min(...ps), pmax=Math.max(...ps);
+    for(let m=pmin+1;m<pmax;m++){ if(!isX(m)||has(m)) continue; let best=null;
+      for(let st=0;st<6;st++){ const f=m-OPEN[st]; if(f<0||f>FRETS) continue;
+        const out=f<lo?lo-f:f>hi?f-hi:0, ord=(st>0&&m<=first(st)?1:0)+(st<5&&m>=first(st+1)?1:0), sc=out*10+ord;
+        if(!best||sc<best[0]) best=[sc,st,f]; }
+      if(best) notes.push([best[1],best[2]]); }
+    notes=notes.filter(n=>n[1]>=0&&n[1]<=FRETS);
+    const fs=notes.map(n=>n[1]); lo=Math.min(...fs); hi=Math.max(...fs);
     return {lo,hi,set:new Set(notes.map(n=>n[0]+'-'+n[1]))};
   });
 }
@@ -622,9 +633,10 @@ function mini(c){
 function noteChips(r,iv){ return iv.map(([k,s,d,blue])=>`<span class="note${blue?' blue':''}${s===0?' root':''}"><b>${krName(spell(r,k,s))}</b><span>${d}</span></span>`).join(''); }
 const PLAY='<svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" style="fill:currentColor;margin-right:8px;vertical-align:-1px"><path d="M4 2l10 6-10 6z"/></svg>듣기';
 function render(){
-  const isC=tab==='chord';
+  const isC=tab==='chord', isT=tab==='tri';
   $('progs').querySelectorAll('.pcard').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===tab));
-  $('chordCtl').hidden=!isC; $('scaleCtl').hidden=isC; $('posField').hidden=isC; $('minis').hidden=!isC; $('boardArea').hidden=isC; $('tri').hidden=!isC;
+  $('chordCtl').hidden=!isC; $('scaleCtl').hidden=isC||isT; $('triCtl').hidden=!isT; $('posField').hidden=isC||isT; $('minis').hidden=!isC; $('boardArea').hidden=isC||isT; $('tri').hidden=!isT;
+  $('legend').hidden=isT; $('scaleRows').hidden=isT;
   if(isC){
     $('boxTitle').textContent='코드';
     $('boxHint').textContent='근음과 종류로 코드를 찾아보세요. 코드를 누르면 소리가 나요';
@@ -633,6 +645,8 @@ function render(){
     $('minis').innerHTML=chordsOf(cRoot,cQual).map(c=>`<button type="button" class="mini" data-v="${FLAT.indexOf(c)}" aria-label="${c.name} ${c.grp} 듣기"><span class="mhead"><span class="mname">${c.name}</span><span class="mgrp">${c.grp}</span><span class="mplay">${PLAY}</span></span>${mini(c)}</button>`).join('')||'<p class="none">이 근음 · 종류의 코드는 아직 없어요</p>';
     $('legend').innerHTML='<span><i class="lr"></i>근음</span><span><i class="lb"></i>바레 — 한 손가락으로 여러 줄을 눌러요</span><span><b class="lx">×</b>안 치는 줄</span>';
     $('scaleRows').innerHTML='';
+  }else if(isT){
+    $('boxTitle').textContent='트라이어드'; $('boxHint').textContent='줄 세 개로 잡는 3화음이에요. 같은 코드를 기본 위치 · 1전위 · 2전위 세 가지 모양으로 지판 위에서 볼 수 있어요';
     const tq=TQ(), tr=trR(), tt=tq.iv[1][1]===3?ROOTS_MIN:ROOTS_MAJ;
     $('trRoot').innerHTML=tt.map((x,i)=>`<button type="button" data-v="${i}" aria-pressed="${i===trRoot}">${LETTERS[x[0]]+accTxt(x[1])}</button>`).join('');
     $('trQual').innerHTML=TRI.map(x=>`<button type="button" data-v="${x.id}" aria-pressed="${x.id===trQual}" aria-label="${x.name}">${x.sym||'M'}</button>`).join('');
@@ -650,7 +664,7 @@ function render(){
   }
   $('fbPos').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.v===fbPos));
   $('fbLab').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===fbLab));
-  if(!isC) drawFB();
+  if(!isC&&!isT) drawFB();
 }
 const chips=()=>document.querySelectorAll('#scaleRows .note');
 function light(k,pos){            // 듣기: 글자 칸과 지판 점을 함께 켬 (pos가 있으면 그 점 하나만)
@@ -704,7 +718,7 @@ function buildUI(){
   $('scaleRows').addEventListener('click',e=>{ if(e.target.closest('#hear')) hearScale(); });
   $('fb').addEventListener('click',async e=>{const g=e.target.closest('.fdot'); if(!g) return; stop(); audio(); await ready();
     const a=audio(); tone(+g.dataset.m,a.currentTime+0.02,1.4,0.85); g.classList.add('on'); setTimeout(()=>g.classList.remove('on'),450);});
-  let rt; window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{ if(tab==='scale') drawFB(); else drawTri(); },150)});
+  let rt; window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{ if(tab==='scale') drawFB(); else if(tab==='tri') drawTri(); },150)});
 }
 buildUI(); render();
 })();
