@@ -474,7 +474,7 @@ const mk={
     const other=dir==='sol'?'let':'sol';
     return {lv:1,kind:'note',ansSys:other,acc:hard(),ask:dir==='sol'?'이 계이름의 음이름은?':'이 음이름의 계이름은?',
       big:nm(n,dir),ans:n,ansTxt:nm(n,other),
-      expl:'<b>'+SOL[n.L]+'</b> = <b>'+LET[n.L]+'</b>'+(n.a?' → '+nm(n,'sol')+' = '+nm(n,'let'):'')+' &nbsp;(도레미파솔라시 = CDEFGAB)'};
+      expl:'<b>'+SOL[n.L]+'</b> = <b>'+LET[n.L]+'</b>'+(n.a?' → '+nm(n,'sol')+' = '+nm(n,'let'):'')};
   },
   2(){ return keyQ(true); },
   3(){ return keyQ(false); },
