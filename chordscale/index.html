@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <script src="../theme.js?v=3"></script>
-<link rel="stylesheet" href="../theme.css?v=4">
+<link rel="stylesheet" href="../theme.css?v=5">
 <meta name="description" content="기타 코드와 스케일을 지판에서 보고 듣는 페이지 — 기본 코드 · 하이 코드 · 7th 코드, 메이저 · 마이너 · 펜타토닉 · 모드 스케일 12키">
 <title>코드&amp;스케일 | 기타MT</title>
 <link rel="icon" href="../favicon.ico?v=6" sizes="any">
@@ -387,13 +387,19 @@ const QUAL={
   'M7':  {kr:'메이저7',      iv:[[0,0,'1'],[2,4,'3'],[4,7,'5'],[6,11,'7']]},
   'm7♭5':{kr:'하프 디미니쉬', iv:[[0,0,'1'],[2,3,'♭3'],[4,6,'♭5'],[6,10,'♭7']]},
 };
-const C=(r,q,frets,barre)=>({r,q,frets,barre,name:r+q});
+const C=(r,q,frets,barre)=>({r,q,frets:typeof frets==='string'?frets.split('').map(x=>x==='x'?'x':+x):frets,barre,name:r+q});
+/* 하이 코드 (K 요청 2026-11-16 "C D E F G A B 모두 하이 코드, 5번 줄 6번 줄"): 근음마다 6번 줄 근음 · 5번 줄 근음 모양, 종류는 교재 하이 코드와 같은 M · 7 · m · m7 */
+const ROOT6={C:8,D:10,E:12,F:1,G:3,A:5,B:7}, ROOT5={C:3,D:5,E:7,F:8,G:10,A:12,B:2};
+const SH6={'':[0,2,2,1,0,0],'7':[0,2,0,1,0,0],'m':[0,2,2,0,0,0],'m7':[0,2,0,0,0,0],'M7':[0,'x',1,1,0,'x']};   // M7은 교재 GM7(3x443x) 모양 (K 요청 2026-11-16 "메이저7도 전부")
+const SH5={'':['x',0,2,2,2,0],'7':['x',0,2,0,2,0],'m':['x',0,2,2,1,0],'m7':['x',0,2,0,1,0],'M7':['x',0,2,1,2,0]};   // M7은 교재 CM7(x35453) 모양
+const HIGH=s=>LETTERS.flatMap(r=>Object.keys(s===6?SH6:SH5).map(q=>{ const f=(s===6?ROOT6:ROOT5)[r], sh=(s===6?SH6:SH5)[q];
+  return Object.assign(C(r,q,sh.map(x=>x==='x'?'x':x+f),s===6&&q==='M7'?undefined:[f,s===6?0:1,5]),{grp:s+'번 줄 하이 코드'}); }));   // 6번 줄 M7은 바레 없음
 const GROUPS=[
   {id:'major',name:'기본 메이저',title:'기본 코드 (메이저)',chords:[C('A','','x02220'),C('E','','022100'),C('D','','xx0232'),C('C','','x32010'),C('G','','320003')]},
   {id:'minor',name:'기본 마이너',title:'기본 코드 (마이너 · 마이너7)',chords:[C('A','m','x02210'),C('E','m','022000'),C('D','m','xx0231'),C('A','m7','x02010'),C('E','m7','020000'),C('D','m7','xx0211')]},
   {id:'dom',name:'기본 7th',title:'기본 코드 (7th)',chords:[C('A','7','x02020'),C('E','7','020100'),C('D','7','xx0212'),C('C','7','x32310'),C('G','7','320001'),C('B','7','x21202')]},
-  {id:'barre',name:'하이 코드',title:'하이 코드 (바레)',chords:[C('F','','133211',[1,0,5]),C('F','7','131211',[1,0,5]),C('F','m','133111',[1,0,5]),C('F','m7','131111',[1,0,5]),
-    C('B','','x24442',[2,1,5]),C('B','7','x24242',[2,1,5]),C('B','m','x24432',[2,1,5]),C('B','m7','x24232',[2,1,5])]},
+  {id:'barre6',name:'하이 코드',title:'6번 줄 하이 코드',chords:HIGH(6)},
+  {id:'barre5',name:'하이 코드',title:'5번 줄 하이 코드',chords:HIGH(5)},
   {id:'seven',name:'7th 코드',title:'7th 코드 (M7 · 7 · m7 · m7♭5)',chords:[C('G','M7','3x443x'),C('G','7','3x343x'),C('G','m7','3x333x'),C('G','m7♭5','3x332x'),
     C('C','M7','x35453',[3,1,5]),C('C','7','x35353',[3,1,5]),C('C','m7','x35343',[3,1,5]),C('C','m7♭5','x3434x')]},
 ];
@@ -448,7 +454,10 @@ const $=id=>document.getElementById(id);
 let tab=store.get('tab','chord'); if(tab!=='scale'&&tab!=='tri') tab='chord';
 if(new URLSearchParams(location.search).get('tab')) tab=new URLSearchParams(location.search).get('tab');
 /* 코드 찾기 (K 요청 2026-11-16 "종류별로 모아 놓으면 찾기 힘들다"): 근음을 누르면 그 근음의 코드가 작은 그림으로 모두 나옴 */
-const FLAT=GROUPS.flatMap(g=>g.chords.map(c=>Object.assign(c,{grp:g.title.replace(/ \(.*/,'')})));
+const FLAT=(()=>{ const seen=new Set(), out=[];
+  GROUPS.forEach(g=>g.chords.forEach(c=>{ const k=c.name+'|'+c.frets.join(','); if(seen.has(k)) return; seen.add(k);
+    out.push(Object.assign(c,{grp:c.grp||(g.id.startsWith('barre')?g.title:g.title.replace(/ \(.*/,'').replace('기본 코드','오픈 코드'))})); }));
+  return out; })();
 const QORD=['','m','7','m7','M7','m7♭5'];
 const QKR={'':'메이저','m':'마이너','7':'7','m7':'m7','M7':'M7','m7♭5':'m7♭5'};
 const QLAB={'':'M','m':'m','7':'7','m7':'m7','M7':'M7','m7♭5':'m7♭5'};   // 종류 버튼 이름 (K 요청: 메이저 · 마이너 · m7 · M7 식)
@@ -547,7 +556,7 @@ function fbBoxes(sc,rpc){
 // 코드 한 개의 점들: 줄마다 한 음 (안 치는 줄은 mutes)
 function chordModel(c){
   const r=chRoot(c), q=QUAL[c.q], dots=[], mutes=[];
-  c.frets.split('').forEach((x,st)=>{
+  c.frets.forEach((x,st)=>{
     if(x==='x'){ mutes.push(st); return; }
     const f=+x, m=OPEN[st]+f, s=((m-r.pc)%12+12)%12, i=q.iv.findIndex(v=>v[1]===s), v=q.iv[i];
     dots.push({st,f,m,k:i,d:v[2],name:krName(spell(r,v[0],v[1])),root:s===0});
@@ -642,11 +651,12 @@ async function hearTri(){           // 낮은 자리부터 모양마다: 한 음
 // 작은 코드 그림 (코드표 모양, 1~5프렛) — 점 안 글자는 도수 / 음이름
 function mini(c){
   const md=chordModel(c), W=50, G=32, X0=34, T=20, R=14, H=T+5*G+30, WD=X0+5*W+8;
-  const fx=f=>f===0?15:X0+(f-.5)*W, sy=st=>T+(5-st)*G;
+  const top=Math.max(...md.dots.map(d=>d.f)), lo=Math.min(...md.dots.filter(d=>d.f>0).map(d=>d.f)), s0=top>5?lo:1;   // 그림의 첫 프렛
+  const fx=f=>f===0?15:X0+(f-s0+.5)*W, sy=st=>T+(5-st)*G;
   let h='';
-  for(let f=1;f<=5;f++) h+=`<line class="ffret" x1="${X0+f*W}" y1="${T}" x2="${X0+f*W}" y2="${T+5*G}"/><text class="fnum" x="${X0+(f-.5)*W}" y="${T+5*G+25}">${f}</text>`;
+  for(let i=1;i<=5;i++) h+=`<line class="ffret" x1="${X0+i*W}" y1="${T}" x2="${X0+i*W}" y2="${T+5*G}"/><text class="fnum" x="${X0+(i-.5)*W}" y="${T+5*G+25}">${s0+i-1}</text>`;
   for(let st=0;st<6;st++) h+=`<line class="fstr" x1="${X0}" y1="${sy(st)}" x2="${WD-4}" y2="${sy(st)}" stroke-width="${(1+st*.3).toFixed(1)}"/>`;
-  h+=`<line class="fnut" x1="${X0}" y1="${T-2}" x2="${X0}" y2="${T+5*G+2}"/>`;
+  h+=s0===1?`<line class="fnut" x1="${X0}" y1="${T-2}" x2="${X0}" y2="${T+5*G+2}"/>`:`<line class="ffret" x1="${X0}" y1="${T}" x2="${X0}" y2="${T+5*G}"/>`;   // 1프렛부터일 때만 굵은 너트
   if(md.barre){ const [f,a,b]=md.barre; h+=`<rect class="fbarre" x="${fx(f)-R-3}" y="${sy(b)-R-3}" width="${2*R+6}" height="${sy(a)-sy(b)+2*R+6}" rx="${R+3}"/>`; }
   md.mutes.forEach(st=>{ h+=`<path class="fmute" d="M${fx(0)-6} ${sy(st)-6}l12 12M${fx(0)+6} ${sy(st)-6}l-12 12"/>`; });
   md.dots.forEach(n=>{ h+=`<g class="fdot${n.root?' root':''}" data-p="${n.st}-${n.f}" transform="translate(${fx(n.f)} ${sy(n.st)})"><circle class="c" r="${R}"/><text${fbLab==='name'&&n.name.length>1?' class="sm"':''}>${fbLab==='name'?n.name:n.d}</text></g>`; });
