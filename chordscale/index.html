@@ -390,20 +390,24 @@ const QUAL={
 const C=(r,q,frets,barre)=>({r,q,frets:typeof frets==='string'?frets.split('').map(x=>x==='x'?'x':+x):frets,barre,name:r+q});
 /* 하이 코드 (K 요청 2026-11-16 "C D E F G A B 모두 하이 코드, 5번 줄 6번 줄"): 근음마다 6번 줄 근음 · 5번 줄 근음 모양, 종류는 교재 하이 코드와 같은 M · 7 · m · m7 */
 const ROOT6={C:8,D:10,E:12,F:1,G:3,A:5,B:7}, ROOT5={C:3,D:5,E:7,F:8,G:10,A:12,B:2};
-const SH6={'':[0,2,2,1,0,0],'7':[0,2,0,1,0,0],'m':[0,2,2,0,0,0],'m7':[0,2,0,0,0,0],'M7':[0,'x',1,1,0,'x'],'m7♭5':[0,'x',0,0,-1,'x']};   // m7♭5는 교재 Gm7♭5(3x332x) 모양 (K 요청 2026-11-16 "전부 넣고")   // M7은 교재 GM7(3x443x) 모양 (K 요청 2026-11-16 "메이저7도 전부")
-const SH5={'':['x',0,2,2,2,0],'7':['x',0,2,0,2,0],'m':['x',0,2,2,1,0],'m7':['x',0,2,0,1,0],'M7':['x',0,2,1,2,0],'m7♭5':['x',0,1,0,1,'x']};   // m7♭5는 교재 Cm7♭5(x3434x) 모양   // M7은 교재 CM7(x35453) 모양
-const HIGH=s=>LETTERS.flatMap(r=>Object.keys(s===6?SH6:SH5).map(q=>{ const f=(s===6?ROOT6:ROOT5)[r], sh=(s===6?SH6:SH5)[q];
+const SH6={'':[0,2,2,1,0,0],'7':[0,2,0,1,0,0],'m':[0,2,2,0,0,0],'m7':[0,2,0,0,0,0]};   // 하이 코드 = 교재 하이 코드(F · B) 모양
+const SH5={'':['x',0,2,2,2,0],'7':['x',0,2,0,2,0],'m':['x',0,2,2,1,0],'m7':['x',0,2,0,1,0]};
+/* 7th 코드 (K 요청 2026-11-17 "7th 코드 왜 G밖에 없어"): 교재 7th 코드(G · C) 모양을 근음 7개로 — M7 · 7 · m7 · m7♭5 */
+const SV6={'M7':[0,'x',1,1,0,'x'],'7':[0,'x',0,1,0,'x'],'m7':[0,'x',0,0,0,'x'],'m7♭5':[0,'x',0,0,-1,'x']};   // GM7 3x443x · G7 3x343x · Gm7 3x333x · Gm7♭5 3x332x
+const SV5={'M7':['x',0,2,1,2,0],'7':['x',0,2,0,2,0],'m7':['x',0,2,0,1,0],'m7♭5':['x',0,1,0,1,'x']};       // CM7 x35453 · C7 x35353 · Cm7 x35343 · Cm7♭5 x3434x
+const MAKE=(s,shapes,label,barreOK)=>LETTERS.flatMap(r=>Object.keys(shapes).map(q=>{ const f=(s===6?ROOT6:ROOT5)[r], sh=shapes[q];
   let fr=sh.map(x=>x==='x'?'x':x+f); if(Math.min(...fr.filter(x=>x!=='x'))<1) fr=fr.map(x=>x==='x'?'x':x+12);   // 개방현이 생기면(F m7♭5) 12프렛 위로
-  return Object.assign(C(r,q,fr,(q==='M7'&&s===6)||q==='m7♭5'?undefined:[f,s===6?0:1,5]),{grp:s+'번 줄 하이 코드'}); }));   // 6번 줄 M7은 바레 없음
+  const bar=barreOK(q)?[f,s===6?0:1,5]:undefined;
+  return Object.assign(C(r,q,fr,bar),{grp:s+'번 줄 '+label}); }));
 const GROUPS=[
   {id:'major',name:'기본 메이저',title:'기본 코드 (메이저)',chords:[C('A','','x02220'),C('E','','022100'),C('D','','xx0232'),C('C','','x32010'),C('G','','320003')]},
   {id:'minor',name:'기본 마이너',title:'기본 코드 (마이너 · 마이너7)',chords:[C('A','m','x02210'),C('E','m','022000'),C('D','m','xx0231'),C('A','m7','x02010'),C('E','m7','020000'),C('D','m7','xx0211')]},
   {id:'dom',name:'기본 7th',title:'기본 코드 (7th)',chords:[C('A','7','x02020'),C('E','7','020100'),C('D','7','xx0212'),C('C','7','x32310'),C('G','7','320001'),C('B','7','x21202')]},
   {id:'openM7',name:'오픈 코드',title:'기본 코드',chords:[C('C','M7','x32000'),C('D','M7','xx0222'),C('E','M7','021100'),C('F','M7','xx3210'),C('G','M7','320002'),C('A','M7','x02120')]},   // 오픈 M7 (K 요청 2026-11-16), B는 오픈 모양이 없음
-  {id:'barre6',name:'하이 코드',title:'6번 줄 하이 코드',chords:HIGH(6)},
-  {id:'barre5',name:'하이 코드',title:'5번 줄 하이 코드',chords:HIGH(5)},
-  {id:'seven',name:'7th 코드',title:'7th 코드 (M7 · 7 · m7 · m7♭5)',chords:[C('G','M7','3x443x'),C('G','7','3x343x'),C('G','m7','3x333x'),C('G','m7♭5','3x332x'),
-    C('C','M7','x35453',[3,1,5]),C('C','7','x35353',[3,1,5]),C('C','m7','x35343',[3,1,5]),C('C','m7♭5','x3434x')]},
+  {id:'barre6',name:'하이 코드',title:'6번 줄 하이 코드',chords:MAKE(6,SH6,'하이 코드',()=>true)},
+  {id:'barre5',name:'하이 코드',title:'5번 줄 하이 코드',chords:MAKE(5,SH5,'하이 코드',()=>true)},
+  {id:'seven6',name:'7th 코드',title:'6번 줄 7th 코드',chords:MAKE(6,SV6,'7th 코드',()=>false)},
+  {id:'seven5',name:'7th 코드',title:'5번 줄 7th 코드',chords:MAKE(5,SV5,'7th 코드',q=>q!=='m7♭5')},   // 5번 줄 7 · m7은 하이 코드와 같은 모양이라 화면에는 하이 코드 쪽만 나옴
 ];
 
 /* 스케일 — [근음에서 몇 번째 글자, 몇 반음, 도수, 강조(블루 노트 · 모드 특징음)] */
