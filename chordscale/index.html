@@ -254,6 +254,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 #trMultiBox,.scsel .seg.acc{margin-left:10px}
 .scsel .seg.acc button{min-width:52px;font-size:19px}
 #rootSel button,#trRoot button,#crSel button{min-width:52px}
+#scSel button{min-width:92px}
 .minis .none{grid-column:1 / -1;margin:8px 0;color:var(--muted);font-size:17px}
 .minis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:14px 0 16px;border-top:1.5px solid var(--line)}
 .mini{display:flex;flex-direction:column;gap:6px;padding:12px 14px 8px;border:2px solid var(--line);border-radius:16px;background:var(--bg);color:var(--ink);text-align:left;min-width:0}
@@ -280,7 +281,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
   .scales .scsel{flex-direction:column;align-items:stretch;gap:6px}
   .scales .scsel .seg{display:grid;grid-auto-flow:row;grid-auto-columns:auto;grid-template-columns:repeat(4,minmax(0,1fr));flex:none}
   .scales .scsel .seg button{padding:6px 4px;font-size:16px;line-height:1.25;word-break:keep-all;border-right:1.5px solid var(--line);border-bottom:1.5px solid var(--line);margin:0 -1.5px -1.5px 0}
-  #crSel{grid-template-columns:repeat(7,minmax(0,1fr))} #cqSel{grid-template-columns:repeat(6,minmax(0,1fr))} #cqSel button{font-size:15px;padding:6px 1px} #rootSel,#trRoot{grid-template-columns:repeat(7,minmax(0,1fr))} .scales .scsel .seg.acc{margin:0;grid-template-columns:repeat(2,minmax(0,1fr))} #scSel{grid-template-columns:repeat(3,minmax(0,1fr))}
+  #crSel{grid-template-columns:repeat(7,minmax(0,1fr))} #cqSel{grid-template-columns:repeat(6,minmax(0,1fr))} #cqSel button{font-size:15px;padding:6px 1px} #rootSel,#trRoot{grid-template-columns:repeat(7,minmax(0,1fr))} .scales .scsel .seg.acc{margin:0;grid-template-columns:repeat(2,minmax(0,1fr))} #scSel{grid-template-columns:repeat(4,minmax(0,1fr))} #mdSel[data-n="3"]{grid-template-columns:repeat(3,minmax(0,1fr))}
   .scales .scsel #trMultiBox{margin:0;grid-template-columns:minmax(0,1fr)}
   .minis{gap:10px}
 }
@@ -326,7 +327,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
     <div id="scaleCtl" hidden>
       <div class="scsel field"><span class="label">근음</span><div class="seg" id="rootSel" role="group" aria-label="근음"></div><div class="seg acc" id="rootAcc" role="group" aria-label="올림 · 내림"><button type="button" data-v="1" aria-label="샵 (반음 올림)">♯</button><button type="button" data-v="-1" aria-label="플랫 (반음 내림)">♭</button></div></div>
       <div class="scsel field"><span class="label">스케일</span><div class="seg" id="scSel" role="group" aria-label="스케일 고르기"></div></div>
-      <div class="scsel field"><span class="label">모드</span><div class="seg" id="mdSel" role="group" aria-label="모드 고르기"></div></div>
+      <div class="scsel field" id="mdField"><span class="label">종류</span><div class="seg" id="mdSel" role="group" aria-label="스케일 종류 고르기"></div></div>
     </div>
 
     <div id="triCtl" hidden>
@@ -420,6 +421,14 @@ const MODES=[
   {id:'locrian',name:'로크리안',sub:'마이너에서 2 · 5음을 반음 내림',mark:MK,iv:[[0,0,'1'],[1,1,'♭2'],[2,3,'♭3'],[3,5,'4'],[4,6,'♭5',1],[5,8,'♭6'],[6,10,'♭7']]},
 ];
 const ALLSC=SCALES.concat(MODES);
+/* 스케일 고르기 (K 요청 2026-11-16): 먼저 묶음(메이저 · 마이너 · 펜타토닉 · 모드) → 그 안의 종류 */
+const CATS=[
+  {id:'major',name:'메이저',items:[['major','메이저']]},
+  {id:'minor',name:'마이너',items:[['minor','내추럴'],['harm','하모닉'],['melo','멜로딕']]},
+  {id:'pent',name:'펜타토닉',items:[['majpent','메이저'],['minpent','마이너'],['blues','블루스']]},
+  {id:'mode',name:'모드',items:MODES.map(m=>[m.id,m.name])},
+];
+const catOf=id=>CATS.find(c=>c.items.some(x=>x[0]===id));
 // 근음 고르기 (K 요청 2026-11-16): C D E F G A B + 오른쪽 ♯ · ♭ 체크. 아래 표는 예전에 저장된 근음(0~11)을 옮길 때만 씀
 const ROOTS_MAJ=[[0,0],[1,-1],[1,0],[2,-1],[2,0],[3,0],[3,1],[4,0],[5,-1],[5,0],[6,-1],[6,0]];
 const ROOTS_MIN=[[0,0],[0,1],[1,0],[2,-1],[2,0],[3,0],[3,1],[4,0],[4,1],[5,0],[6,-1],[6,0]];
@@ -677,8 +686,10 @@ function render(){
     $('boxTitle').textContent='스케일'; $('boxHint').textContent='근음(♯ · ♭은 오른쪽에서 체크)과 스케일을 고르면 지판에 음이 나와요. 포지션을 고르면 그 자리만 진하게 보여요';
     $('rootSel').innerHTML=LETTERS.map((l,i)=>`<button type="button" data-v="${i}" aria-pressed="${i===scL}">${l}</button>`).join('');
     $('rootAcc').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.v===scA));
-    $('scSel').innerHTML=SCALES.map(x=>`<button type="button" data-v="${x.id}" aria-pressed="${x.id===scId}">${x.name}</button>`).join('');
-    $('mdSel').innerHTML=MODES.map(x=>`<button type="button" data-v="${x.id}" aria-pressed="${x.id===scId}">${x.name}</button>`).join('');
+    const cat=catOf(scId);
+    $('scSel').innerHTML=CATS.map(x=>`<button type="button" data-v="${x.id}" aria-pressed="${x===cat}">${x.name}</button>`).join('');
+    $('mdField').hidden=cat.items.length<2; $('mdSel').dataset.n=cat.items.length;
+    $('mdSel').innerHTML=cat.items.map(([id,t])=>`<button type="button" data-v="${id}" aria-pressed="${id===scId}">${t}</button>`).join('');
     $('legend').innerHTML='<span><i class="lr"></i>근음</span>'+(sc.mark?`<span><i></i>${sc.mark}</span>`:'')+'<span>점을 누르면 그 음이 나요</span>';
     $('scaleRows').innerHTML=`<div class="srow"><div class="sname">${r.label} ${sc.name}<small>${sc.sub}</small></div><div class="notes">${noteChips(r,sc.iv)}</div><button type="button" class="btn sbtn" id="hear">${PLAY}</button></div>`;
   }
@@ -737,8 +748,9 @@ function buildUI(){
     const a=audio(); tone(+g.dataset.m,a.currentTime+0.02,1.4,0.85); g.classList.add('on'); setTimeout(()=>g.classList.remove('on'),450);});
   on('rootSel',v=>{scL=+v;store.set('rootl',scL)});
   on('rootAcc',v=>{scA=scA===+v?0:+v;store.set('roota',scA)});
-  on('scSel',v=>{scId=v;store.set('sc',scId)});
-  on('mdSel',v=>{scId=v;store.set('sc',scId)});
+  const pickSc=id=>{ scId=id; store.set('sc',scId); store.set('sclast',Object.assign({},store.get('sclast',{}),{[catOf(id).id]:id})); };
+  on('scSel',v=>{ pickSc(scId); const c=CATS.find(x=>x.id===v), last=(store.get('sclast',{})||{})[v]; pickSc(c.items.some(x=>x[0]===last)?last:c.items[0][0]); });   // 묶음을 누르면 그 묶음에서 마지막에 본 종류
+  on('mdSel',v=>pickSc(v));
   on('fbPos',v=>{fbPos=+v;store.set('fbpos',fbPos)});
   on('fbLab',v=>{fbLab=v;store.set('fblab',fbLab)});
   $('scaleRows').addEventListener('click',e=>{ if(e.target.closest('#hear')) hearScale(); });
