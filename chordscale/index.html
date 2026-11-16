@@ -307,6 +307,17 @@ html[data-theme="dark"]{--vc0:#6C8CFF;--vc1:#FF6B6B;--vc2:#FFB020;--vc3:#40C057}
 .itrow b .vsw{display:inline-block;margin-right:8px}
 .itrow b{display:flex;align-items:center}
 .itrow b{display:flex;align-items:center}
+
+/* 음 순서 칸 = 고르기 버튼 (K 요청 2026-11-17 "누르면 스케일처럼 그 부분만 켜지게, 전체 칸도") */
+#vInvtab{grid-template-columns:minmax(96px,.55fr) repeat(var(--cn,4),minmax(0,1fr))}
+#vInvtab[data-n="1"]{--cn:1} #vInvtab[data-n="2"]{--cn:2} #vInvtab[data-n="3"]{--cn:3}
+#vInvtab[data-n="1"],#vInvtab[data-n="2"]{grid-template-columns:minmax(96px,.55fr) repeat(var(--cn),minmax(0,1fr)) minmax(0,1fr)}
+#vRows{border-top:1.5px solid var(--line);margin-top:8px}
+#vInvtab .itrow{font:inherit;color:inherit;text-align:left;background:var(--bg);cursor:pointer;border-width:2px}
+#vInvtab .itrow[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+#vInvtab .itall{justify-content:center;gap:2px}
+#vInvtab .itall small{color:var(--muted);font-size:14px}
+@media (max-width:720px){ #vInvtab{grid-template-columns:repeat(2,minmax(0,1fr))} #vInvtab .itall{grid-column:1 / -1;flex-direction:row;align-items:center;gap:10px;padding:10px 14px} }
 .minis .none{grid-column:1 / -1;margin:8px 0;color:var(--muted);font-size:17px}
 .minis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:14px 0 16px;border-top:1.5px solid var(--line)}
 .mini{display:flex;flex-direction:column;gap:6px;padding:12px 14px 8px;border:2px solid var(--line);border-radius:16px;background:var(--bg);color:var(--ink);text-align:left;min-width:0}
@@ -414,8 +425,8 @@ html[data-theme="dark"]{--vc0:#6C8CFF;--vc1:#FF6B6B;--vc2:#FFB020;--vc3:#40C057}
       <div class="fbwrap" id="vfbWrap"><svg id="vfb" role="img" aria-label="기타 지판 위 보이싱"></svg></div>
       <div class="scrollhint" id="vfbHint" hidden>← 지판을 옆으로 밀어서 보세요 →</div>
       <div class="legend" id="vLegend"></div>
-      <div id="vRows"></div>
       <div class="invtab" id="vInvtab"></div>
+      <div id="vRows"></div>
     </div>
 
     <div id="tri" hidden>
@@ -773,6 +784,7 @@ const QS=()=>Q7.filter(q=>!(TT().no||[]).includes(q.id));             // 그 보
 const QQ=()=>QS().find(q=>q.id===qId)||QS()[0];                       // 고른 종류가 없으면 첫 종류를 보여 줌 (고른 것은 그대로 기억)
 let setsBy=store.get('vsets',{}); if(!setsBy||typeof setsBy!=='object'||Array.isArray(setsBy)) setsBy={};
 let multi=store.get('vmulti',false)===true;
+let focus=store.get('vfocus',-1); if(!Number.isInteger(focus)) focus=-1;   // 음 순서 칸에서 고른 모양만 진하게 (-1 = 전체, K 요청 2026-11-17)
 const sets=()=>{ const n=TT().sets.length; let v=(setsBy[tId]||[0]).filter(i=>i>=0&&i<n); if(!v.length) v=[0]; return multi?v:v.slice(0,1); };
 const FRETS=17;   // 기본 위치~3전위가 모두 들어가게 17프렛까지
 // 모양마다 개방현이 없는 가장 낮은 자리 하나씩 (코드&스케일 트라이어드와 같은 규칙)
@@ -788,7 +800,9 @@ function shapes(){
   });
   return out.sort((a,b)=>a.si-b.si||a.lo-b.lo);
 }
-const colorOf=p=>'vc'+(TT().id==='shell'?p.si:p.i);                 // 드롭: 전위마다 색, 쉘: 근음 줄마다 색
+const keyOf=p=>TT().id==='shell'?p.si:p.i;                          // 색 · 고르기 번호: 드롭은 전위, 쉘은 근음 줄
+const colorOf=p=>'vc'+keyOf(p);
+const focusOK=p=>focus<0||keyOf(p)===focus;                 // 드롭: 전위마다 색, 쉘: 근음 줄마다 색
 function colorLegend(){                                             // 지판 위 색 설명
   const T=TT(), ss=sets();
   const items=T.id==='shell'?ss.map(si=>[si,T.sets[si].name+' · '+T.sets[si].shapes[0].name]):T.sets[ss[0]].shapes.map((sh,i)=>[i,sh.name]);
@@ -809,13 +823,13 @@ function draw(){
   for(let st=0;st<6;st++) if(!used.has(st)) h+=`<path class="fmute" d="M${fx(0)-7} ${sy(st)-7}l14 14M${fx(0)+7} ${sy(st)-7}l-14 14"/>`;
   const seen=new Set();
   sp.forEach(p=>p.dots.forEach(n=>{ const key=n.st+'-'+n.f; if(seen.has(key)) return; seen.add(key);
-    h+=`<g class="fdot ${colorOf(p)}${n.root?' root':''}" data-m="${n.m}" data-p="${key}" transform="translate(${fx(n.f)} ${sy(n.st)})"><circle class="bk" r="15.5"/><circle class="c" r="15.5"/><text${fbLab==='name'&&n.name.length>2?' class="sm"':''}>${fbLab==='name'?n.name:n.d}</text></g>`; }));
+    h+=`<g class="fdot ${colorOf(p)}${n.root?' root':''}${focusOK(p)?'':' dim'}" data-m="${n.m}" data-p="${key}" transform="translate(${fx(n.f)} ${sy(n.st)})"><circle class="bk" r="15.5"/><circle class="c" r="15.5"/><text${fbLab==='name'&&n.name.length>2?' class="sm"':''}>${fbLab==='name'?n.name:n.d}</text></g>`; }));
   const svg=$('vfb'); svg.setAttribute('viewBox',`0 0 ${WD} ${H}`); svg.innerHTML=h;
   requestAnimationFrame(()=>{ const w=$('vfbWrap'); $('vfbHint').hidden=!(w.scrollWidth>w.clientWidth+2); });
 }
 async function hear(){             // 모양마다: 아래 줄부터 한 음씩 → 같이 한 번
   stop(); audio(); await ready();
-  const a=audio(), sp=shapes(), ch=document.querySelectorAll('#vRows .note'); let t=a.currentTime+0.08;
+  const a=audio(), sp=shapes().filter(focusOK), ch=document.querySelectorAll('#vRows .note'); let t=a.currentTime+0.08;   // 고른 모양만
   const dot=n=>document.querySelector('#vfb .fdot[data-p="'+n.st+'-'+n.f+'"]');
   const off=()=>{ document.querySelectorAll('#vfb .fdot.on').forEach(g=>g.classList.remove('on')); ch.forEach(c=>c.classList.remove('on')); };
   sp.forEach(p=>{
@@ -841,18 +855,23 @@ function renderV(){
     const used=T.id==='shell'?q.iv.filter((x,k)=>k!==2):q.iv;
   $('vRows').innerHTML=`<div class="srow"><div class="sname">${r.label+q.name} ${T.name}<small>${q.kr} · ${ss.map(i=>T.sets[i].name).join(' · ')}</small></div><div class="notes">${noteChips(r,used)}</div><button type="button" class="btn sbtn" id="vHear">${PLAY}</button></div>`;
   const chip=k=>{ const t=fbLab==='name'?krName(spell(r,q.iv[k][0],q.iv[k][1])):q.iv[k][2]; return `<i class="${k===0?'r':''}${t.length>2?' sm':''}">${t}</i>`; };
-  $('vInvtab').dataset.n=T.sets[ss[0]].shapes.length;
-  $('vInvtab').innerHTML=`<div class="ithead">아래 줄 → 위 줄 음 순서 · ${T.sets[ss[0]].name}</div>`+T.sets[ss[0]].shapes.map((sh,i)=>`<div class="itrow"><b><span class="vsw vc${T.id==='shell'?ss[0]:i}"></span>${sh.name}</b><span>${sh.ord.map(chip).join('')}</span></div>`).join('');
+  const cards=T.id==='shell'?ss.map(si=>[si,T.sets[si].name,T.sets[si].shapes[0]]):T.sets[ss[0]].shapes.map((sh,i)=>[i,sh.name,sh]);
+  if(!cards.some(c=>c[0]===focus)) focus=-1;
+  $('vInvtab').dataset.n=cards.length;
+  $('vInvtab').innerHTML=`<div class="ithead">아래 줄 → 위 줄 음 순서${T.id==='shell'?'':' · '+T.sets[ss[0]].name} — 누르면 그 모양만 진하게 보여요</div>`
+    +`<button type="button" class="itrow itall" data-v="-1" aria-pressed="${focus<0}"><b>전체</b><small>모든 모양</small></button>`
+    +cards.map(([k,name,sh])=>`<button type="button" class="itrow" data-v="${k}" aria-pressed="${k===focus}"><b><span class="vsw vc${k}"></span>${name}</b><span>${sh.ord.map(chip).join('')}</span></button>`).join('');
   $('vLegend').innerHTML=colorLegend()+'<span><span class="vsw vroot"></span>채운 점 = 근음</span><span><b class="lx">×</b>안 치는 줄</span>';
   draw();
 }
+von('vInvtab',v=>{focus=+v;store.set('vfocus',focus)});
 von('vrSel',v=>{rL=+v;store.set('vrl',rL)});
 von('vrAcc',v=>{rA=rA===+v?0:+v;store.set('vra',rA)});
 von('vqSel',v=>{qId=v;store.set('vq',qId)});
-von('vtSel',v=>{tId=v;store.set('vt',tId)});
+von('vtSel',v=>{tId=v;store.set('vt',tId);focus=-1;store.set('vfocus',focus)});   // 보이싱을 바꾸면 전체로
 von('vsSel',v=>{ v=+v; const cur=sets(); let nx=[v]; if(multi){ nx=cur.includes(v)?cur.filter(x=>x!==v):cur.concat(v); if(!nx.length) return; }
   setsBy=Object.assign({},store.get('vsets',{}),{[tId]:nx.sort()}); store.set('vsets',setsBy); });
-$('vMulti').addEventListener('click',()=>{ stop(); multi=!multi; store.set('vMulti',multi); render(); });   // 끄면 고른 것 중 첫 묶음만 보임
+$('vMulti').addEventListener('click',()=>{ stop(); multi=!multi; store.set('vmulti',multi); render(); });   // 끄면 고른 것 중 첫 묶음만 보임
 $('vRows').addEventListener('click',e=>{ if(e.target.closest('#vHear')) hear(); });
 $('vfb').addEventListener('click',async e=>{const g=e.target.closest('.fdot'); if(!g) return; stop(); audio(); await ready();
   const a=audio(); tone(+g.dataset.m,a.currentTime+0.02,1.4,0.85); g.classList.add('on'); setTimeout(()=>g.classList.remove('on'),450);});
