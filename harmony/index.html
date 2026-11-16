@@ -533,7 +533,7 @@ function keyQ(sharp){
   const chips=c?'<div class="chips">'+list.map((n,i)=>'<span class="chip'+(hard()?' hid':'')+'"><b>'+(hard()?'?':nm(n,sys))+'</b><small>'+(i+1)+'번</small></span>').join('')+'</div>':'';
   let ex;
   if(!c) ex=sg+'이 없으면 <b>C 키</b>';
-  else if(sharp){ const last=list[c-1]; ex=sg+' 붙는 순서 '+ORD.map(L=>SOL[L]).join(' ')+'<br>'+c+'번째 <b>'+nm(last,sys)+'</b> → 온음 위 <b>'+nm(key,sys)+'</b> → <b>'+nm(key,'let')+' 키</b>'; }
+  else if(sharp){ const last=N(list[c-1].L); ex=sg+' 붙는 순서 '+ORD.map(L=>SOL[L]).join(' ')+'<br>'+c+'번째 <b>'+nm(last,sys)+'</b> → 온음 위 <b>'+nm(key,sys)+'</b> → <b>'+nm(key,'let')+' 키</b>'; }
   else if(c===1) ex='♭ 1개(시♭)는 그냥 <b>F 키</b>';
   else { const prev=list[c-2]; ex='♭ 붙는 순서 '+ORD.map(L=>SOL[L]).join(' ')+'<br>'+c+'번째 '+nm(list[c-1],sys)+' → 바로 앞 <b>'+nm(prev,sys)+'</b> → <b>'+nm(key,'let')+' 키</b>'; }
   return {lv:sharp?2:3,kind:'key',keys:KS,ask:'무슨 키일까요?',big:sg+' '+c+'개',chips,ans:key,ansTxt:nm(key,'let')+' 키',expl:ex};
