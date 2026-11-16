@@ -251,6 +251,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 #triRows{border-top:1.5px solid var(--line)}
 .scsel .seg button:disabled{opacity:.32;cursor:default}
 #cqSel button{min-width:64px}
+#trMultiBox{margin-left:10px}
 .minis .none{grid-column:1 / -1;margin:8px 0;color:var(--muted);font-size:17px}
 .minis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:14px 0 16px;border-top:1.5px solid var(--line)}
 .mini{display:flex;flex-direction:column;gap:6px;padding:12px 14px 8px;border:2px solid var(--line);border-radius:16px;background:var(--bg);color:var(--ink);text-align:left;min-width:0}
@@ -278,6 +279,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
   .scales .scsel .seg{display:grid;grid-auto-flow:row;grid-auto-columns:auto;grid-template-columns:repeat(4,minmax(0,1fr));flex:none}
   .scales .scsel .seg button{padding:6px 4px;font-size:16px;line-height:1.25;word-break:keep-all;border-right:1.5px solid var(--line);border-bottom:1.5px solid var(--line);margin:0 -1.5px -1.5px 0}
   #crSel{grid-template-columns:repeat(7,minmax(0,1fr))} #cqSel{grid-template-columns:repeat(6,minmax(0,1fr))} #cqSel button{font-size:15px;padding:6px 1px} #rootSel,#trRoot{grid-template-columns:repeat(6,minmax(0,1fr))} #scSel{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .scales .scsel #trMultiBox{margin:0;grid-template-columns:minmax(0,1fr)}
   .minis{gap:10px}
 }
 </style>
@@ -328,7 +330,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
     <div id="triCtl" hidden>
       <div class="scsel field"><span class="label">근음</span><div class="seg" id="trRoot" role="group" aria-label="트라이어드 근음"></div></div>
       <div class="scsel field"><span class="label">종류</span><div class="seg" id="trQual" role="group" aria-label="트라이어드 종류"></div></div>
-      <div class="scsel field"><span class="label">줄</span><div class="seg" id="trSet" role="group" aria-label="줄 묶음"></div></div>
+      <div class="scsel field"><span class="label">줄</span><div class="seg" id="trSet" role="group" aria-label="줄 묶음"></div><div class="seg" id="trMultiBox"><button type="button" id="trMulti" aria-pressed="false">중복</button></div></div>
     </div>
 
     <div class="fbctl" id="fbctl">
@@ -453,6 +455,8 @@ let trQual=store.get('trqual','min'); if(!TRI.some(t=>t.id===trQual)) trQual='mi
 // 줄 묶음은 여러 개 같이 켤 수 있음 (K 요청 2026-11-16 "123번 줄하고 234번 줄 중복 누르게") — 하나는 늘 켜져 있음
 let trSets=store.get('trsets',null); if(!Array.isArray(trSets)) trSets=[store.get('trset',3)];
 trSets=TSETS.map(t=>t.s).filter(v=>trSets.includes(v)); if(!trSets.length) trSets=[3];
+// '중복' 버튼 (K 요청 2026-11-16): 켜면 줄 묶음을 여러 개 같이, 끄면 하나만
+let trMulti=store.get('trmulti',trSets.length>1)===true; if(!trMulti) trSets=trSets.slice(0,1);
 const TQ=()=>TRI.find(t=>t.id===trQual);
 const trR=()=>{const t=TQ().iv[1][1]===3?ROOTS_MIN:ROOTS_MAJ; return mkRoot(t[trRoot][0],t[trRoot][1]);};
 const SC=()=>ALLSC.find(s=>s.id===scId);
@@ -581,6 +585,7 @@ function triShapes(){
     for(const add of [sh,sh+12]){
       const dots=ns.map(n=>{ const v=q.iv[n.k]; return {st:n.st,f:n.m-OPEN[n.st]+add,m:n.m+add,k:n.k,d:v[2],name:krName(spell(r,v[0],v[1])),root:n.k===0}; });
       const fs=dots.map(d=>d.f); if(Math.max(...fs)>FRETS) continue;
+      if(Math.min(...fs)===0) continue;                            // 개방현이 들어간 모양은 뺌 (K 요청 2026-11-16)
       out.push({set:trSet,inv,dots,lo:Math.min(...fs),hi:Math.max(...fs)});
     }
   }
@@ -599,8 +604,7 @@ function drawTri(){
   for(let f=1;f<=FRETS;f++){ h+=`<line class="ffret" x1="${X0+f*W}" y1="${T}" x2="${X0+f*W}" y2="${T+5*G}"/><text class="fnum" x="${X0+(f-.5)*W}" y="${T+5*G+36}">${f}</text>`; }
   for(let st=0;st<6;st++) h+=`<line class="fstr" x1="${X0}" y1="${sy(st)}" x2="${WD-8}" y2="${sy(st)}" stroke-width="${(1+st*.3).toFixed(1)}"/>`;
   h+=`<line class="fnut" x1="${X0}" y1="${T-2}" x2="${X0}" y2="${T+5*G+2}"/>`;
-  const open=new Set(shapes.flatMap(sp=>sp.dots).filter(d=>d.f===0).map(d=>d.st));
-  for(let st=0;st<6;st++) if(!trSets.some(v=>st>=v&&st<=v+2)&&!open.has(st)) h+=`<path class="fmute" d="M${fx(0)-7} ${sy(st)-7}l14 14M${fx(0)+7} ${sy(st)-7}l-14 14"/>`;
+  for(let st=0;st<6;st++) if(!trSets.some(v=>st>=v&&st<=v+2)) h+=`<path class="fmute" d="M${fx(0)-7} ${sy(st)-7}l14 14M${fx(0)+7} ${sy(st)-7}l-14 14"/>`;
   const seen=new Set();                                            // 두 묶음이 같은 자리를 쓰면 점은 하나만
   shapes.forEach(sp=>sp.dots.forEach(n=>{ const p=n.st+'-'+n.f; if(seen.has(p)) return; seen.add(p);
     h+=`<g class="fdot${n.root?' root':''}" data-m="${n.m}" data-k="${n.k}" data-p="${p}" transform="translate(${fx(n.f)} ${sy(n.st)})"><circle class="bk" r="15.5"/><circle class="c" r="15.5"/><text>${fbLab==='name'?n.name:n.d}</text></g>`; }));
@@ -653,11 +657,12 @@ function render(){
     $('legend').innerHTML='<span><i class="lr"></i>근음</span><span><i class="lb"></i>바레 — 한 손가락으로 여러 줄을 눌러요</span><span><b class="lx">×</b>안 치는 줄</span>';
     $('scaleRows').innerHTML='';
   }else if(isT){
-    $('boxTitle').textContent='트라이어드'; $('boxHint').textContent='줄 세 개로 잡는 3화음이에요. 같은 코드를 기본 위치 · 1전위 · 2전위 세 가지 모양으로 볼 수 있어요. 줄은 여러 개 같이 켤 수 있어요';
+    $('boxTitle').textContent='트라이어드'; $('boxHint').textContent='줄 세 개로 잡는 3화음이에요. 같은 코드를 기본 위치 · 1전위 · 2전위 세 가지 모양으로 볼 수 있어요. 중복을 켜면 줄을 여러 개 같이 볼 수 있어요';
     const tq=TQ(), tr=trR(), tt=tq.iv[1][1]===3?ROOTS_MIN:ROOTS_MAJ;
     $('trRoot').innerHTML=tt.map((x,i)=>`<button type="button" data-v="${i}" aria-pressed="${i===trRoot}">${LETTERS[x[0]]+accTxt(x[1])}</button>`).join('');
     $('trQual').innerHTML=TRI.map(x=>`<button type="button" data-v="${x.id}" aria-pressed="${x.id===trQual}" aria-label="${x.name}">${x.sym||'M'}</button>`).join('');
     $('trSet').innerHTML=TSETS.map(x=>`<button type="button" data-v="${x.s}" aria-pressed="${trSets.includes(x.s)}">${x.name}</button>`).join('');
+    $('trMulti').setAttribute('aria-pressed',trMulti);
     $('triRows').innerHTML=`<div class="srow"><div class="sname">${tr.label+tq.sym} 트라이어드<small>${tq.name} · ${TSETS.filter(x=>trSets.includes(x.s)).map(x=>x.name).join(' · ')}</small></div><div class="notes">${noteChips(tr,tq.iv)}</div><button type="button" class="btn sbtn" id="hearTri">${PLAY}</button></div>`;
     drawTri();
   }else{
@@ -713,8 +718,11 @@ function buildUI(){
   $('minis').addEventListener('click',e=>{const b=e.target.closest('.mini'); if(b) hearChord(FLAT[+b.dataset.v],b);});
   on('trRoot',v=>{trRoot=+v;store.set('trroot',trRoot)});
   on('trQual',v=>{trQual=v;store.set('trqual',trQual)});
-  on('trSet',v=>{ v=+v; const nx=trSets.includes(v)?trSets.filter(x=>x!==v):trSets.concat(v); if(!nx.length) return;   // 마지막 하나는 안 꺼짐
+  on('trSet',v=>{ v=+v; let nx=[v];                                 // 중복이 꺼져 있으면 누른 묶음 하나만
+    if(trMulti){ nx=trSets.includes(v)?trSets.filter(x=>x!==v):trSets.concat(v); if(!nx.length) return; }   // 마지막 하나는 안 꺼짐
     trSets=TSETS.map(t=>t.s).filter(x=>nx.includes(x)); store.set('trsets',trSets); });
+  $('trMulti').addEventListener('click',()=>{ stop(); trMulti=!trMulti; store.set('trmulti',trMulti);
+    if(!trMulti&&trSets.length>1){ trSets=trSets.slice(0,1); store.set('trsets',trSets); } render(); });
   $('triRows').addEventListener('click',e=>{ if(e.target.closest('#hearTri')) hearTri(); });
   $('fb2').addEventListener('click',async e=>{const g=e.target.closest('.fdot'); if(!g) return; stop(); audio(); await ready();
     const a=audio(); tone(+g.dataset.m,a.currentTime+0.02,1.4,0.85); g.classList.add('on'); setTimeout(()=>g.classList.remove('on'),450);});
