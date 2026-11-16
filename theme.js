@@ -72,6 +72,11 @@
   var before=100;   // 스피커 버튼으로 끄기 전 값
   function mount(){
     var nav=document.querySelector('.band .nav'); if(!nav||document.querySelector('.vol-row')) return;
+    // 초견 · 청음 펼침 메뉴: 누르면 열고 닫힘, 바깥을 누르거나 Esc면 닫힘 (컴퓨터에서 마우스를 올려 여는 것은 theme.css)
+    var grps=nav.querySelectorAll('.grp'), shut=function(x){ for(var i=0;i<grps.length;i++) if(grps[i]!==x){ grps[i].classList.remove('open'); grps[i].querySelector('.gbtn').setAttribute('aria-expanded','false'); } };
+    for(var gi=0;gi<grps.length;gi++) (function(g){ g.querySelector('.gbtn').addEventListener('click',function(e){ e.stopPropagation(); shut(g); var on=g.classList.toggle('open'); this.setAttribute('aria-expanded',on?'true':'false'); }); })(grps[gi]);
+    document.addEventListener('click',function(e){ if(!e.target.closest||!e.target.closest('.band .nav .grp')) shut(null); });
+    document.addEventListener('keydown',function(e){ if(e.key==='Escape') shut(null); });
     var col=document.createElement('div'); col.className='navcol';
     nav.parentNode.insertBefore(col,nav); col.appendChild(nav);
     var row=document.createElement('div'); row.className='vol-row';
@@ -82,8 +87,8 @@
     var setV=function(v){ vol=v; try{ localStorage.setItem(KEY,vol); }catch(e){} paint(); apply(); };
     rg.addEventListener('input',function(){ setV(+rg.value); });
     btn.addEventListener('click',function(){ if(vol){ before=vol; setV(0); } else setV(before||100); });
-    var fit=function(){   // 볼륨 줄 너비 = 코드 청음 칸 왼쪽 ~ 메뉴 오른쪽 끝
-      var a=nav.querySelectorAll('a')[3]; if(!a) return;   // 4번째 칸 = 코드 청음부터 (레벨업 소리 버튼이 들어가도 막대 길이 유지, 2026-11-13)
+    var fit=function(){   // 볼륨 줄 너비 = 메뉴 너비 (메뉴가 6칸으로 줄어서 2026-11-16부터 메뉴 전체에 맞춤)
+      var a=nav.firstElementChild; if(!a) return;
       var w=nav.getBoundingClientRect().right-a.getBoundingClientRect().left;
       if(w>0) row.style.width=Math.round(w/(parseFloat(getComputedStyle(document.documentElement).zoom)||1))+'px';
     };
