@@ -288,17 +288,24 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 @media (max-width:720px){ .invtab{grid-template-columns:repeat(2,minmax(0,1fr))} .itrow{padding:10px} .itrow span{gap:4px} .itrow i{font-size:15px} #vsSel{grid-template-columns:repeat(var(--n,3),minmax(0,1fr))!important} #vsSel[data-n="2"]{--n:2} #vsSel[data-n="3"]{--n:3} #vsSel[data-n="4"]{--n:2} #vqSel{grid-template-columns:repeat(var(--qn,5),minmax(0,1fr))!important} #vqSel[data-n="4"]{--qn:4} #vtSel{grid-template-columns:repeat(4,minmax(0,1fr))!important} #vrSel{grid-template-columns:repeat(7,minmax(0,1fr))!important} #vqSel{grid-template-columns:repeat(var(--qn,5),minmax(0,1fr))!important} .scales .scsel #vMultiBox{margin:0;grid-template-columns:minmax(0,1fr)} }
 
 
-/* 보이싱 전위 색 (K 요청 2026-11-17): 기본 위치 파랑 · 1전위 빨강 · 2전위 노랑 · 3전위 초록, 근음은 굵은 테두리 */
-:root{--vc0:#2F6FE4;--vc1:#E5484D;--vc2:#F2B705;--vc3:#1F9D55}
-#vfb .fdot.vc0 .c{fill:var(--vc0);stroke:var(--vc0)} #vfb .fdot.vc1 .c{fill:var(--vc1);stroke:var(--vc1)}
-#vfb .fdot.vc2 .c{fill:var(--vc2);stroke:var(--vc2)} #vfb .fdot.vc3 .c{fill:var(--vc3);stroke:var(--vc3)}
-#vfb .fdot[class*="vc"] text{fill:#fff} #vfb .fdot.vc2 text{fill:#1A1A1A}
-#vfb .fdot.root .c{stroke:var(--ink);stroke-width:3.5}
-#vfb .fdot.on .c{fill:var(--ink);stroke:var(--ink)} #vfb .fdot.on text{fill:var(--bg)}
-.vsw{display:inline-block;width:16px;height:16px;border-radius:50%;margin-right:6px;vertical-align:-2px}
-.vsw.vc0{background:var(--vc0)} .vsw.vc1{background:var(--vc1)} .vsw.vc2{background:var(--vc2)} .vsw.vc3{background:var(--vc3)}
-.vsw.vroot{background:var(--bg);border:3px solid var(--ink);box-sizing:border-box}
+/* 전위 색 — 보이싱 · 트라이어드 (K 확정 2026-11-17 시안 2): 흰 바탕 + 색 테두리 + 색 글자, 근음만 색으로 채움
+   기본 위치 파랑 · 1전위 빨강 · 2전위 노랑 · 3전위 초록 */
+:root{--vc0:#3B5BDB;--vc1:#E03131;--vc2:#E8A100;--vc3:#2B8A3E}
+html[data-theme="dark"]{--vc0:#6C8CFF;--vc1:#FF6B6B;--vc2:#FFB020;--vc3:#40C057}
+:is(#vfb,#fb2) .fdot[class*="vc"] .c{fill:var(--bg);stroke-width:3}
+:is(#vfb,#fb2) .fdot.vc0 .c{stroke:var(--vc0)} :is(#vfb,#fb2) .fdot.vc1 .c{stroke:var(--vc1)}
+:is(#vfb,#fb2) .fdot.vc2 .c{stroke:var(--vc2)} :is(#vfb,#fb2) .fdot.vc3 .c{stroke:var(--vc3)}
+:is(#vfb,#fb2) .fdot.vc0 text{fill:var(--vc0)} :is(#vfb,#fb2) .fdot.vc1 text{fill:var(--vc1)}
+:is(#vfb,#fb2) .fdot.vc2 text{fill:var(--vc2)} :is(#vfb,#fb2) .fdot.vc3 text{fill:var(--vc3)}
+:is(#vfb,#fb2) .fdot.root.vc0 .c{fill:var(--vc0)} :is(#vfb,#fb2) .fdot.root.vc1 .c{fill:var(--vc1)}
+:is(#vfb,#fb2) .fdot.root.vc2 .c{fill:var(--vc2)} :is(#vfb,#fb2) .fdot.root.vc3 .c{fill:var(--vc3)}
+:is(#vfb,#fb2) .fdot.root[class*="vc"] text{fill:#fff}
+:is(#vfb,#fb2) .fdot.on .c{fill:var(--ink);stroke:var(--ink)} :is(#vfb,#fb2) .fdot.on text{fill:var(--bg)}
+.vsw{display:inline-block;width:18px;height:18px;border-radius:50%;margin-right:6px;vertical-align:-3px;box-sizing:border-box;background:var(--bg);border:3px solid var(--muted)}
+.vsw.vc0{border-color:var(--vc0)} .vsw.vc1{border-color:var(--vc1)} .vsw.vc2{border-color:var(--vc2)} .vsw.vc3{border-color:var(--vc3)}
+.vsw.vroot{background:var(--muted);border-color:var(--muted)}
 .itrow b .vsw{display:inline-block;margin-right:8px}
+.itrow b{display:flex;align-items:center}
 .itrow b{display:flex;align-items:center}
 .minis .none{grid-column:1 / -1;margin:8px 0;color:var(--muted);font-size:17px}
 .minis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:14px 0 16px;border-top:1.5px solid var(--line)}
@@ -414,7 +421,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
     <div id="tri" hidden>
       <div class="fbwrap" id="fb2Wrap"><svg id="fb2" role="img" aria-label="기타 지판 위 트라이어드"></svg></div>
       <div class="scrollhint" id="fb2Hint" hidden>← 지판을 옆으로 밀어서 보세요 →</div>
-      <div class="legend"><span><i class="lr"></i>근음</span><span><b class="lx">×</b>안 치는 줄</span><span>점을 누르면 그 음이 나요</span></div>
+      <div class="legend"><span><span class="vsw vc0"></span>기본 위치</span><span><span class="vsw vc1"></span>1전위</span><span><span class="vsw vc2"></span>2전위</span><span><span class="vsw vroot"></span>채운 점 = 근음</span><span><b class="lx">×</b>안 치는 줄</span></div>
       <div id="triRows"></div>
     </div>
   </section>
@@ -681,13 +688,10 @@ function triShapes(){
 }
 function drawTri(){
   const shapes=triShapes();
-  const multi=trSets.length>1;                                     // 중복(줄 여러 개)일 때는 전위 이름을 안 씀 (K 2026-11-16 "중복 때는 알 필요가 없어")
-  const X0=50, W=58, T=multi?28:54, G=36, H=T+5*G+48, WD=X0+FRETS*W+16;
+  // 전위마다 점 색으로 구분 — 점선 칸 · 이름 대신 (K 확정 2026-11-17, 보이싱과 같게)
+  const X0=50, W=58, T=28, G=36, H=T+5*G+48, WD=X0+FRETS*W+16;
   const fx=f=>f===0?24:X0+(f-.5)*W, sy=st=>T+(5-st)*G;
   let h='';
-  shapes.forEach(sp=>{ const trSet=sp.set; const x1=sp.lo===0?4:X0+(sp.lo-1)*W+3, x2=X0+Math.max(sp.hi,1)*W-3;
-    h+=`<rect class="fband" x="${x1}" y="${sy(trSet+2)-21}" width="${x2-x1}" height="${2*G+42}" rx="12"/>`;
-    if(!multi) h+=`<text class="flab" x="${(x1+x2)/2}" y="22">${INV[sp.inv]}</text>`; });
   [3,5,7,9,15].forEach(f=>h+=`<circle class="fmark" cx="${X0+(f-.5)*W}" cy="${T+2.5*G}" r="7"/>`);
   h+=`<circle class="fmark" cx="${X0+11.5*W}" cy="${T+1.5*G}" r="7"/><circle class="fmark" cx="${X0+11.5*W}" cy="${T+3.5*G}" r="7"/>`;
   for(let f=1;f<=FRETS;f++){ h+=`<line class="ffret" x1="${X0+f*W}" y1="${T}" x2="${X0+f*W}" y2="${T+5*G}"/><text class="fnum" x="${X0+(f-.5)*W}" y="${T+5*G+36}">${f}</text>`; }
@@ -696,7 +700,7 @@ function drawTri(){
   for(let st=0;st<6;st++) if(!trSets.some(v=>st>=v&&st<=v+2)) h+=`<path class="fmute" d="M${fx(0)-7} ${sy(st)-7}l14 14M${fx(0)+7} ${sy(st)-7}l-14 14"/>`;
   const seen=new Set();                                            // 두 묶음이 같은 자리를 쓰면 점은 하나만
   shapes.forEach(sp=>sp.dots.forEach(n=>{ const p=n.st+'-'+n.f; if(seen.has(p)) return; seen.add(p);
-    h+=`<g class="fdot${n.root?' root':''}" data-m="${n.m}" data-k="${n.k}" data-p="${p}" transform="translate(${fx(n.f)} ${sy(n.st)})"><circle class="bk" r="15.5"/><circle class="c" r="15.5"/><text>${fbLab==='name'?n.name:n.d}</text></g>`; }));
+    h+=`<g class="fdot vc${sp.inv}${n.root?' root':''}" data-m="${n.m}" data-k="${n.k}" data-p="${p}" transform="translate(${fx(n.f)} ${sy(n.st)})"><circle class="bk" r="15.5"/><circle class="c" r="15.5"/><text>${fbLab==='name'?n.name:n.d}</text></g>`; }));
   const svg=$('fb2'); svg.setAttribute('viewBox',`0 0 ${WD} ${H}`); svg.innerHTML=h;
   const wrap=$('fb2Wrap');
   requestAnimationFrame(()=>{ $('fb2Hint').hidden=!(wrap.scrollWidth>wrap.clientWidth+2); });
@@ -839,7 +843,7 @@ function renderV(){
   const chip=k=>{ const t=fbLab==='name'?krName(spell(r,q.iv[k][0],q.iv[k][1])):q.iv[k][2]; return `<i class="${k===0?'r':''}${t.length>2?' sm':''}">${t}</i>`; };
   $('vInvtab').dataset.n=T.sets[ss[0]].shapes.length;
   $('vInvtab').innerHTML=`<div class="ithead">아래 줄 → 위 줄 음 순서 · ${T.sets[ss[0]].name}</div>`+T.sets[ss[0]].shapes.map((sh,i)=>`<div class="itrow"><b><span class="vsw vc${T.id==='shell'?ss[0]:i}"></span>${sh.name}</b><span>${sh.ord.map(chip).join('')}</span></div>`).join('');
-  $('vLegend').innerHTML=colorLegend()+'<span><span class="vsw vroot"></span>근음 (굵은 테두리)</span><span><b class="lx">×</b>안 치는 줄</span>';
+  $('vLegend').innerHTML=colorLegend()+'<span><span class="vsw vroot"></span>채운 점 = 근음</span><span><b class="lx">×</b>안 치는 줄</span>';
   draw();
 }
 von('vrSel',v=>{rL=+v;store.set('vrl',rL)});
