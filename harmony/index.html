@@ -5,15 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <script src="../theme.js?v=3"></script>
 <link rel="stylesheet" href="../theme.css?v=5">
-<meta name="description" content="화성학을 차근차근 익히는 페이지 (준비 중)">
+<meta name="description" content="화성학 문제 — 음이름 · ♯ 키 · ♭ 키 · 인터벌 · 코드 · 스케일 · 다이어토닉 코드를 계속 맞히며 익히기">
+<style>body{margin:0}[hidden]{display:none!important}img{max-width:100%}
+</style>
 <title>화성학 | 기타MT</title>
 <link rel="icon" href="../favicon.ico?v=6" sizes="any">
 <link rel="icon" type="image/png" href="../favicon.png?v=6">
 <link rel="apple-touch-icon" href="../apple-touch-icon.png?v=6">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=Black+Han+Sans&family=Noto+Music&display=swap">
-<style>body{margin:0}[hidden]{display:none!important}
-
+<style>
 /* 레이아웃: 머리 띠 → 연습 설정판(단계 카드·모드·박자·키) → 흰 악보 → 재생 버튼 */
 :root{
   --bg:#FFFFFF; --ink:#18202E; --muted:#5B6372; --line:#DCE1E8; --tile:#F3F5F8;
@@ -48,11 +49,15 @@ h1.logo{font-family:var(--f-disp);font-weight:400;font-size:36px;letter-spacing:
 
 /* 단계 카드 */
 .stagewrap{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:stretch}
-#levels{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
-.stage{position:relative;text-align:left;border:2px solid var(--line);border-radius:18px;padding:14px 14px 12px;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;gap:4px;min-width:0}
+#levels{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}   /* 5단계 + 랜덤 */
+.stage{position:relative;text-align:left;border:2px solid var(--line);border-radius:18px;padding:14px 14px 12px;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;gap:4px;min-width:0;container:card/inline-size}
+.stage .top{display:flex;align-items:center;gap:7px;min-width:0}
 .stage .num{font-family:var(--f-disp);font-size:36px;line-height:1}
 .stage .sym{position:absolute;right:12px;top:10px;font-family:var(--f-music);font-size:32px;line-height:1;color:#B7BFCD}
 .stage .name{font-weight:700;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stage.rnd .stars{visibility:hidden}
+.stage.rnd .sym{font-family:var(--f-body);font-size:17px;font-weight:700;top:14px}
+@media (max-width:720px){ .stage.rnd .sym{font-size:16px;line-height:26px} }
 .stars{display:flex;gap:2px;margin-top:2px} .stars svg{width:15px;height:15px;fill:var(--star-off)} .stars svg.on{fill:var(--star)}
 .prog{display:flex;align-items:center;gap:8px;margin-top:4px}
 .prog .pbar{flex:1;margin-top:0}
@@ -60,9 +65,13 @@ h1.logo{font-family:var(--f-disp);font-weight:400;font-size:36px;letter-spacing:
 .pbar{height:6px;border-radius:3px;background:var(--line);margin-top:4px;overflow:hidden} .pbar i{display:block;height:100%;width:0;background:var(--accent)}
 .stage[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 8px 20px var(--accent-glow)}
 .stage[aria-pressed="true"] .num,.stage[aria-pressed="true"] .sym{color:var(--accent)}
-.hardtag{display:none;align-self:flex-start;padding:2px 9px;border-radius:999px;background:var(--hard-bg);color:var(--hard);font-size:13.5px;font-weight:700;line-height:1.5}
-.hardtag .short{display:none}
-.hard .hardtag{display:inline-flex}
+/* Hard 표시: 숫자 옆에 붙여서 카드 크기가 Easy와 같게. 카드가 좁으면 ♯♭로 짧게 */
+.hardtag{display:none;color:var(--hard);font-size:15px;font-weight:700;line-height:1;white-space:nowrap}
+.hardtag .full{display:none}
+.hardtag .short{font-family:var(--f-music);font-size:1.4em;font-weight:400}
+.hard .hardtag{display:inline}
+@container card (min-width:130px){ .hardtag .full{display:inline} .hardtag .short{display:none} }
+@media (min-width:721px){ @container card (max-width:85.98px){ .hard .hardtag{display:none} } }  /* 광고를 켜서 카드가 아주 좁아지면 아이콘과 겹치지 않게 숨김 */
 .hard .wrap{--accent:var(--hard);--accent-soft:var(--hard-bg);--accent-shadow:rgba(232,70,31,.28);--accent-glow:rgba(232,70,31,.16)}
 /* 모드: 단계 카드와 같은 테두리 카드 안에 Easy/Hard를 하나의 이어 붙인 버튼으로 */
 .modebox{display:flex;flex-direction:column;gap:8px;padding:12px 12px 12px;border:2px solid var(--line);border-radius:18px;background:var(--bg)}
@@ -72,7 +81,18 @@ h1.logo{font-family:var(--f-disp);font-weight:400;font-size:36px;letter-spacing:
 #modes button:last-child{border-bottom:0}
 #modes button[aria-pressed="true"][data-v="easy"]{background:var(--accent);color:var(--bg)}
 #modes button[aria-pressed="true"][data-v="hard"]{background:var(--hard);color:var(--bg)}
-.lvdesc{font-size:16px;color:var(--muted);margin-top:-4px}
+.lvrow{display:flex;align-items:center;flex-wrap:wrap;gap:8px 16px;margin-top:-4px}
+.lvdesc{font-size:16px;color:var(--muted)}
+/* 연습 기록 초기화: 누르면 한 번 더 물어봄 */
+.reset{display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:2px}
+.reset [hidden]{display:none!important}
+.rask{display:flex;flex-direction:column;align-items:center;gap:6px}
+.rbtns{display:inline-flex;gap:6px}
+.rq{font-size:14px;font-weight:700;color:var(--ink);text-align:center;line-height:1.3}
+.rmsg{font-size:14px;font-weight:700;color:var(--accent)}
+.rbtn{display:inline-flex;align-items:center;gap:5px;min-height:32px;padding:0 10px;border:1.5px solid var(--line);border-radius:999px;background:var(--bg);font-size:14px;font-weight:500;color:var(--muted)}
+.rbtn svg{width:13px;height:13px;overflow:visible;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.rbtn.danger{background:var(--hard);border-color:var(--hard);color:var(--bg);font-weight:700}
 
 /* 이어 붙인 버튼 묶음 */
 .seg{display:inline-flex;flex-wrap:wrap;border:1.5px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg)}
@@ -95,6 +115,33 @@ h1.logo{font-family:var(--f-disp);font-weight:400;font-size:36px;letter-spacing:
 .check:has(input:checked){border-color:var(--accent);background:var(--accent-soft);font-weight:700}
 button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 
+/* 설정: 악보 상자 · 연주 상자 */
+.setgrid{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:12px;align-items:stretch}
+.setbox{display:flex;flex-direction:column;gap:12px;padding:14px 16px 16px;border:1.5px solid var(--line);border-radius:14px;background:var(--bg)}
+.setbox h3{margin:0;font-size:15px;font-weight:700;color:var(--muted)}
+.setbox .label{min-width:48px}
+.scorebody{flex:1;display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px}   /* 박자·마디는 왼쪽, 키는 오른쪽 */
+.scoreleft{display:flex;flex-direction:column;gap:12px;flex:none}
+.keyfield{align-items:stretch;flex:1 1 300px;min-width:0}
+.keyfield .label{align-self:center;min-width:0}
+.keys{display:flex;gap:8px;align-items:stretch;min-width:0;flex:1}
+.keys .kc{display:flex} .keys .kc button{flex:1;height:auto;padding-left:8px;padding-right:8px}
+.krows{display:flex;flex-direction:column;gap:8px;min-width:0;flex:1}
+.krows .seg{display:flex;flex-wrap:nowrap} .krows .seg button{flex:1;min-width:0;padding-left:4px;padding-right:4px}
+.setbox .tempo{flex-wrap:nowrap} .setbox .tempo input{flex:1;width:auto;min-width:80px}
+@container (min-width:760.02px){   /* 컴퓨터: 악보 상자 빈 곳이 많아 버튼·글씨를 키움 */
+  .scorebody{gap:14px 24px} .scoreleft{gap:14px}
+  .scorebody .label{font-size:16px}
+  .scorebody .seg button{min-height:50px;padding:8px 17px;font-size:17.5px}
+  .krows{gap:12px} #keys .krows .seg button{min-height:56px;padding-left:4px;padding-right:4px}
+  .keys{gap:10px} #keys .kc button{padding-left:14px;padding-right:14px}
+  #keys .kl{font-size:18.5px} #keys .ks{font-size:13px}
+}
+.optlist{display:flex;flex-direction:column}
+.optlist .check{flex-direction:row-reverse;justify-content:space-between;gap:12px;min-height:46px;padding:0;border:0;border-top:1.5px solid var(--line);border-radius:0;background:transparent;font-size:17px}
+.optlist .check:first-child{border-top:0}
+.optlist .check:has(input:checked){background:transparent;border-color:var(--line)}
+
 /* 악보 */
 .sheet{background:var(--bg);border:1.5px solid var(--line);border-radius:18px;padding:20px 14px 14px;box-shadow:0 10px 30px rgba(24,32,46,.07);overflow:hidden}
 .meta{display:flex;flex-wrap:wrap;gap:6px 18px;padding:0 10px 6px;font-size:16px;color:var(--muted)}
@@ -104,11 +151,10 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 #score .on text{fill:var(--accent)}
 #score .on .hollow{fill:none}
 
-.actions{display:flex;flex-wrap:wrap;gap:12px}
-.btn{display:inline-flex;align-items:center;gap:10px;min-height:58px;padding:0 24px;border-radius:14px;border:1.5px solid var(--line);background:var(--bg);font-size:18px;font-weight:700;color:var(--ink)}
-.btn svg{width:18px;height:18px;fill:currentColor}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--bg);box-shadow:0 8px 18px var(--accent-shadow)}
-.btn.new{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:10px -14px -14px;padding:14px;border-top:1.5px solid var(--line);background:var(--tile)}   /* 악보 카드 아래쪽에 붙은 버튼 줄 */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:56px;padding:0 16px;border-radius:14px;border:1.5px solid var(--line);background:var(--bg);font-size:18px;font-weight:700;color:var(--ink);white-space:nowrap}
+.btn svg{width:18px;height:18px;fill:currentColor;flex:none}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--bg)}
 .status{font-size:16px;color:var(--muted);min-height:1.5em}
 .credit{margin:8px 0 0;font-size:14px;color:var(--muted)}
 
@@ -128,25 +174,29 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 }
 @media (max-width:1023.98px){ body:not(.ads-off) .ad-bottom{display:flex} }
 @container (max-width:760px){
+  .setgrid{grid-template-columns:1fr}
   .stagewrap{grid-template-columns:1fr}
-  .modebox{flex-direction:row;align-items:center;gap:12px;padding:8px 12px;border-radius:14px} #modes{flex-direction:row;flex:1} #modes button{flex:1;min-width:0;border-bottom:0;border-right:1.5px solid var(--line)} #modes button:last-child{border-right:0}
+  .modebox{flex-direction:row;align-items:center;flex-wrap:wrap;gap:8px 12px;padding:8px 12px;border-radius:14px} .reset{margin-top:0;flex:none} .rask{flex-direction:row;flex-wrap:wrap;justify-content:center} #modes{flex-direction:row;flex:1} #modes button{flex:1;min-width:0;border-bottom:0;border-right:1.5px solid var(--line)} #modes button:last-child{border-right:0}
 }
 
 @media (max-width:720px){
   .band .in{padding-block:18px 16px} h1{font-size:25px} h1.logo img{height:72px} .mark{width:46px;height:46px} .mark span{font-size:33px} .mark svg{width:40px;height:40px}
   .panel{padding:14px 12px}
   .stagewrap{grid-template-columns:1fr}
-  #levels{gap:6px}
+  #levels{gap:6px;grid-template-columns:repeat(3,minmax(0,1fr))}   /* 휴대폰은 3칸씩 두 줄 */
   .stage{padding:10px 4px 8px;border-radius:14px;align-items:center;text-align:center}
   .stage .num{font-size:28px} .stage .sym{position:static;font-size:24px;height:26px} .stage .name{display:none}
   .stars{gap:1px} .stars svg{width:10px;height:10px} .prog{flex-direction:column;align-items:center;gap:3px;width:100%} .prog .pbar{flex:none;width:80%} .cnt{font-size:13px}
   .pbar{width:80%}
-  .hardtag{align-self:center;padding:1px 7px;font-size:12px} .hardtag .full{display:none} .hardtag .short{display:inline}
-  .modebox{flex-direction:row;align-items:center;gap:12px;padding:8px 12px;border-radius:14px} #modes{flex-direction:row;flex:1} #modes button{flex:1;min-width:0;border-bottom:0;border-right:1.5px solid var(--line)} #modes button:last-child{border-right:0}
+  .stage .top{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:0;width:100%} .stage .top .num{grid-column:2}
+  .hardtag{grid-column:3;justify-self:start;margin-left:2px;font-size:13px}
+  .lvdesc{flex-basis:100%}
+  .modebox{flex-direction:row;align-items:center;flex-wrap:wrap;gap:8px 12px;padding:8px 12px;border-radius:14px} .reset{margin-top:0;flex:none} .rask{flex-direction:row;flex-wrap:wrap;justify-content:center} #modes{flex-direction:row;flex:1} #modes button{flex:1;min-width:0;border-bottom:0;border-right:1.5px solid var(--line)} #modes button:last-child{border-right:0}
   .seg button{padding:8px 12px}
+  .setgrid{grid-template-columns:1fr} .setbox{padding:12px 12px 14px} .setbox .label{min-width:40px}
   #keys button{padding:6px 6px;min-width:36px}
   .tempo input{width:140px}
-  .btn{flex:1 1 46%;justify-content:center}
+  .actions{gap:6px;margin:8px -14px -14px;padding:10px} .btn{min-height:50px;padding:0 6px;font-size:16px;gap:6px} .btn svg{width:15px;height:15px}
 }
 @media (prefers-reduced-motion:reduce){ *{transition:none!important} }
 
@@ -158,10 +208,110 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 .nav a[aria-current="page"]{background:var(--ink);color:var(--bg)}
 .nav a:focus-visible,.brand:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 @media (max-width:720px){ .nav{width:100%;box-sizing:border-box;gap:2px} .nav a{flex:1 1 0;min-width:0;padding:4px 2px;font-size:15px;line-height:1.2;white-space:normal;text-align:center;word-break:keep-all} }   /* 메뉴 5칸: 휴대폰은 두 줄 글씨 허용 */
+/* 컴퓨터 카드 오른쪽 위 그림 (K 요청 2026-11-12, 다른 페이지처럼). 휴대폰은 이름 대신 글자 기호 그대로 */
+.stage .pic{position:absolute;right:12px;top:10px;color:#B7BFCD;line-height:0;pointer-events:none}
+.stage .pic svg{height:32px;width:auto;fill:currentColor;display:block}
+.stage .pic.t{font-family:var(--f-body);font-size:17px;font-weight:700;line-height:1;top:14px}
+.stage[aria-pressed="true"] .pic{color:var(--accent)}
+.stage.txt.rnd .sym{display:block}   /* 랜덤 카드는 컴퓨터에서도 글자 기호 (멜로디 초견 1~5처럼) */
+@media (max-width:720px){ .stage .pic{display:none} }
+@media (min-width:721px){ @container card (max-width:215px){ .hardtag .full{display:none} .hardtag .short{display:inline} } }   /* 오른쪽 위 기호와 "+ 부속·차용"이 겹치면 짧게 "+α" */
+.stage.txt .sym{display:none}   /* 컴퓨터: 이름에 도수가 있어서 오른쪽 위 글자는 뺌 (휴대폰만 보임) */
+@media (max-width:720px){ .stage.txt .sym{display:block;font-family:var(--f-body);font-size:16px;font-weight:700;line-height:26px} }
+/* 청음: 답 칸 · 답 버튼 */
+.answer{display:flex;flex-direction:column;gap:12px;padding:6px 6px 4px}
+.ansrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:stretch}
+.slots{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.slot{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;min-height:66px;padding:4px 2px;border:2px solid var(--line);border-radius:14px;background:var(--bg);color:var(--ink);line-height:1.2}
+.slot .sn{font-size:13px;font-weight:500;color:var(--muted)}
+.slot .sv{font-size:22px;font-weight:700}
+.slot .sv.empty{color:#B7BFCD}
+.slot .sf{font-size:14px;font-weight:700}
+.slot[aria-current="true"]{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 6px 16px var(--accent-glow)}
+.slot.given{background:var(--tile);cursor:default}
+.slot.ok{border-color:#2B55C9;background:#E9EEFB} .slot.ok .sv{color:#2B55C9}   /* 맞음은 Hard에서도 파랑 (틀림 주황과 구분) */
+.slot.ng{border-color:var(--hard);background:var(--hard-bg)} .slot.ng .sv{color:var(--hard);text-decoration:line-through;text-decoration-thickness:2px}
+.slot.ng .sf{color:var(--ink)}
+.anscol{display:flex;flex-direction:column;gap:8px}
+.anscol .btn{flex:1;min-height:0}
+.btn:disabled{opacity:.45;cursor:default}
+.pads{display:flex;flex-direction:column;gap:8px}
+.pad{display:grid;gap:6px}
+.pad.p7{grid-template-columns:repeat(7,minmax(0,1fr))}
+.pad.p5{grid-template-columns:repeat(5,minmax(0,1fr));padding:0 7%}
+.pad button{min-height:54px;padding:0 2px;border:1.5px solid var(--line);border-radius:12px;background:var(--bg);font-size:19px;font-weight:700;color:var(--ink);white-space:nowrap}
+.pad.p5 button{background:var(--tile);font-size:17px}
+.pad button:active{background:var(--accent-soft);border-color:var(--accent)}
+.result{font-size:17px;font-weight:700;color:var(--muted);min-height:1.5em;padding:0 4px}
+.result.good{color:var(--accent)}
+/* ===== 화성학 문제 (K 요청 2026-11-17, 교재 "화성학 첫걸음 VOL.01"을 보고 Claude가 만듦 — K가 보고 수정 예정) ===== */
+#levels{grid-template-columns:repeat(4,minmax(0,1fr))}   /* 7단계 + 랜덤 = 4칸씩 두 줄 */
+@media (max-width:720px){ #levels{grid-template-columns:repeat(4,minmax(0,1fr))} }
+.stage .pic.t{font-family:var(--f-body)}
+.stage .pic.m{font-family:var(--f-music);font-size:30px;font-weight:400;top:8px}
+.setbox.off .seg button{background:var(--tile);color:#A9B0BC;pointer-events:none;cursor:default}
+html[data-theme="dark"] .setbox.off .seg button{color:#565D69}
+.setrow{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px}
+.setnote{font-size:15px;color:var(--muted)}
 
-.soon{background:var(--bg);border:1.5px dashed var(--line);border-radius:22px;padding:56px 24px;text-align:center;color:var(--muted);font-size:18px}
-.soon b{display:block;margin-bottom:6px;color:var(--ink);font-size:22px}
+/* 문제 칸 */
+.qbox{display:flex;flex-direction:column;align-items:center;gap:10px;padding:18px 10px 22px;text-align:center}
+.qask{font-size:17px;font-weight:700;color:var(--muted)}
+.qbig{font-size:46px;font-weight:700;line-height:1.2;color:var(--ink);word-break:keep-all}
+.qbig .arr{color:#B7BFCD;margin:0 .25em;font-weight:500}
+.chips{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+.chip{display:inline-flex;flex-direction:column;align-items:center;min-width:64px;padding:8px 12px;border:2px solid var(--line);border-radius:14px;background:var(--bg);line-height:1.15}
+.chip b{font-size:26px;font-weight:700;color:var(--ink)}
+.chip small{font-size:13px;font-weight:500;color:var(--muted)}
+.chip.hid b{color:#B7BFCD}
+.chip.rt{border-color:var(--accent);background:var(--accent-soft)} .chip.rt b{color:var(--accent)}
+.notes .chip{min-width:58px}
+@media (max-width:720px){
+  .qbig{font-size:34px} .chip{min-width:46px;padding:6px 8px} .chip b{font-size:21px} .notes .chip{min-width:40px} .chips{gap:6px}
+}
 
+/* 고른 답 + 정답 확인 (근음 + 종류처럼 두 번 고르는 문제) */
+.pick{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:stretch;max-width:560px;width:100%;margin:0 auto 4px}
+.pick .slot{min-height:62px}
+.pick .slot .sv{font-size:26px}
+.pick .btn{min-height:62px}
+
+/* 답 버튼 */
+.pads{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.prow{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+.pbtn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-width:0;min-height:62px;padding:4px 6px;border:1.5px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);line-height:1.15;flex:0 0 calc((100% - 48px)/7)}
+.pbtn .cn{font-size:21px;font-weight:700;white-space:nowrap}
+.pbtn .cr{font-size:13px;font-weight:500;color:var(--muted);white-space:nowrap}
+.pbtn.w5{flex-basis:calc((100% - 32px)/5)} .pbtn.w4{flex-basis:calc((100% - 24px)/4)} .pbtn.w6{flex-basis:calc((100% - 40px)/6)}
+.pbtn.k8{flex-basis:calc((100% - 56px)/8)}
+.pbtn.acc{flex:0 0 76px;background:var(--tile)}
+.pbtn.acc .cn{font-size:24px}
+.pbtn.on{border-color:var(--accent);background:var(--accent-soft)} .pbtn.on .cn{color:var(--accent)}
+.pbtn.ok{border-color:#2B55C9;background:#E9EEFB} .pbtn.ok .cn,.pbtn.ok .cr{color:#2B55C9}
+.pbtn.ng{border-color:var(--hard);background:var(--hard-bg)} .pbtn.ng .cn{color:var(--hard)}
+.pbtn:disabled{cursor:default}
+.plabel{font-size:14px;font-weight:700;color:var(--muted);text-align:center;margin-bottom:-2px}
+/* 음정 버튼: 1~7도 칸마다 세로로 */
+.ivl{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;align-items:start}
+.ivl .col{display:flex;flex-direction:column;gap:6px}
+.ivl .col .hd{font-size:14px;font-weight:700;color:var(--muted);text-align:center}
+.ivl .pbtn{flex:none;width:100%}
+.ivl .pbtn .cn{font-size:19px}
+@media (max-width:720px){
+  .prow{gap:5px} .pbtn{flex-basis:calc((100% - 15px)/4);min-height:56px;padding:4px 2px} .pbtn .cn{font-size:18px} .pbtn .cr{font-size:12px}
+  .pbtn.w5{flex-basis:calc((100% - 10px)/3)} .pbtn.w6{flex-basis:calc((100% - 10px)/3)} .pbtn.w4{flex-basis:calc((100% - 15px)/4)}
+  .pbtn.k8{flex-basis:calc((100% - 15px)/4)}
+  .pbtn.acc{flex:0 0 64px}
+  .ivl{gap:4px} .ivl .pbtn{min-height:58px} .ivl .pbtn .cn{font-size:14px;white-space:normal;line-height:1.2} .ivl .col .hd{font-size:13px}
+  .pick .slot .sv{font-size:22px}
+}
+
+/* 결과 · 풀이 */
+.result{font-size:19px;font-weight:700;color:var(--muted);min-height:1.5em;text-align:center;margin-top:14px}
+.result.good{color:#2B55C9} .result.bad{color:var(--hard)}
+html[data-theme="dark"] .result.good{color:#2B55C9}
+.expl{max-width:640px;margin:6px auto 0;padding:12px 16px;border-radius:14px;background:var(--tile);font-size:17px;line-height:1.6;color:var(--ink);text-align:center;word-break:keep-all}
+.actions{grid-template-columns:repeat(2,minmax(0,1fr))}
 </style>
 </head>
 <body class="ads-off">
@@ -182,11 +332,381 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 <div class="layout">
 <aside class="ad ad-side" aria-label="광고">광고<small>160×600</small></aside>
 <div class="wrap">
-  <section class="soon"><b>준비 중이에요</b>곧 화성학 연습을 이곳에서 할 수 있어요.</section>
+  <section class="panel" aria-label="설정">
+    <div class="stagewrap">
+      <div id="levels" role="group" aria-label="단계"></div>
+      <div class="modebox"><span class="label">모드</span><div id="modes"></div><div class="reset">
+          <span class="rmsg" id="resetMsg" role="status" hidden>초기화했어요</span>
+          <button type="button" class="rbtn" id="resetBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>기록 초기화</button>
+          <span class="rask" id="resetAsk" hidden><span class="rq">기록을 모두 지울까요?</span><span class="rbtns"><button type="button" class="rbtn danger" id="resetYes">초기화</button><button type="button" class="rbtn" id="resetNo">취소</button></span></span>
+        </div></div>
+    </div>
+    <div class="lvrow">
+      <div class="lvdesc" id="lvdesc"></div>
+    </div>
+    <div class="setbox" id="nameBox" aria-label="문제 설정"><h3>문제</h3>
+      <div class="setrow"><span class="label">표기</span><div class="seg" id="names"></div><span class="setnote" id="nameNote"></span></div>
+    </div>
+  </section>
+
+  <section class="sheet" aria-label="화성학 문제">
+    <div class="meta" id="meta"></div>
+    <div class="qbox" id="qbox"></div>
+    <div class="pick" id="pick" hidden>
+      <div class="slot" id="pickSlot"><span class="sn" id="pickHead">고른 답</span><span class="sv empty" id="pickVal">?</span></div>
+      <button type="button" class="btn primary" id="checkBtn">정답 확인</button>
+    </div>
+    <div class="pads" id="pads" role="group" aria-label="답"></div>
+    <div class="result" id="result" aria-live="polite"></div>
+    <div class="expl" id="expl" hidden></div>
+    <div class="actions">
+      <button type="button" class="btn" id="showBtn">정답 보기</button>
+      <button type="button" class="btn primary" id="nextBtn">다음 문제</button>
+    </div>
+  </section>
+
   <aside class="ad ad-bottom" aria-label="광고">광고<small>320×100</small></aside>
 </div>
 <aside class="ad ad-side" aria-label="광고">광고<small>160×600</small></aside>
 </div>
+
+<script>
+(()=>{
+/* ---------- 음 (교재: 계이름 도레미파솔라시 = 음이름 CDEFGAB) ---------- */
+const LET=['C','D','E','F','G','A','B'], SOL=['도','레','미','파','솔','라','시'];
+const SEMI=[0,2,4,5,7,9,11];
+const accTxt=a=>a>0?'♯'.repeat(a):a<0?'♭'.repeat(-a):'';
+const N=(L,a=0)=>({L:((L%7)+7)%7,a});
+const pcOf=n=>((SEMI[n.L]+n.a)%12+12)%12;
+const nm=(n,sys)=>(sys==='sol'?SOL:LET)[n.L]+accTxt(n.a);
+const same=(x,y)=>x&&y&&x.L===y.L&&x.a===y.a;
+function up(root,steps,semis){                        // root에서 글자 steps칸 위, 반음 semis개 위인 음 (이론대로 이름)
+  const L=(root.L+steps)%7, want=(pcOf(root)+semis)%12; let a=((want-SEMI[L])%12+12)%12; if(a>6) a-=12;
+  return N(L,a);
+}
+
+/* ---------- 키 (교재 1장 6·7장) ---------- */
+const SHARP_ORDER=[3,0,4,1,5,2,6];   // 파 도 솔 레 라 미 시
+const FLAT_ORDER=[6,2,5,1,4,0,3];    // 시 미 라 레 솔 도 파
+const SHARP_KEYS=[N(0),N(4),N(1),N(5),N(2),N(6),N(3,1),N(0,1)];        // #0~7: C G D A E B F♯ C♯
+const FLAT_KEYS=[N(0),N(3),N(6,-1),N(2,-1),N(5,-1),N(1,-1),N(4,-1),N(0,-1)];   // ♭0~7: C F B♭ E♭ A♭ D♭ G♭ C♭
+function keyScale(k){ return [0,2,4,5,7,9,11].map((s,i)=>up(k,i,s)); }   // 메이저 스케일 7음
+
+/* ---------- 음정 (교재 2·3장) ---------- */
+const PERF={1:0,4:5,5:7}, MAJ={2:2,3:4,6:9,7:11};
+function ivlName(num,diff){                            // diff = 기준(완전·장)에서 반음 몇 개 차이
+  if(PERF[num]!=null) return ({0:'완전','1':'증','-1':'감'})[diff];
+  return ({0:'장','-1':'단','1':'증','-2':'감'})[diff];
+}
+const IVL_EASY=[[1,'완전'],[2,'단'],[2,'장'],[3,'단'],[3,'장'],[4,'완전'],[5,'완전'],[6,'단'],[6,'장'],[7,'단'],[7,'장']];
+const IVL_HARD=IVL_EASY.concat([[5,'감'],[5,'증']]);   // 교재 3장 3절: 증5도 · 감5도
+function ivlSemis(num,q){ const b=PERF[num]!=null?PERF[num]:MAJ[num]; return b+({완전:0,장:0,단:-1,증:1,감:PERF[num]!=null?-1:-2})[q]; }
+
+/* ---------- 코드 (교재 2·3장) ---------- */
+const CHORDS={
+  'M':{suf:'',ko:'메이저',st:[0,2,4],se:[0,4,7]},
+  'm':{suf:'m',ko:'마이너',st:[0,2,4],se:[0,3,7]},
+  'sus4':{suf:'sus4',ko:'서스포',st:[0,3,4],se:[0,5,7]},
+  'aug':{suf:'aug',ko:'어그먼트',st:[0,2,4],se:[0,4,8]},
+  'dim':{suf:'dim',ko:'디미니쉬',st:[0,2,4],se:[0,3,6]},
+  'M7':{suf:'M7',ko:'메이저 세븐',st:[0,2,4,6],se:[0,4,7,11]},
+  '7':{suf:'7',ko:'세븐',st:[0,2,4,6],se:[0,4,7,10]},
+  'm7':{suf:'m7',ko:'마이너 세븐',st:[0,2,4,6],se:[0,3,7,10]},
+  'm7♭5':{suf:'m7♭5',ko:'하프 디미니쉬',st:[0,2,4,6],se:[0,3,6,10]},
+  'aug7':{suf:'aug7',ko:'어그먼트 세븐',st:[0,2,4,6],se:[0,4,8,10]},
+  'dim7':{suf:'dim7',ko:'디미니쉬 세븐',st:[0,2,4,6],se:[0,3,6,9]},
+};
+const TRI=['M','m','sus4','aug','dim'], SEV=['M7','7','m7','m7♭5','aug7','dim7'];
+const chordTones=(r,t)=>CHORDS[t].st.map((s,i)=>up(r,s,CHORDS[t].se[i]));
+const chordName=(r,t)=>nm(r,'let')+CHORDS[t].suf;
+const BUILD={'M':'장3도 + 단3도','m':'단3도 + 장3도','sus4':'메이저의 가운데 음을 반음 ↑','aug':'장3도 + 장3도','dim':'단3도 + 단3도',
+  'M7':'메이저 + 장7도','7':'메이저 + 단7도','m7':'마이너 + 단7도','m7♭5':'디미니쉬 + 단7도','aug7':'어그먼트 + 단7도','dim7':'단3도 간격으로 쌓기'};
+
+/* ---------- 스케일 (교재 3장 1·2절) ---------- */
+const SCALES={
+  maj:{ko:'메이저',se:[0,2,4,5,7,9,11],f:'♭ 없음'},
+  nat:{ko:'내추럴 마이너',se:[0,2,3,5,7,8,10],f:'♭3 · ♭6 · ♭7'},
+  har:{ko:'하모닉 마이너',se:[0,2,3,5,7,8,11],f:'♭3 · ♭6'},
+  mel:{ko:'멜로딕 마이너',se:[0,2,3,5,7,9,11],f:'♭3'},
+};
+
+/* ---------- 다이어토닉 (교재 3장 9·10절) ---------- */
+const ROM=['Ⅰ','Ⅱ','Ⅲ','Ⅳ','Ⅴ','Ⅵ','Ⅶ'];
+const DIA3=['M','m','m','M','M','m','dim'], DIA7=['M7','m7','m7','M7','7','m7','m7♭5'];
+const romOf=(d,t)=>ROM[d]+CHORDS[t].suf;
+
+/* ---------- 단계 ---------- */
+const LEVELS=[
+  {n:1,name:'음이름',pc:'C 도',sym:'C도',desc:'계이름 ↔ 음이름 (도 = C)',hdesc:'♯ · ♭ 붙은 음까지',tag:'+ ♯♭',tagS:'♯♭'},
+  {n:2,name:'♯ 키',pc:'♯',m:1,sym:'♯',desc:'♯ 붙는 순서와 개수를 보고 무슨 키인지',hdesc:'♯ 개수만 보고 (순서는 외워서)',tag:'개수만',tagS:'개수'},
+  {n:3,name:'♭ 키',pc:'♭',m:1,sym:'♭',desc:'♭ 붙는 순서와 개수를 보고 무슨 키인지',hdesc:'♭ 개수만 보고 (순서는 외워서)',tag:'개수만',tagS:'개수'},
+  {n:4,name:'인터벌',pc:'3도',sym:'3도',desc:'두 음 사이가 몇 도인지 (완전1도 ~ 장7도)',hdesc:'♯ · ♭ 근음 + 증5도 · 감5도',tag:'+ 증·감',tagS:'증감'},
+  {n:5,name:'코드',pc:'C7',sym:'C7',desc:'구성음을 보고 코드 맞히기 (M · m · sus4 · aug · dim)',hdesc:'♯ · ♭ 근음 + 7th 코드 (M7 · 7 · m7 · m7♭5 · aug7 · dim7)',tag:'+ 7th',tagS:'7th'},
+  {n:6,name:'스케일',pc:'도~시',sym:'도~시',desc:'스케일 음 7개를 보고 맞히기 (메이저 · 내추럴 마이너)',hdesc:'♯ · ♭ 근음 + 하모닉 · 멜로딕 마이너',tag:'+ 하모닉·멜로딕',tagS:'+α'},
+  {n:7,name:'다이어토닉',pc:'Ⅰ~Ⅶ',sym:'Ⅰ~Ⅶ',desc:'키의 다이어토닉 코드 맞히기 (3화음)',hdesc:'♭ · ♯ 많은 키 + 7th 다이어토닉',tag:'+ 7th',tagS:'7th'},
+];
+
+/* ---------- 상태 ---------- */
+const store={get(k,d){try{const v=localStorage.getItem('hm-'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},
+             set(k,v){try{localStorage.setItem('hm-'+k,JSON.stringify(v))}catch(e){}}};
+let sel=store.get('level',1); if(sel!==0&&!LEVELS[sel-1]) sel=1;   // 0 = 랜덤
+let mode=store.get('mode','easy'); if(mode!=='hard') mode='easy';
+let sys=store.get('names','sol'); if(sys!=='let') sys='sol';        // 문제 표기: 계이름(처음) · 음이름
+let done=store.get('done',null); if(!done||typeof done!=='object'||!done.easy) done={easy:{},hard:{}};
+let q=null, answered=false, pick={root:null,acc:0,type:null}, tally={n:0,ok:0};
+
+const $=id=>document.getElementById(id);
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+const hard=()=>mode==='hard';
+const NAT=[0,1,2,3,4,5,6].map(L=>N(L));
+const ACCR=[N(3,1),N(0,1),N(4,1),N(6,-1),N(2,-1),N(5,-1),N(1,-1),N(4,-1)];   // Hard 근음: F♯ C♯ G♯ B♭ E♭ A♭ D♭ G♭
+const rootPool=()=>hard()?NAT.concat(ACCR):NAT;
+const ok1=(ns,max)=>ns.every(n=>Math.abs(n.a)<=max);
+let lastKey='';
+
+/* ---------- 문제 만들기 ---------- */
+// 문제 = {lv, ask, big(html), chips, kind:'note'|'key'|'ivl'|'chord'|'scale'|'rom', ans, expl, opts}
+function chipHTML(n,cls=''){ return '<span class="chip '+cls+'"><b>'+nm(n,sys)+'</b></span>'; }
+const mk={
+  1(){                                                 // 계이름 ↔ 음이름
+    let n,dir,k=0; do{ n=hard()?rnd(NAT.concat([0,1,2,3,4,5,6].map(L=>N(L,1)),[0,1,2,3,4,5,6].map(L=>N(L,-1)))):rnd(NAT); dir=Math.random()<.5?'sol':'let'; k++; }while(dir+nm(n,dir)===lastKey&&k<20);
+    lastKey=dir+nm(n,dir);
+    const other=dir==='sol'?'let':'sol';
+    return {lv:1,kind:'note',ansSys:other,acc:hard(),ask:dir==='sol'?'이 계이름의 음이름은?':'이 음이름의 계이름은?',
+      big:nm(n,dir),ans:n,ansTxt:nm(n,other),
+      expl:'<b>'+SOL[n.L]+'</b> = <b>'+LET[n.L]+'</b>'+(n.a?' → '+nm(n,'sol')+' = '+nm(n,'let'):'')+' &nbsp;(도레미파솔라시 = CDEFGAB)'};
+  },
+  2(){ return keyQ(true); },
+  3(){ return keyQ(false); },
+  4(){                                                 // 두 음 사이 몇 도
+    for(let t=0;t<200;t++){
+      const r=rnd(rootPool()), [num,ql]=rnd(hard()?IVL_HARD:IVL_EASY), s=ivlSemis(num,ql), u=up(r,num-1,s);
+      if(Math.abs(u.a)>1) continue;
+      if(num===1&&Math.random()<.6) continue;           // 완전1도(같은 음)는 가끔만
+      const id=nm(r,'sol')+nm(u,'sol'); if(id===lastKey) continue; lastKey=id;
+      const cnt=[]; for(let i=0;i<num;i++) cnt.push(nm(N(r.L+i),sys));
+      return {lv:4,kind:'ivl',ask:'두 음 사이는 몇 도일까요? (아래 음 → 위 음)',
+        big:nm(r,sys)+'<span class="arr">→</span>'+nm(u,sys),ans:{num,q:ql},ansTxt:ql+num+'도',
+        expl:cnt.join(' · ')+' → <b>'+num+'도</b>, 반음 '+s+'개 → <b>'+ql+num+'도</b>'};
+    }
+  },
+  5(){                                                 // 구성음 → 코드
+    for(let t=0;t<200;t++){
+      const r=rnd(rootPool()), ty=rnd(hard()?TRI.concat(SEV,SEV):TRI), ts=chordTones(r,ty);
+      if(!ok1(ts,hard()?2:1)) continue;
+      const id=chordName(r,ty); if(id===lastKey) continue; lastKey=id;
+      return {lv:5,kind:'chord',types:hard()?TRI.concat(SEV):TRI,ask:'이 구성음으로 만든 코드는?',
+        chips:'<div class="chips notes">'+ts.map((n,i)=>chipHTML(n)).join('')+'</div>',ans:{root:r,type:ty},ansTxt:id,
+        expl:'근음 <b>'+nm(r,sys)+'</b> · '+BUILD[ty]+' → <b>'+id+'</b> ('+CHORDS[ty].ko+')'};
+    }
+  },
+  6(){                                                 // 스케일 음 7개 → 스케일
+    const kinds=hard()?['maj','nat','har','mel']:['maj','nat'];
+    for(let t=0;t<200;t++){
+      const r=rnd(rootPool()), sk=rnd(kinds), ns=SCALES[sk].se.map((s,i)=>up(r,i,s));
+      if(!ok1(ns,1)) continue;
+      const id=nm(r,'let')+' '+SCALES[sk].ko; if(id===lastKey) continue; lastKey=id;
+      return {lv:6,kind:'scale',kinds,ask:'이 음들로 된 스케일은?',
+        chips:'<div class="chips notes">'+ns.map(n=>chipHTML(n)).join('')+'</div>',ans:{root:r,type:sk},ansTxt:id,
+        expl:'첫 음 <b>'+nm(r,sys)+'</b>, 메이저 스케일에서 '+SCALES[sk].f+' → <b>'+id+'</b>'};
+    }
+  },
+  7(){                                                 // 다이어토닉
+    const sev=hard(), maxAcc=hard()?6:3;
+    const keys=[];
+    for(let i=0;i<=maxAcc;i++){ keys.push(SHARP_KEYS[i]); if(i) keys.push(FLAT_KEYS[i]); }
+    for(let t=0;t<200;t++){
+      const k=rnd(keys), d=Math.floor(Math.random()*7), sc=keyScale(k), r=sc[d], ty=(sev?DIA7:DIA3)[d], cn=chordName(r,ty);
+      const kn=nm(k,'let'), dir=Math.random()<.5;
+      const id=kn+d+dir; if(id===lastKey) continue; lastKey=id;
+      const expl=kn+' 메이저 스케일: '+sc.map((n,i)=>i===d?'<b>'+nm(n,sys)+'</b>':nm(n,sys)).join(' · ')+'<br>'+ROM[d]+'번째 음 <b>'+nm(r,sys)+'</b>에서 3도씩 쌓기 → <b>'+cn+'</b> = <b>'+romOf(d,ty)+'</b>';
+      if(dir) return {lv:7,kind:'chord',types:sev?['M7','m7','7','m7♭5']:['M','m','dim'],ask:kn+' 키의 '+ROM[d]+' 코드는?'+(sev?' (7th)':''),
+        big:kn+' 키 · '+ROM[d],ans:{root:r,type:ty},ansTxt:cn,expl};
+      return {lv:7,kind:'rom',ask:kn+' 키에서 이 코드는 몇 번째 코드일까요?',big:kn+' 키 · '+cn,ans:d,ansTxt:romOf(d,ty),expl};
+    }
+  },
+};
+function keyQ(sharp){
+  const KS=sharp?SHARP_KEYS:FLAT_KEYS, ORD=sharp?SHARP_ORDER:FLAT_ORDER, sg=sharp?'♯':'♭';
+  let c,k=0; do{ c=Math.floor(Math.random()*8); k++; }while(sg+c===lastKey&&k<20); lastKey=sg+c;
+  const list=ORD.slice(0,c).map(L=>N(L,sharp?1:-1)), key=KS[c];
+  const chips=c?'<div class="chips">'+list.map((n,i)=>'<span class="chip'+(hard()?' hid':'')+'"><b>'+(hard()?'?':nm(n,sys))+'</b><small>'+(i+1)+'번</small></span>').join('')+'</div>':'';
+  let ex;
+  if(!c) ex=sg+'이 없으면 <b>C 키</b>';
+  else if(sharp){ const last=list[c-1]; ex=sg+' 붙는 순서 '+ORD.map(L=>SOL[L]).join(' ')+'<br>'+c+'번째 <b>'+nm(last,sys)+'</b> → 온음 위 <b>'+nm(key,sys)+'</b> → <b>'+nm(key,'let')+' 키</b>'; }
+  else if(c===1) ex='♭ 1개(시♭)는 그냥 <b>F 키</b>';
+  else { const prev=list[c-2]; ex='♭ 붙는 순서 '+ORD.map(L=>SOL[L]).join(' ')+'<br>'+c+'번째 '+nm(list[c-1],sys)+' → 바로 앞 <b>'+nm(prev,sys)+'</b> → <b>'+nm(key,'let')+' 키</b>'; }
+  return {lv:sharp?2:3,kind:'key',keys:KS,ask:'무슨 키일까요?',big:sg+' '+c+'개',chips,ans:key,ansTxt:nm(key,'let')+' 키',expl:ex};
+}
+function makeQ(){ const lv=sel||1+Math.floor(Math.random()*7); return mk[lv](); }
+
+/* ---------- 답 버튼 ---------- */
+function btn(cn,cr,data,cls=''){ return '<button type="button" class="pbtn '+cls+'" '+data+'><span class="cn">'+cn+'</span>'+(cr?'<span class="cr">'+cr+'</span>':'')+'</button>'; }
+function rootRow(lettersSys,small){                  // 근음 C~B + ♯ ♭
+  return '<div class="prow">'+[0,1,2,3,4,5,6].map(L=>btn((lettersSys==='sol'?SOL:LET)[L],small?(lettersSys==='sol'?LET:SOL)[L]:'','data-l="'+L+'"')).join('')+'</div>'
+    +'<div class="prow">'+btn('♯','','data-acc="1"','acc')+btn('♭','','data-acc="-1"','acc')+'</div>';
+}
+function buildPads(){
+  const P=$('pads'); let h='';
+  if(q.kind==='note'){
+    if(q.acc) h=rootRow(q.ansSys,false);
+    else h='<div class="prow">'+[0,1,2,3,4,5,6].map(L=>btn((q.ansSys==='sol'?SOL:LET)[L],'','data-v="'+L+'"')).join('')+'</div>';
+  } else if(q.kind==='key'){
+    h='<div class="prow">'+q.keys.map((k,i)=>btn(nm(k,'let'),nm(k,'sol')+' 키','data-v="'+i+'"','k8')).join('')+'</div>';
+  } else if(q.kind==='ivl'){
+    const list=hard()?IVL_HARD:IVL_EASY, ORDQ=['감','단','완전','장','증'];
+    h='<div class="ivl">'+[1,2,3,4,5,6,7].map(num=>'<div class="col"><span class="hd">'+num+'도</span>'
+      +list.filter(x=>x[0]===num).sort((a,b)=>ORDQ.indexOf(a[1])-ORDQ.indexOf(b[1])).map(x=>btn(x[1]+num+'도','','data-v="'+x[1]+'|'+num+'"')).join('')+'</div>').join('')+'</div>';
+  } else if(q.kind==='chord'||q.kind==='scale'){
+    h='<div class="plabel">근음</div>'+rootRow('let',true)+'<div class="plabel">'+(q.kind==='chord'?'종류':'스케일')+'</div>';
+    if(q.kind==='chord'){
+      const t3=q.types.filter(t=>TRI.includes(t)), t7=q.types.filter(t=>SEV.includes(t));
+      if(t3.length) h+='<div class="prow">'+t3.map(t=>btn(t,CHORDS[t].ko,'data-t="'+t+'"','w5')).join('')+'</div>';
+      if(t7.length) h+='<div class="prow">'+t7.map(t=>btn(t,CHORDS[t].ko,'data-t="'+t+'"','w6')).join('')+'</div>';
+    } else h+='<div class="prow">'+q.kinds.map(t=>btn(SCALES[t].ko,'','data-t="'+t+'"','w4')).join('')+'</div>';
+  } else if(q.kind==='rom'){
+    h='<div class="prow">'+ROM.map((r,i)=>btn(r,(i+1)+'번째','data-v="'+i+'"')).join('')+'</div>';
+  }
+  P.innerHTML=h;
+  const two=q.kind==='chord'||q.kind==='scale'||(q.kind==='note'&&q.acc);
+  $('pick').hidden=!two;
+  syncPick();
+}
+function pickText(){
+  const r=pick.root?(q.kind==='note'?nm(pick.root,q.ansSys):nm(pick.root,'let')):null;
+  if(q.kind==='note') return r;
+  if(!r&&!pick.type) return null;
+  const t=pick.type?(q.kind==='chord'?CHORDS[pick.type].suf||'(메이저)':' '+SCALES[pick.type].ko):'';
+  return (r||'?')+(q.kind==='chord'?(pick.type?t:' ?'):(pick.type?t:' ?'));
+}
+function syncPick(){
+  const tx=pickText(), v=$('pickVal');
+  v.textContent=tx||'?'; v.classList.toggle('empty',!tx);
+  $('pickHead').textContent=q.kind==='chord'?'근음 + 종류':q.kind==='scale'?'근음 + 스케일':'고른 답';
+  const full=q.kind==='note'?!!pick.root:!!(pick.root&&pick.type);
+  $('checkBtn').disabled=answered||!full;
+  $('pads').querySelectorAll('[data-l]').forEach(b=>b.classList.toggle('on',!!pick.root&&pick.root.L===+b.dataset.l));
+  $('pads').querySelectorAll('[data-acc]').forEach(b=>b.classList.toggle('on',pick.acc===+b.dataset.acc));
+  $('pads').querySelectorAll('[data-t]').forEach(b=>b.classList.toggle('on',pick.type===b.dataset.t));
+  const sl=$('pickSlot'); sl.classList.remove('ok','ng');
+}
+
+/* ---------- 채점 ---------- */
+function isRight(a){
+  if(q.kind==='note') return same(a,q.ans);
+  if(q.kind==='key') return same(a,q.ans);
+  if(q.kind==='ivl') return a.num===q.ans.num&&a.q===q.ans.q;
+  if(q.kind==='chord'||q.kind==='scale') return same(a.root,q.ans.root)&&a.type===q.ans.type;
+  if(q.kind==='rom') return a===q.ans;
+}
+function finish(a,el,gave){
+  if(answered) return; answered=true;
+  const right=!gave&&isRight(a);
+  tally.n++; if(right) tally.ok++;
+  $('result').textContent=gave?'정답은 '+q.ansTxt:right?'맞았어요 — '+q.ansTxt:'틀렸어요 — 정답은 '+q.ansTxt;
+  $('result').className='result '+(gave?'':right?'good':'bad');
+  $('expl').innerHTML=q.expl; $('expl').hidden=false;
+  if(el) el.classList.add(right?'ok':'ng');
+  if(!right) markAnswer();
+  if(!$('pick').hidden){ $('pickSlot').classList.add(right?'ok':'ng'); $('checkBtn').disabled=true; }
+  $('pads').querySelectorAll('button').forEach(b=>b.disabled=true);
+  const fr=store.get('done',null); if(fr&&typeof fr==='object'&&fr.easy) done=fr;   // 다른 창 기록을 덮어쓰지 않게
+  const d=done[mode]||(done[mode]={}), k=sel===0?'R':sel, c0=d[k]||0; d[k]=c0+1; store.set('done',done); if(window.gmLevelUp) gmLevelUp(c0,c0+1); syncCards();
+  updateMeta(); $('showBtn').disabled=true; $('nextBtn').focus({preventScroll:true});
+}
+function markAnswer(){                                  // 정답 버튼에 파란 테두리
+  const P=$('pads');
+  if(q.kind==='note'&&!q.acc){ const b=P.querySelector('[data-v="'+q.ans.L+'"]'); if(b) b.classList.add('ok'); }
+  if(q.kind==='key'){ const i=q.keys.findIndex(k=>same(k,q.ans)); const b=P.querySelector('[data-v="'+i+'"]'); if(b) b.classList.add('ok'); }
+  if(q.kind==='ivl'){ const b=P.querySelector('[data-v="'+q.ans.q+'|'+q.ans.num+'"]'); if(b) b.classList.add('ok'); }
+  if(q.kind==='rom'){ const b=P.querySelector('[data-v="'+q.ans+'"]'); if(b) b.classList.add('ok'); }
+}
+
+/* ---------- 화면 ---------- */
+function render(){
+  $('qbox').innerHTML='<span class="qask">'+q.ask+'</span>'+(q.big?'<span class="qbig">'+q.big+'</span>':'')+(q.chips||'');
+}
+function updateMeta(){
+  const L=LEVELS[q.lv-1];
+  $('meta').innerHTML='<span>단계 <b>'+(sel===0?'랜덤 · '+L.name:q.lv+' '+L.name)+'</b></span><span>모드 <b>'+(hard()?'Hard':'Easy')+'</b></span>'
+    +(tally.n?'<span>이번에 <b>'+tally.n+'</b>문제 중 <b>'+tally.ok+'</b>개 맞음</span>':'');
+}
+function fresh(){
+  q=makeQ(); answered=false; pick={root:null,acc:0,type:null};
+  $('result').textContent=''; $('result').className='result'; $('expl').hidden=true; $('showBtn').disabled=false;
+  render(); buildPads(); updateMeta();
+}
+function updDesc(){
+  if(sel===0){ $('lvdesc').textContent='1~7단계 문제가 섞여 나와요'+(hard()?' (모두 Hard)':''); return; }
+  const L=LEVELS[sel-1]; $('lvdesc').textContent=L.desc+(hard()?' · Hard: '+L.hdesc:'');
+}
+const STARS=[0,1,2,3,4,5,6].map(()=>'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.2 6.6.7-5 4.5 1.4 6.6L12 17.3 6.1 20.5l1.4-6.6-5-4.5 6.6-.7z"/></svg>').join('');
+window.addEventListener('storage',e=>{ if(e.key!=='hm-done') return; try{ const v=JSON.parse(e.newValue); if(v&&typeof v==='object'&&v.easy){ done=v; syncCards(); } }catch(_){} });
+function levelInfo(n){ const c=(done[mode]||{})[n===0?'R':n]||0; const L=window.gmLevel?gmLevel(c):{lv:1,cur:c,need:20,max:false,pct:Math.min(100,c*5)}; return {c,pct:L.pct,L}; }
+function buildCards(){
+  const box=$('levels');
+  LEVELS.concat([{n:0,name:'랜덤',pc:'1~7',sym:'1~7',tag:'+ 모두 Hard',tagS:'H'}]).forEach(L=>{
+    const b=document.createElement('button'); b.type='button'; b.className='stage txt'+(L.n?'':' rnd'); b.dataset.v=L.n;
+    b.innerHTML='<span class="top"><span class="num">'+(L.n||'R')+'</span><span class="hardtag" aria-hidden="true"><span class="full">'+L.tag+'</span><span class="short">'+L.tagS+'</span></span></span><span class="sym" aria-hidden="true">'+L.sym+'</span><span class="pic t'+(L.m?' m':'')+'" aria-hidden="true">'+L.pc+'</span><span class="name">'+L.name+'</span><span class="stars" aria-hidden="true">'+STARS+'</span><span class="prog"><span class="pbar"><i></i></span><span class="cnt"></span></span><span class="lvl"></span>';
+    box.appendChild(b);
+  });
+}
+function syncCards(){
+  $('levels').querySelectorAll('.stage').forEach(b=>{
+    const n=+b.dataset.v, inf=levelInfo(n), name=n?LEVELS[n-1].name:'랜덤';
+    b.setAttribute('aria-pressed',n===sel);
+    b.querySelectorAll('.stars svg').forEach((s,k)=>{ s.classList.toggle('on',k<n); s.style.display=k<Math.max(n,1)?'':'none'; });
+    b.querySelector('.cnt').textContent=inf.L.max?'총 '+inf.c+'문제':inf.L.cur+'/'+inf.L.need+'문제';
+    b.querySelector('.lvl').innerHTML='<small>LV</small>'+inf.L.lv+(inf.L.max?'<span class="mx">MAX</span>':'<span class="tot">총 '+inf.c+'문제</span>');
+    b.querySelector('.pbar i').style.width=inf.pct+'%';
+    b.setAttribute('aria-label',(n?n+'단계 ':'')+name+', '+inf.c+'문제 연습, 레벨 '+inf.L.lv);
+  });
+}
+function segButtons(id,items,label){ const box=$(id); items.forEach(v=>{ const b=document.createElement('button'); b.type='button'; b.dataset.v=v; b.textContent=label(v); box.appendChild(b); }); }
+function buildUI(){
+  buildCards();
+  segButtons('modes',['easy','hard'],v=>v==='easy'?'Easy':'Hard');
+  segButtons('names',['sol','let'],v=>v==='sol'?'계이름 (도레미)':'음이름 (CDE)');
+  const sync=()=>{
+    document.body.classList.toggle('hard',hard());
+    syncCards(); updDesc();
+    $('modes').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===mode));
+    $('names').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===sys));
+    const off=sel===1;                                  // 1단계는 계이름 ↔ 음이름을 묻는 문제라 표기를 안 씀
+    $('nameBox').classList.toggle('off',off); $('names').querySelectorAll('button').forEach(b=>b.disabled=off);
+    $('nameNote').textContent=off?'1단계는 계이름 · 음이름이 번갈아 나와요':'문제의 음을 이 이름으로 보여 줘요 (코드 · 키 이름은 늘 음이름)';
+  };
+  const on=(id,fn)=>$(id).addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;fn(b.dataset.v);sync();fresh();});
+  on('levels',v=>{sel=+v;store.set('level',sel);tally={n:0,ok:0}});
+  on('modes',v=>{mode=v;store.set('mode',mode);tally={n:0,ok:0}});
+  on('names',v=>{sys=v;store.set('names',sys)});
+  $('pads').addEventListener('click',e=>{
+    const b=e.target.closest('button'); if(!b||answered) return;
+    if(b.dataset.acc!=null){ const a=+b.dataset.acc; pick.acc=pick.acc===a?0:a; if(pick.root) pick.root=N(pick.root.L,pick.acc); syncPick(); return; }
+    if(b.dataset.l!=null){ pick.root=N(+b.dataset.l,pick.acc); syncPick(); return; }
+    if(b.dataset.t!=null){ pick.type=b.dataset.t; syncPick(); return; }
+    const v=b.dataset.v;                                // 한 번에 고르는 문제는 누르면 바로 채점
+    if(q.kind==='note') finish(N(+v,0),b);
+    else if(q.kind==='key') finish(q.keys[+v],b);
+    else if(q.kind==='ivl'){ const [ql,num]=v.split('|'); finish({num:+num,q:ql},b); }
+    else if(q.kind==='rom') finish(+v,b);
+  });
+  $('checkBtn').onclick=()=>{ if(answered) return; finish(q.kind==='note'?pick.root:{root:pick.root,type:pick.type},null); };
+  $('showBtn').onclick=()=>{ if(!answered) finish(null,null,true); };
+  $('nextBtn').onclick=fresh;
+  document.addEventListener('keydown',e=>{ if(e.key==='Enter'&&answered&&!e.target.closest('input')){ e.preventDefault(); fresh(); } });
+  let resetT;
+  const showReset=(ask,msg)=>{ $('resetBtn').hidden=ask; $('resetAsk').hidden=!ask; $('resetMsg').hidden=!msg; };
+  $('resetBtn').onclick=()=>{ clearTimeout(resetT); showReset(true,false); $('resetNo').focus(); };
+  $('resetNo').onclick=()=>{ showReset(false,false); $('resetBtn').focus(); };
+  $('resetYes').onclick=()=>{ done={easy:{},hard:{}}; store.set('done',done); syncCards(); showReset(false,true); $('resetBtn').focus(); resetT=setTimeout(()=>{ $('resetMsg').hidden=true; },2500); };
+  $('resetAsk').addEventListener('keydown',e=>{ if(e.key==='Escape') $('resetNo').click(); });
+  sync();
+}
+buildUI(); fresh();
+window.__hm={mk,setSel:v=>{sel=v},setMode:v=>{mode=v}};   // 검사용
+})();
+</script>
 <footer class="site-foot"><div class="in"><span>기타MT 관리자 : 고주한</span><a href="../privacy/#contact">문의</a><a href="../privacy/">개인정보 처리방침</a></div></footer>
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "2854ed88848e4128989edc5a9f54153b"}'></script><!-- End Cloudflare Web Analytics -->
 </body>
