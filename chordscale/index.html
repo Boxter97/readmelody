@@ -575,7 +575,7 @@ function drawFB(){
   requestAnimationFrame(()=>{ const over=wrap.scrollWidth>wrap.clientWidth+2; $('fbHint').hidden=!over;
     if(over){ const k=svg.getBoundingClientRect().width/WD; wrap.scrollLeft=box?Math.max(0,(box.lo===0?0:X0+(box.lo-1)*W)*k-24):0; } });
 }
-// 트라이어드 모양: 전위마다 가장 낮은 자리 (+ 15프렛 안에 들어가면 한 옥타브 위도)
+// 트라이어드 모양: 전위마다 개방현이 없는 가장 낮은 자리 하나씩 (기본 위치 · 1전위 · 2전위 = 3개)
 function triShapes(){
   const q=TQ(), r=trR(), out=[];
   for(const trSet of trSets) for(let inv=0;inv<3;inv++){
@@ -587,6 +587,7 @@ function triShapes(){
       const fs=dots.map(d=>d.f); if(Math.max(...fs)>FRETS) continue;
       if(Math.min(...fs)===0) continue;                            // 개방현이 들어간 모양은 뺌 (K 요청 2026-11-16)
       out.push({set:trSet,inv,dots,lo:Math.min(...fs),hi:Math.max(...fs)});
+      break;                                                       // 전위마다 한 번만: 같은 모양의 한 옥타브 위는 안 그림 (K 요청 2026-11-16)
     }
   }
   return out.sort((a,b)=>b.set-a.set||a.lo-b.lo||a.hi-b.hi);   // 높은 줄 묶음부터, 그 안에서는 낮은 자리부터
