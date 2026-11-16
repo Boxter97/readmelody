@@ -74,7 +74,9 @@
     var nav=document.querySelector('.band .nav'); if(!nav||document.querySelector('.vol-row')) return;
     // 초견 · 청음 펼침 메뉴: 누르면 열고 닫힘, 바깥을 누르거나 Esc면 닫힘 (컴퓨터에서 마우스를 올려 여는 것은 theme.css)
     var grps=nav.querySelectorAll('.grp'), shut=function(x){ for(var i=0;i<grps.length;i++) if(grps[i]!==x){ grps[i].classList.remove('open'); grps[i].querySelector('.gbtn').setAttribute('aria-expanded','false'); } };
-    for(var gi=0;gi<grps.length;gi++) (function(g){ g.querySelector('.gbtn').addEventListener('click',function(e){ e.stopPropagation(); shut(g); var on=g.classList.toggle('open'); this.setAttribute('aria-expanded',on?'true':'false'); }); })(grps[gi]);
+    for(var gi=0;gi<grps.length;gi++) (function(g){ g.querySelector('.gbtn').addEventListener('click',function(e){ e.stopPropagation(); shut(g); var on=g.classList.toggle('open'); this.setAttribute('aria-expanded',on?'true':'false'); });
+      g.addEventListener('mouseenter',function(){ shut(g); });   // 하나를 눌러 열어 둔 채 다른 칸에 마우스를 올리면 먼저 열린 것은 닫음 (둘이 겹쳐 보이던 오류, K 제보 2026-11-16)
+    })(grps[gi]);
     document.addEventListener('click',function(e){ if(!e.target.closest||!e.target.closest('.band .nav .grp')) shut(null); });
     document.addEventListener('keydown',function(e){ if(e.key==='Escape') shut(null); });
     var col=document.createElement('div'); col.className='navcol';
