@@ -250,6 +250,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 #trQual button{min-width:64px}
 #triRows{border-top:1.5px solid var(--line)}
 .scsel .seg button:disabled{opacity:.32;cursor:default}
+#cqSel button{min-width:64px}
 .minis .none{grid-column:1 / -1;margin:8px 0;color:var(--muted);font-size:17px}
 .minis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:14px 0 16px;border-top:1.5px solid var(--line)}
 .mini{display:flex;flex-direction:column;gap:6px;padding:12px 14px 8px;border:2px solid var(--line);border-radius:16px;background:var(--bg);color:var(--ink);text-align:left;min-width:0}
@@ -438,7 +439,8 @@ if(new URLSearchParams(location.search).get('tab')) tab=new URLSearchParams(loca
 /* 코드 찾기 (K 요청 2026-11-16 "종류별로 모아 놓으면 찾기 힘들다"): 근음을 누르면 그 근음의 코드가 작은 그림으로 모두 나옴 */
 const FLAT=GROUPS.flatMap(g=>g.chords.map(c=>Object.assign(c,{grp:g.title.replace(/ \(.*/,'')})));
 const QORD=['','m','7','m7','M7','m7♭5'];
-const QLAB={'':'메이저','m':'마이너','7':'7','m7':'m7','M7':'M7','m7♭5':'m7♭5'};   // 종류 버튼 이름 (K 요청: 메이저 · 마이너 · m7 · M7 식)
+const QKR={'':'메이저','m':'마이너','7':'7','m7':'m7','M7':'M7','m7♭5':'m7♭5'};
+const QLAB={'':'M','m':'m','7':'7','m7':'m7','M7':'M7','m7♭5':'m7♭5'};   // 종류 버튼 이름 (K 요청: 메이저 · 마이너 · m7 · M7 식)
 const chordsOf=(r,q)=>FLAT.filter(c=>(r==='all'||c.r===r)&&(q==='all'||c.q===q)).sort((a,b)=>LETTERS.indexOf(a.r)-LETTERS.indexOf(b.r)||QORD.indexOf(a.q)-QORD.indexOf(b.q));
 let cRoot=store.get('croot','C'); if(!LETTERS.includes(cRoot)) cRoot='C';   // '전체'는 뺌 (K 요청 2026-11-16 "필요없어")
 let cQual=store.get('cqual',''); if(!QORD.includes(cQual)) cQual='';
@@ -645,10 +647,9 @@ function render(){
   if(isC){
     $('boxTitle').textContent='코드';
     $('boxHint').textContent='근음과 종류를 고르면 코드가 나와요. 코드를 누르면 소리가 나요';
-    const avail=QORD.filter(q=>chordsOf(cRoot,q).length); if(!avail.includes(cQual)) cQual=avail[0];   // 그 근음에 없는 종류는 회색, 고른 종류가 없으면 첫 종류로
     $('crSel').innerHTML=LETTERS.map(l=>[l,l]).map(([v,t])=>`<button type="button" data-v="${v}" aria-pressed="${v===cRoot}">${t}</button>`).join('');
-    $('cqSel').innerHTML=QORD.map(q=>[q,QLAB[q]]).map(([v,t])=>`<button type="button" data-v="${v}" aria-pressed="${v===cQual}"${avail.includes(v)?'':' disabled'}>${t}</button>`).join('');
-    $('minis').innerHTML=chordsOf(cRoot,cQual).map(c=>`<button type="button" class="mini" data-v="${FLAT.indexOf(c)}" aria-label="${c.name} ${c.grp} 듣기"><span class="mhead"><span class="mname">${c.name}</span><span class="mgrp">${c.grp}</span><span class="mplay">${PLAY}</span></span>${mini(c)}</button>`).join('')||'<p class="none">이 근음 · 종류의 코드는 아직 없어요</p>';
+    $('cqSel').innerHTML=QORD.map(q=>[q,QLAB[q]]).map(([v,t])=>`<button type="button" data-v="${v}" aria-pressed="${v===cQual}" aria-label="${QKR[v]}">${t}</button>`).join('');
+    $('minis').innerHTML=chordsOf(cRoot,cQual).map(c=>`<button type="button" class="mini" data-v="${FLAT.indexOf(c)}" aria-label="${c.name} ${c.grp} 듣기"><span class="mhead"><span class="mname">${c.name}</span><span class="mgrp">${c.grp}</span><span class="mplay">${PLAY}</span></span>${mini(c)}</button>`).join('')||`<p class="none">${cRoot+cQual} 코드는 아직 없어요</p>`;
     $('legend').innerHTML='<span><i class="lr"></i>근음</span><span><i class="lb"></i>바레 — 한 손가락으로 여러 줄을 눌러요</span><span><b class="lx">×</b>안 치는 줄</span>';
     $('scaleRows').innerHTML='';
   }else if(isT){
