@@ -594,12 +594,13 @@ function triShapes(){
 }
 function drawTri(){
   const shapes=triShapes();
-  const rows=trSets.slice().sort((a,b)=>b-a);                     // 묶음마다 이름 한 줄 (위 = 높은 줄 묶음)
-  const X0=50, W=58, T=54+22*(rows.length-1), G=36, H=T+5*G+48, WD=X0+FRETS*W+16;
+  const multi=trSets.length>1;                                     // 중복(줄 여러 개)일 때는 전위 이름을 안 씀 (K 2026-11-16 "중복 때는 알 필요가 없어")
+  const X0=50, W=58, T=multi?28:54, G=36, H=T+5*G+48, WD=X0+FRETS*W+16;
   const fx=f=>f===0?24:X0+(f-.5)*W, sy=st=>T+(5-st)*G;
   let h='';
   shapes.forEach(sp=>{ const trSet=sp.set; const x1=sp.lo===0?4:X0+(sp.lo-1)*W+3, x2=X0+Math.max(sp.hi,1)*W-3;
-    h+=`<rect class="fband" x="${x1}" y="${sy(trSet+2)-21}" width="${x2-x1}" height="${2*G+42}" rx="12"/><text class="flab" x="${(x1+x2)/2}" y="${22+22*rows.indexOf(trSet)}">${INV[sp.inv]}</text>`; });
+    h+=`<rect class="fband" x="${x1}" y="${sy(trSet+2)-21}" width="${x2-x1}" height="${2*G+42}" rx="12"/>`;
+    if(!multi) h+=`<text class="flab" x="${(x1+x2)/2}" y="22">${INV[sp.inv]}</text>`; });
   [3,5,7,9,15].forEach(f=>h+=`<circle class="fmark" cx="${X0+(f-.5)*W}" cy="${T+2.5*G}" r="7"/>`);
   h+=`<circle class="fmark" cx="${X0+11.5*W}" cy="${T+1.5*G}" r="7"/><circle class="fmark" cx="${X0+11.5*W}" cy="${T+3.5*G}" r="7"/>`;
   for(let f=1;f<=FRETS;f++){ h+=`<line class="ffret" x1="${X0+f*W}" y1="${T}" x2="${X0+f*W}" y2="${T+5*G}"/><text class="fnum" x="${X0+(f-.5)*W}" y="${T+5*G+36}">${f}</text>`; }
