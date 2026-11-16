@@ -516,6 +516,7 @@ const GEN=[];
 LETTERS.forEach(r=>{
   T7.forEach(q=>{                                                     // 7th 코드: 드롭2 (기본 위치 · 전위) + 쉘
     D2SETS.forEach(([n,strs])=>GEN.push(INVC(r,q,0,shapeFr(r,q,D2ORD[0],strs),'드롭2 · '+n)));   // 전위는 뺌 (K 요청 2026-11-17)
+    GEN.push(INVC(r,q,0,shapeFr(r,q,[0,3,1,2],[0,2,3,4]),'드롭3 · 6 · 4 · 3 · 2번 줄'));   // 드롭3 기본 위치 R 7 3 5 (예전 6번 줄 7th 코드 자리, K 요청 2026-11-17)
     if(q!=='m7♭5'&&q!=='aug7'){ GEN.push(INVC(r,q,0,shapeFr(r,q,[0,3,1],[0,2,3]),'쉘 · 6번 줄 근음')); GEN.push(INVC(r,q,0,shapeFr(r,q,[0,1,3],[1,2,3]),'쉘 · 5번 줄 근음')); }
   });
 });
@@ -535,7 +536,7 @@ const GROUPS=[
   {id:'barre5',name:'하이 코드',title:'5번 줄 하이 코드',chords:MAKE(5,SH5,'하이 코드',()=>true)},
   {id:'new6',name:'하이 코드',title:'6번 줄 하이 코드',chords:MAKE(6,NEW6,'하이 코드',q=>!!BAR6[q])},
   {id:'new5',name:'하이 코드',title:'5번 줄 하이 코드',chords:MAKE(5,NEW5,'하이 코드',q=>!!BAR5[q])},
-  {id:'seven6',name:'7th 코드',title:'6번 줄 7th 코드',chords:MAKE(6,SV6,'7th 코드',()=>false)},
+  // 6번 줄 7th 코드(seven6)는 뺌 — 드롭3 · 6 · 4 · 3 · 2번 줄 기본 위치와 같은 모양이라 드롭3 카드로 나옴 (K 요청 2026-11-17)
   // 5번 줄 7th 코드(seven5)는 뺌 — M7은 드롭2 · 5~2번 줄과, 7 · m7은 5번 줄 하이 코드와, m7♭5는 드롭2와 같은 모양 (K 요청 2026-11-17)
   {id:'gen',name:'보이싱',title:'보이싱',chords:GEN},
 ];
