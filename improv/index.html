@@ -300,7 +300,6 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 <aside class="ad ad-side" aria-label="광고">광고<small>160×600</small></aside>
 </div>
 
-<script src="../piano.js"></script>
 <script>
 (()=>{
 /* ---------- 음악 데이터 ---------- */
@@ -510,7 +509,7 @@ function render(){
   barEls.forEach(g=>svg.insertBefore(g,svg.firstChild));
 }
 
-/* ---------- 소리 (코드 초견과 같은 피아노) ---------- */
+/* ---------- 소리 (스케일 듣기 = 통기타, 코드&스케일과 같음) ---------- */
 let ctx=null, master=null, buffers=null, loading=null, playing=false, timers=[], nodes=[], backingEl=null, raf=0;
 const have={};                     // 백킹 음원이 실제로 있는지 (진행·변형별)
 function makeCtx(){
@@ -521,22 +520,26 @@ function makeCtx(){
   return ctx;
 }
 function audio(){ const c=makeCtx(); if(c.state==='suspended') c.resume(); return c }
+/* 즉흥연주 스케일 듣기 = 통기타 소리 (K 요청 2026-11-17, 예전엔 피아노). 코드&스케일과 같은 FatBoy 소리 파일 ../guitar/40~81.mp3 */
 function loadPiano(){
   if(loading) return loading;
   let c; try{ c=makeCtx() }catch(e){ return Promise.resolve(null) }
-  loading=gmPianoLoad(c).then(list=>(buffers=list)).catch(()=>(buffers=null));   // 피아노 소리 파일은 piano/ 폴더 (piano.js 참고, 2026-11-13 새 소리)
+  const out={};
+  loading=Promise.all(Array.from({length:42},(_,i)=>40+i).map(m=>fetch('../guitar/'+m+'.mp3?v=fatboy').then(r=>r.ok?r.arrayBuffer():Promise.reject())
+    .then(a=>new Promise((ok,no)=>c.decodeAudioData(a,ok,no))).then(b=>{ let pk=0; const d=b.getChannelData(0); for(let i=0;i<d.length;i+=4) pk=Math.max(pk,Math.abs(d[i])); out[m]={b,k:0.62/(pk||1)}; }).catch(()=>{})))
+    .then(()=>(buffers=Object.keys(out).length?out:null)).catch(()=>(buffers=null));
   return loading;
 }
 function keep(n,end){ nodes.push({n,end}); }
 function tone(midi,t,len,vol=1){
   const c=audio();
   if(!buffers) return synthTone(midi,t,len,vol);
-  const best=gmPianoPick(buffers,midi,vol);   // 가장 가까운 녹음 + 세기(멜로디 세게 · 코드 부드럽게)
-  const src=c.createBufferSource(), g=c.createGain();
-  src.buffer=best[1]; src.playbackRate.value=Math.pow(2,(midi-best[0])/12);
-  const v=1.5*vol, end=t+Math.max(len,0.12);
-  g.gain.setValueAtTime(v,t); g.gain.setValueAtTime(v,end); g.gain.setTargetAtTime(0,end,0.07);
-  src.connect(g); g.connect(gmPianoOut(c,master)); src.start(t); src.stop(end+0.6); keep(src,end+0.6);
+  let near=null; for(const k in buffers){ if(near===null||Math.abs(k-midi)<Math.abs(near-midi)) near=+k; }   // 음 파일이 없으면 가장 가까운 음을 높낮이만 바꿔서
+  const sm=buffers[near], src=c.createBufferSource(), g=c.createGain();
+  src.buffer=sm.b; src.playbackRate.value=Math.pow(2,(midi-near)/12);
+  const v=sm.k*1.15*vol, end=t+Math.max(len,0.12);
+  g.gain.setValueAtTime(v,t); g.gain.setValueAtTime(v,end); g.gain.setTargetAtTime(0,end,0.08);
+  src.connect(g); g.connect(master); src.start(t); src.stop(end+0.5); keep(src,end+0.5);
 }
 function synthTone(midi,t,len,vol){
   const c=audio(), f=440*Math.pow(2,(midi-69)/12), g=c.createGain(); g.connect(master);
@@ -554,7 +557,7 @@ function strike(c,t,len,vol){
   tone(v.bass,t,len,0.75*vol);
   v.upper.forEach((m,i)=>tone(m,t+0.012*(i+1),len,0.5*vol));
 }
-async function ready(){ if(buffers) return; $('status').textContent='피아노 소리를 준비하는 중…'; await loadPiano(); $('status').textContent=''; }
+async function ready(){ if(buffers) return; $('status').textContent='기타 소리를 준비하는 중…'; await loadPiano(); $('status').textContent=''; }
 function clearOn(){ barEls.forEach(g=>g&&g.classList.remove('on')); }
 function stop(){
   playing=false; timers.forEach(clearTimeout); timers=[];
