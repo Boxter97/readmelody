@@ -530,7 +530,11 @@ function loadPiano(){
     .then(()=>(buffers=Object.keys(out).length?out:null)).catch(()=>(buffers=null));
   return loading;
 }
-function keep(n,end){ nodes.push({n,end}); }
+function keep(n,end,g){ nodes.push({n,end,g}); }
+function hush(o){                        // 멈출 때 뚝 끊지 않고 0.03초 동안 줄여서 끔 — "퍽" 소리 막기 (K 제보 2026-11-17)
+  try{ const c=audio(), now=c.currentTime;
+    if(o.g){ const p=o.g.gain; p.cancelScheduledValues(now); p.setValueAtTime(p.value,now); p.linearRampToValueAtTime(0,now+0.03); }
+    o.n.stop(now+(o.g?0.04:0)); }catch(e){} }
 function tone(midi,t,len,vol=1){
   const c=audio();
   if(!buffers) return synthTone(midi,t,len,vol);
@@ -538,8 +542,8 @@ function tone(midi,t,len,vol=1){
   const sm=buffers[near], src=c.createBufferSource(), g=c.createGain();
   src.buffer=sm.b; src.playbackRate.value=Math.pow(2,(midi-near)/12);
   const v=sm.k*1.15*vol, end=t+Math.max(len,0.12);
-  g.gain.setValueAtTime(v,t); g.gain.setValueAtTime(v,end); g.gain.setTargetAtTime(0,end,0.08);
-  src.connect(g); g.connect(master); src.start(t); src.stop(end+0.5); keep(src,end+0.5);
+  g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(v,t+0.004); g.gain.setValueAtTime(v,end); g.gain.setTargetAtTime(0,end,0.08);
+  src.connect(g); g.connect(master); src.start(t); src.stop(end+0.5); keep(src,end+0.5,g);
 }
 function synthTone(midi,t,len,vol){
   const c=audio(), f=440*Math.pow(2,(midi-69)/12), g=c.createGain(); g.connect(master);
@@ -561,7 +565,7 @@ async function ready(){ if(buffers) return; $('status').textContent='기타 소�
 function clearOn(){ barEls.forEach(g=>g&&g.classList.remove('on')); }
 function stop(){
   playing=false; timers.forEach(clearTimeout); timers=[];
-  nodes.forEach(o=>{try{o.n.stop()}catch(e){}}); nodes=[];
+  nodes.forEach(hush); nodes=[];
   if(backingEl){ backingEl.pause(); backingEl=null; } cancelAnimationFrame(raf);
   clearOn(); document.querySelectorAll('.note.on').forEach(n=>n.classList.remove('on'));
   $('playTxt').textContent='백킹 재생'; $('playIcon').innerHTML='<path d="M4 2l10 6-10 6z"/>'; $('status').textContent='';
