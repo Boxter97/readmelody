@@ -262,6 +262,15 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 .falt{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:16px;color:var(--muted)}
 .falt b{padding:3px 12px;border:1.5px solid var(--line);border-radius:10px;color:var(--ink);font-size:18px}
 .fbtns{display:flex;gap:8px}
+/* 텐션 찾기 — 주황 (K 시안 1) */
+:root{--ten:#E8590C;--ten-bg:#FFF4E6} html[data-theme="dark"]{--ten:#FF922B;--ten-bg:rgba(255,146,43,.14)}
+#ffb .ften{pointer-events:none} #ffb .ften circle{fill:var(--ten-bg);stroke:var(--ten);stroke-width:2;stroke-dasharray:4 3}
+#ffb .ften text{fill:var(--ten);font-size:13.5px;font-weight:700;text-anchor:middle;dominant-baseline:central;font-family:var(--f-body)} #ffb .ften text.sm{font-size:11.5px}
+.ftbtn[aria-pressed="true"]{border-color:var(--ten);background:var(--ten-bg);color:var(--ten)}
+.ften-row{grid-column:1 / -1;padding-top:12px;border-top:1.5px solid var(--line)}
+.ften-row .th{font-size:16px;font-weight:700;color:var(--ink);margin-bottom:10px} .ften-row .th small{font-size:14.5px;font-weight:500;color:var(--muted);margin-left:6px}
+.note.ten{border-color:var(--ten);background:var(--ten-bg)} .note.ten b,.note.ten span{color:var(--ten)}
+.ften-row .none{margin:0;color:var(--muted);font-size:16px}
 @media (prefers-reduced-motion:reduce){ *{transition:none!important} }
 
 /* 맨 위 메뉴 (모든 페이지 공통) */
@@ -371,7 +380,7 @@ html[data-theme="dark"]{--vc0:#6C8CFF;--vc1:#FF6B6B;--vc2:#FFB020;--vc3:#40C057}
   #progs .pcard{padding:10px 8px} #progs .pcard .name{font-size:17px} #progs .pcard .sub{display:none}
   #progs{grid-template-columns:repeat(3,minmax(0,1fr))}   /* 휴대폰: 카드 5개 → 3칸 + 2칸 */
   #ffb{min-width:900px}
-  .fres{grid-template-columns:minmax(0,1fr)} .fres .fbtns{justify-content:stretch} .fres .fbtns .btn{flex:1} .fname{font-size:40px}
+  .fres{grid-template-columns:minmax(0,1fr)} .fres .fbtns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))} .fres .fbtns .btn{flex:1} .fname{font-size:40px}
   .scales .scsel{flex-direction:column;align-items:stretch;gap:6px}
   .scales .scsel .seg{display:grid;grid-auto-flow:row;grid-auto-columns:auto;grid-template-columns:repeat(4,minmax(0,1fr));flex:none}
   .scales .scsel .seg button{padding:6px 4px;font-size:16px;line-height:1.25;word-break:keep-all;border-right:1.5px solid var(--line);border-bottom:1.5px solid var(--line);margin:0 -1.5px -1.5px 0}
@@ -1029,7 +1038,7 @@ function identify(pcs,bass){            // pcs: 음 종류(0~11) 모음, bass: �
       let bassTxt='';
       if(slash){ const v=iv.find(v=>v[1]===((bass-r)%12+12)%12), n=spell(R,v[0],v[1]); bassTxt='/'+(Math.abs(n.a)>1?LETTERS[RN[bass][0]]+accTxt(RN[bass][1]):LETTERS[n.li]+accTxt(n.a)); }   // ♭♭ · ♯♯ 베이스는 쉬운 이름으로
       out.push({name:R.label+c.b.q+tn+bassTxt,root:R,iv:iv.slice().sort((a,b)=>a[1]-b[1]),
-        qkr:c.b.kr, kr:c.b.kr+(c.add.length?' + 텐션 '+c.add.map(x=>x[2]).join(' · '):'')+(omit?' (5음 생략)':'')+(slash?' · 베이스 '+bassTxt.slice(1):''),
+        q:c.b.q, qkr:c.b.kr, kr:c.b.kr+(c.add.length?' + 텐션 '+c.add.map(x=>x[2]).join(' · '):'')+(omit?' (5음 생략)':'')+(slash?' · 베이스 '+bassTxt.slice(1):''),
         score:(slash?10:0)+c.add.length*3+omit*2+c.bi*0.05});
     } }
   out.sort((a,b)=>a.score-b.score);
@@ -1041,6 +1050,15 @@ const X0=50, W=58, T=28, G=36, H=T+5*G+48, WD=X0+FR*W+16;
 const fx=f=>f===0?24:X0+(f-.5)*W, sy=st=>T+(5-st)*G;
 // 지판 음 보기 (K 요청 2026-11-17): 음 보기 = 빈 칸에 도~시, 반음 보기 = ♯ · ♭ 음까지 (음 보기가 켜져 있을 때만)
 let showNat=store.get('fnat',false)===true, showSemi=store.get('fsemi',false)===true;
+/* 텐션 찾기 (K 요청 2026-11-17, 시안 1 "종류로만"): 키와 상관없이 코드 종류에 붙일 수 있는 텐션 — 표는 Claude가 정함 (K 확인 전)
+   [근음에서 몇 번째 글자, 몇 반음, 도수] */
+const T9=[1,2,'9'], Tb9=[1,1,'♭9'], Ts9=[1,3,'♯9'], T11=[3,5,'11'], Ts11=[3,6,'♯11'], Tb13=[5,8,'♭13'], T13=[5,9,'13'];
+const TENS={'':[T9,Ts11,T13],'M7':[T9,Ts11,T13],'6':[T9,Ts11],'add9':[Ts11,T13],
+  'm':[T9,T11,T13],'m7':[T9,T11,T13],'m6':[T9,T11],'madd9':[T11,T13],'mM7':[T9,T11,T13],
+  '7':[Tb9,T9,Ts9,Ts11,Tb13,T13],'7sus4':[Tb9,T9,T13],'sus4':[T9,T13],'sus2':[T13],
+  'm7♭5':[T9,T11,Tb13],'dim':[T9,T11,Tb13],'dim7':[T9,T11,Tb13],'aug':[T9,Ts11],'aug7':[T9,Ts11],'5':[T9,T11,T13]};
+let showTen=store.get('ften',false)===true;
+const tensOf=b=>{ if(!b) return []; const have=new Set(b.iv.map(v=>v[1])); return (TENS[b.q]||[]).filter(t=>!have.has(t[1])&&!b.iv.some(v=>v[0]===t[0])); };   // 이미 코드에 든 음 · 같은 자리 음(9가 있으면 ♭9 · ♯9)은 뺌
 const notes=()=>frets.map((f,st)=>f==='x'?null:{st,f,m:OPEN[st]+f}).filter(Boolean);
 function result(){ const ns=notes(); if(ns.length<2) return {ns,list:[]};
   const pcs=new Set(ns.map(n=>n.m%12)), bass=ns.slice().sort((a,b)=>a.m-b.m)[0].m%12;
@@ -1054,9 +1072,13 @@ function draw(){
   h+=`<text class="fnum" x="${fx(0)}" y="${T+5*G+36}">0</text>`;
   for(let st=0;st<6;st++) h+=`<line class="fstr" x1="${X0}" y1="${sy(st)}" x2="${WD-8}" y2="${sy(st)}" stroke-width="${(1+st*.3).toFixed(1)}"/>`;
   h+=`<line class="fnut" x1="${X0}" y1="${T-2}" x2="${X0}" y2="${T+5*G+2}"/>`;
-  if(showNat) for(let st=0;st<6;st++) for(let f=1;f<=FR;f++){ if(frets[st]===f) continue;
+  const tmap={}; if(showTen&&best) tensOf(best).forEach(t=>tmap[(best.root.pc+t[1])%12]=t);
+  if(showNat) for(let st=0;st<6;st++) for(let f=1;f<=FR;f++){ if(frets[st]===f||tmap[(OPEN[st]+f)%12]) continue;
     const pc=(OPEN[st]+f)%12, nat=RN[pc][1]===0; if(!nat&&!showSemi) continue;
     h+=`<text class="fname${nat?'':' semi'}" x="${fx(f)}" y="${sy(st)}">${krName(spell(rootOf(pc),0,0))}</text>`; }
+  for(let st=0;st<6;st++) for(let f=1;f<=FR;f++){ const t=tmap[(OPEN[st]+f)%12]; if(!t||frets[st]===f) continue;   // 텐션 자리: 주황 점선
+    const tx=fbLab==='name'?krName(spell(best.root,t[0],t[1])):t[2];
+    h+=`<g class="ften" transform="translate(${fx(f)} ${sy(st)})"><circle r="15"/><text${tx.length>2?' class="sm"':''}>${tx}</text></g>`; }
   frets.forEach((f,st)=>{ if(f==='x') h+=`<path class="fmute" d="M${fx(0)-7} ${sy(st)-7}l14 14M${fx(0)+7} ${sy(st)-7}l-14 14"/>`; });
   ns.forEach(n=>{ let t, root=false;
     if(best){ const s=((n.m-best.root.pc)%12+12)%12, v=best.iv.find(v=>v[1]===s); root=s===0; t=fbLab==='name'?krName(spell(best.root,v[0],v[1])):v[2]; }
@@ -1069,7 +1091,7 @@ function renderF(){
   $('boxTitle').textContent='코드 찾기';
   $('boxHint').textContent='지판을 눌러 코드를 잡으면 무슨 코드인지 알려 줘요. 줄마다 점은 하나, 누르지 않은 줄은 안 치는 줄이에요';
   const {ns,list}=result(), best=list[0];
-  const btns=`<div class="fbtns"><button type="button" class="btn sbtn" id="fHear"${ns.length?'':' aria-disabled="true"'}>${PLAY}</button><button type="button" class="btn sbtn" id="fShot"${best?'':' aria-disabled="true"'}>캡처</button><button type="button" class="btn sbtn" id="fClear"${ns.length?'':' aria-disabled="true"'}>모두 지우기</button></div>`;
+  const btns=`<div class="fbtns"><button type="button" class="btn sbtn" id="fHear"${ns.length?'':' aria-disabled="true"'}>${PLAY}</button><button type="button" class="btn sbtn ftbtn" id="fTen" aria-pressed="${showTen&&!!best}"${best?'':' aria-disabled="true"'}>텐션 찾기</button><button type="button" class="btn sbtn" id="fShot"${best?'':' aria-disabled="true"'}>캡처</button><button type="button" class="btn sbtn" id="fClear"${ns.length?'':' aria-disabled="true"'}>모두 지우기</button></div>`;
   let left, mid='';
   if(!ns.length) left=`<div class="fname empty">지판을 눌러 코드를 잡아 보세요</div>`;
   else if(best){
@@ -1082,7 +1104,11 @@ function renderF(){
     mid=`<div class="notes">${pcs.map(p=>`<span class="note"><b>${krName(spell(rootOf(p),0,0))}</b><span>${LETTERS[RN[p][0]]+accTxt(RN[p][1])}</span></span>`).join('')}</div>`;
   }
   $('fnSel').querySelectorAll('button').forEach(b=>{ const on=b.dataset.v==='nat'?showNat:showSemi&&showNat; b.setAttribute('aria-pressed',on); if(b.dataset.v==='semi') b.setAttribute('aria-disabled',!showNat); });
-  $('fRes').innerHTML=left+(mid?`<div class="fmid">${mid}</div>`:'<div></div>')+btns;
+  let tens='';
+  if(showTen&&best){ const ts=tensOf(best);
+    tens=`<div class="ften-row"><div class="th">쓸 수 있는 텐션 <small>코드 종류 기준 — 키에 따라 피해야 하는 음이 있을 수 있어요</small></div>`
+      +(ts.length?`<div class="notes">${ts.map(t=>`<span class="note ten"><b>${krName(spell(best.root,t[0],t[1]))}</b><span>${t[2]}</span></span>`).join('')}</div>`:`<p class="none">이 코드에 더 붙일 텐션이 없어요</p>`)+`</div>`; }
+  $('fRes').innerHTML=left+(mid?`<div class="fmid">${mid}</div>`:'<div></div>')+btns+tens;
   draw();
 }
 async function hear(){                  // 낮은 줄부터 한 음씩 → 같이 한 번 (코드 카드 듣기와 같음)
@@ -1151,6 +1177,7 @@ async function shot(){
 $('fRes').addEventListener('click',e=>{
   if(e.target.closest('#fHear')) hear();
   if(e.target.closest('#fShot')) shot();
+  if(e.target.closest('#fTen')){ if(!result().list.length) return; showTen=!showTen; store.set('ften',showTen); renderF(); }
   if(e.target.closest('#fClear')){ stop(); frets=['x','x','x','x','x','x']; store.set('ffr',frets); renderF(); }
 });
 return {render:renderF,draw,identify};
