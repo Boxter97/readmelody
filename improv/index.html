@@ -723,7 +723,7 @@ function buildUI(){
   $('fbPos').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; fbPos=+b.dataset.v; store.set('fbpos',fbPos); drawFB();});
   $('fbLab').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; fbLab=b.dataset.v; store.set('fblab',fbLab); drawFB();});
   $('fb').addEventListener('click',async e=>{const g=e.target.closest('.fdot'); if(!g) return; if(playing) stop(); audio(); await ready();
-    const c=audio(); tone(+g.dataset.m,c.currentTime+0.02,0.6,0.85);   // 점 누르기 0.9 → 0.6초 (K "좀만 더 줄여줘") g.classList.add('on'); setTimeout(()=>g.classList.remove('on'),450);});
+    const c=audio(); tone(+g.dataset.m,c.currentTime+0.02,0.6,0.85); /* 점 누르기 0.9 → 0.6초 (K "좀만 더 줄여줘") */ g.classList.add('on'); setTimeout(()=>g.classList.remove('on'),450);});
   let rt; window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{stop();render();drawFB()},150)});
   sync();
 }
