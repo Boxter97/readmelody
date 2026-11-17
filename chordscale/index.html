@@ -1029,7 +1029,7 @@ function identify(pcs,bass){            // pcs: 음 종류(0~11) 모음, bass: �
       let bassTxt='';
       if(slash){ const v=iv.find(v=>v[1]===((bass-r)%12+12)%12), n=spell(R,v[0],v[1]); bassTxt='/'+(Math.abs(n.a)>1?LETTERS[RN[bass][0]]+accTxt(RN[bass][1]):LETTERS[n.li]+accTxt(n.a)); }   // ♭♭ · ♯♯ 베이스는 쉬운 이름으로
       out.push({name:R.label+c.b.q+tn+bassTxt,root:R,iv:iv.slice().sort((a,b)=>a[1]-b[1]),
-        kr:c.b.kr+(c.add.length?' + 텐션 '+c.add.map(x=>x[2]).join(' · '):'')+(omit?' (5음 생략)':'')+(slash?' · 베이스 '+bassTxt.slice(1):''),
+        qkr:c.b.kr, kr:c.b.kr+(c.add.length?' + 텐션 '+c.add.map(x=>x[2]).join(' · '):'')+(omit?' (5음 생략)':'')+(slash?' · 베이스 '+bassTxt.slice(1):''),
         score:(slash?10:0)+c.add.length*3+omit*2+c.bi*0.05});
     } }
   out.sort((a,b)=>a.score-b.score);
@@ -1069,7 +1069,7 @@ function renderF(){
   $('boxTitle').textContent='코드 찾기';
   $('boxHint').textContent='지판을 눌러 코드를 잡으면 무슨 코드인지 알려 줘요. 줄마다 점은 하나, 누르지 않은 줄은 안 치는 줄이에요';
   const {ns,list}=result(), best=list[0];
-  const btns=`<div class="fbtns"><button type="button" class="btn sbtn" id="fHear"${ns.length?'':' aria-disabled="true"'}>${PLAY}</button><button type="button" class="btn sbtn" id="fClear"${ns.length?'':' aria-disabled="true"'}>모두 지우기</button></div>`;
+  const btns=`<div class="fbtns"><button type="button" class="btn sbtn" id="fHear"${ns.length?'':' aria-disabled="true"'}>${PLAY}</button><button type="button" class="btn sbtn" id="fShot"${best?'':' aria-disabled="true"'}>캡처</button><button type="button" class="btn sbtn" id="fClear"${ns.length?'':' aria-disabled="true"'}>모두 지우기</button></div>`;
   let left, mid='';
   if(!ns.length) left=`<div class="fname empty">지판을 눌러 코드를 잡아 보세요</div>`;
   else if(best){
@@ -1110,8 +1110,47 @@ $('fnSel').addEventListener('click',e=>{ const b=e.target.closest('button'); if(
   if(b.dataset.v==='nat'){ showNat=!showNat; store.set('fnat',showNat); }
   else{ if(!showNat) return; showSemi=!showSemi; store.set('fsemi',showSemi); }   // 반음 보기는 음 보기가 켜져 있을 때만
   renderF(); });
+/* 캡처 (K 요청 2026-11-17 "코드를 만들고 캡처 누르면 코드 사전 카드처럼"): 코드 이름 + 종류 + 작은 코드 그림을 PNG로 저장 */
+async function shot(){
+  const {ns,list}=result(), best=list[0]; if(!best) return;
+  try{ await document.fonts.ready; }catch(e){}
+  const css=getComputedStyle(document.documentElement), V=n=>css.getPropertyValue(n).trim();
+  const C={bg:V('--bg'),ink:V('--ink'),muted:V('--muted'),line:V('--line'),tile:V('--tile'),ac:V('--accent'),acs:V('--accent-soft')};
+  const FONT=getComputedStyle(document.body).fontFamily;
+  const fs=ns.filter(n=>n.f>0).map(n=>n.f), top=Math.max(0,...fs), lo=fs.length?Math.min(...fs):1;
+  const s0=top>5?lo:1, nF=Math.max(5,top-s0+1);                                  // 코드 사전 그림과 같음 (5칸, 넓게 잡으면 칸을 늘림)
+  // 바레: 가장 낮은 프렛을 두 줄 이상 같이 누르고, 그 사이 줄이 모두 그 프렛 이상일 때
+  let barre=null; const bs=frets.map((f,st)=>f===lo?st:-1).filter(x=>x>=0);
+  if(fs.length&&bs.length>=2){ const a=bs[0], b=bs[bs.length-1]; if(frets.slice(a,b+1).every(f=>f!=='x'&&f>=lo)) barre=[lo,a,b]; }
+  const W=50, G=32, X0=34, T=20, R=14, PAD=16, HEAD=46;
+  const DW=X0+nF*W+8, DH=T+5*G+30, CW=DW+PAD*2, CH=HEAD+DH+PAD+4, K=3;
+  const cv=document.createElement('canvas'); cv.width=CW*K; cv.height=CH*K; const g=cv.getContext('2d'); g.scale(K,K);
+  const rr=(x,y,w,h,r)=>{ g.beginPath(); g.moveTo(x+r,y); g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r); g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath(); };
+  g.fillStyle=C.bg; g.fillRect(0,0,CW,CH);
+  rr(1,1,CW-2,CH-2,16); g.strokeStyle=C.line; g.lineWidth=2; g.stroke();
+  // 머리: 코드 이름 + 종류
+  g.textBaseline='middle'; g.fillStyle=C.ink; g.font=`700 22px ${FONT}`; g.fillText(best.name,PAD,PAD+14);
+  const nw=g.measureText(best.name).width; g.font=`700 14px ${FONT}`; const tw=g.measureText(best.qkr).width;
+  rr(PAD+nw+10,PAD+3,tw+20,22,11); g.fillStyle=C.tile; g.fill(); g.fillStyle=C.muted; g.fillText(best.qkr,PAD+nw+20,PAD+14.5);
+  // 코드 그림
+  const ox=PAD, oy=HEAD, fx=f=>ox+(f===0?15:X0+(f-s0+.5)*W), sy=st=>oy+T+(5-st)*G;
+  const line=(x1,y1,x2,y2,c,w)=>{ g.beginPath(); g.moveTo(x1,y1); g.lineTo(x2,y2); g.strokeStyle=c; g.lineWidth=w; g.stroke(); };
+  g.textAlign='center';
+  for(let i=1;i<=nF;i++){ line(ox+X0+i*W,oy+T,ox+X0+i*W,oy+T+5*G,C.line,2); g.fillStyle=C.muted; g.font=`700 14px ${FONT}`; g.fillText(String(s0+i-1),ox+X0+(i-.5)*W,oy+T+5*G+25); }
+  for(let st=0;st<6;st++) line(ox+X0,sy(st),ox+DW-4,sy(st),C.muted,1+st*.3);
+  if(s0===1) line(ox+X0,oy+T-2,ox+X0,oy+T+5*G+2,C.ink,5); else line(ox+X0,oy+T,ox+X0,oy+T+5*G,C.line,2);
+  if(barre){ const [f,a,b]=barre; rr(fx(f)-R-3,sy(b)-R-3,2*R+6,sy(a)-sy(b)+2*R+6,R+3); g.fillStyle=C.acs; g.fill(); g.strokeStyle=C.ac; g.lineWidth=1.5; g.stroke(); }
+  frets.forEach((f,st)=>{ if(f!=='x') return; const x=fx(0), y=sy(st); g.lineCap='round'; line(x-6,y-6,x+6,y+6,C.muted,2.4); line(x+6,y-6,x-6,y+6,C.muted,2.4); });
+  ns.forEach(n=>{ const s=((n.m-best.root.pc)%12+12)%12, v=best.iv.find(v=>v[1]===s), root=s===0;
+    const t=fbLab==='name'?krName(spell(best.root,v[0],v[1])):v[2], x=fx(n.f), y=sy(n.st);
+    g.beginPath(); g.arc(x,y,R,0,Math.PI*2); g.fillStyle=root?C.ac:C.bg; g.fill(); g.strokeStyle=root?C.ac:C.ink; g.lineWidth=1.6; g.stroke();
+    g.fillStyle=root?C.bg:C.ink; g.font=`700 ${t.length>1&&fbLab==='name'?11:13.5}px ${FONT}`; g.fillText(t,x,y+.5); });
+  const name='기타MT_코드_'+best.name.replace(/[\\/:*?"<>|]/g,'-')+'.png';
+  cv.toBlob(b=>{ if(!b) return; const u=URL.createObjectURL(b), a=document.createElement('a'); a.href=u; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(u),4000); },'image/png');
+}
 $('fRes').addEventListener('click',e=>{
   if(e.target.closest('#fHear')) hear();
+  if(e.target.closest('#fShot')) shot();
   if(e.target.closest('#fClear')){ stop(); frets=['x','x','x','x','x','x']; store.set('ffr',frets); renderF(); }
 });
 return {render:renderF,draw,identify};
