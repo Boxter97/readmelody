@@ -717,7 +717,7 @@ function gtr(c,midi){               // 음 하나의 기타 소리 (한 번 만�
   return gbuf[midi]={b,rate:f*(N+0.5)/sr};
 }
 function keep(n,end){ nodes.push({n,end}); }
-/* 통기타 녹음 소리 (K 요청 2026-11-17 "더 좋은 소리, 통기타만"): FluidR3 GM Acoustic Guitar (steel), Frank Wen — CC BY 3.0
+/* 통기타 녹음 소리 (K 요청 2026-11-17 "더 좋은 소리, 통기타만"): FatBoy Acoustic Guitar (steel), cwadge (fatboy.site) — CC BY-SA 3.0 (K가 후보 4개 중 고름, 예전엔 FluidR3)
    E2~A5 (MIDI 40~81, 17프렛까지) 한 음씩 mp3 (../guitar/40.mp3 …). 받기 전이거나 실패하면 위의 계산 소리로 */
 const SAMP={}; let sampP=null;
 function loadSamples(){
