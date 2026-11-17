@@ -204,6 +204,8 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 @media (max-width:720px){ .metro{padding:22px 14px;gap:16px} .round{width:48px;height:48px} .bigplay{width:88px;height:88px} .presets button{min-width:56px} }
 @media (prefers-reduced-motion:reduce){ #bpm.pulse{animation:none} }
 
+/* 메트로놈 상자 크기 90% (K 요청 2026-11-17 "10%만 줄여줘") — 컴퓨터만, 휴대폰은 그대로 */
+@media (min-width:721px){ .metro{zoom:.9} }
 </style>
 </head>
 <body class="ads-off">
