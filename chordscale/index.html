@@ -717,14 +717,25 @@ function gtr(c,midi){               // 음 하나의 기타 소리 (한 번 만�
   return gbuf[midi]={b,rate:f*(N+0.5)/sr};
 }
 function keep(n,end){ nodes.push({n,end}); }
+/* 통기타 녹음 소리 (K 요청 2026-11-17 "더 좋은 소리, 통기타만"): FluidR3 GM Acoustic Guitar (steel), Frank Wen — CC BY 3.0
+   E2~A5 (MIDI 40~81, 17프렛까지) 한 음씩 mp3 (../guitar/40.mp3 …). 받기 전이거나 실패하면 위의 계산 소리로 */
+const SAMP={}; let sampP=null;
+function loadSamples(){
+  if(sampP) return sampP; const c=makeCtx();
+  sampP=Promise.all(Array.from({length:42},(_,i)=>40+i).map(m=>fetch('../guitar/'+m+'.mp3').then(r=>r.ok?r.arrayBuffer():Promise.reject())
+    .then(a=>new Promise((ok,no)=>c.decodeAudioData(a,ok,no))).then(b=>{ let pk=0; const d=b.getChannelData(0); for(let i=0;i<d.length;i+=4) pk=Math.max(pk,Math.abs(d[i])); SAMP[m]={b,k:0.62/(pk||1)}; }).catch(()=>{})));
+  return sampP;
+}
 function tone(midi,t,len,vol=1){
-  const c=audio(), s=gtr(c,midi), src=c.createBufferSource(), g=c.createGain();
-  src.buffer=s.b; src.playbackRate.value=s.rate;
-  const v=1.15*vol, end=t+Math.max(len,0.15);
+  const c=audio(), src=c.createBufferSource(), g=c.createGain(), sm=SAMP[midi];
+  let v=1.15*vol;
+  if(sm){ src.buffer=sm.b; v=sm.k*1.15*vol; } else { const s=gtr(c,midi); src.buffer=s.b; src.playbackRate.value=s.rate; }
+  const end=t+Math.max(len,0.15);
   g.gain.setValueAtTime(v,t); g.gain.setValueAtTime(v,end); g.gain.setTargetAtTime(0,end,0.12);
   src.connect(g); g.connect(gout); src.start(t); src.stop(end+0.8); keep(src,end+0.8);
 }
-async function ready(){}
+document.addEventListener('pointerdown',()=>loadSamples(),{once:true});   // 처음 누를 때 미리 받기 시작 (약 0.8MB)
+async function ready(){ try{ await Promise.race([loadSamples(),new Promise(r=>setTimeout(r,2500))]); }catch(e){} }   // 처음 한 번 소리를 받음 (늦으면 계산 소리로)
 function stop(){
   timers.forEach(clearTimeout); timers=[];
   nodes.forEach(o=>{try{o.n.stop()}catch(e){}}); nodes=[];
