@@ -722,7 +722,7 @@ function keep(n,end){ nodes.push({n,end}); }
 const SAMP={}; let sampP=null;
 function loadSamples(){
   if(sampP) return sampP; const c=makeCtx();
-  sampP=Promise.all(Array.from({length:42},(_,i)=>40+i).map(m=>fetch('../guitar/'+m+'.mp3').then(r=>r.ok?r.arrayBuffer():Promise.reject())
+  sampP=Promise.all(Array.from({length:42},(_,i)=>40+i).map(m=>fetch('../guitar/'+m+'.mp3?v=fatboy').then(r=>r.ok?r.arrayBuffer():Promise.reject())
     .then(a=>new Promise((ok,no)=>c.decodeAudioData(a,ok,no))).then(b=>{ let pk=0; const d=b.getChannelData(0); for(let i=0;i<d.length;i+=4) pk=Math.max(pk,Math.abs(d[i])); SAMP[m]={b,k:0.62/(pk||1)}; }).catch(()=>{})));
   return sampP;
 }
