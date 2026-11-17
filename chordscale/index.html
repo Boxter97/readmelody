@@ -263,6 +263,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 .falt{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:16px;color:var(--muted)}
 .falt b{padding:3px 12px;border:1.5px solid var(--line);border-radius:10px;color:var(--ink);font-size:18px}
 .fbtns{display:flex;gap:8px}
+.fsaved{grid-column:1 / -1;margin:0;padding:10px 14px;border-radius:12px;background:var(--accent-soft);color:var(--accent);font-size:16px;font-weight:700}
 /* 텐션 찾기 — 주황 (K 시안 1) */
 :root{--ten:#E8590C;--ten-bg:#FFF4E6} html[data-theme="dark"]{--ten:#FF922B;--ten-bg:rgba(255,146,43,.14)}
 #ffb .ften{pointer-events:none} #ffb .ften circle{fill:var(--ten-bg);stroke:var(--ten);stroke-width:2;stroke-dasharray:4 3}
@@ -478,7 +479,7 @@ html[data-theme="dark"]{--vc0:#6C8CFF;--vc1:#FF6B6B;--vc2:#FFB020;--vc3:#40C057}
     <div id="find" hidden>
       <div class="fbwrap" id="ffbWrap"><svg id="ffb" role="img" aria-label="코드를 잡을 기타 지판"></svg></div>
       <div class="scrollhint" id="ffbHint" hidden>← 지판을 옆으로 밀어서 보세요 →</div>
-      <div class="legend" id="fLegend"><span><i class="lr"></i>근음</span><span><b class="lx">×</b>안 치는 줄</span><span>누른 점을 다시 누르면 지워져요 · 맨 왼쪽(0)을 누르면 개방현</span></div>
+      <div class="legend" id="fLegend"><span id="fSave"><i class="lr"></i>근음</span><span><b class="lx">×</b>안 치는 줄</span><span>누른 점을 다시 누르면 지워져요 · 맨 왼쪽(0)을 누르면 개방현</span></div>
       <div class="fres" id="fRes"></div>
     </div>
 
@@ -656,7 +657,15 @@ const QORD=CGRP.flatMap(g=>g.qs);
 const QKR=Object.fromEntries(QORD.map(q=>[q,QUAL[q].kr]));
 const QLAB=Object.fromEntries(QORD.map(q=>[q,q===''?'M':q]));   // 종류 버튼 이름 (K 요청: 메이저 · 마이너 · m7 · M7 식)
 const INVQ=q=>1;   // 전위 줄 숨김 (K 요청 2026-11-17 "전위는 빼자")               // 전위 수 (6 · m6 · 9 · sus4는 기본 위치만)
-const chordsOf=(r,q,inv=0)=>FLAT.filter(c=>c.r===r&&c.q===q&&(c.inv||0)===inv).sort((a,b)=>LETTERS.indexOf(a.r)-LETTERS.indexOf(b.r)||QORD.indexOf(a.q)-QORD.indexOf(b.q));
+/* 코드 찾기에서 저장한 모양 (K 요청 2026-11-17, 임시 — 관리자 페이지가 생기기 전까지 이 브라우저에만 저장) */
+const userChords=()=>{ const v=store.get('user',[]); return Array.isArray(v)?v.filter(c=>c&&LETTERS.includes(c.r)&&QUAL[c.q]&&Array.isArray(c.frets)&&c.frets.length===6):[]; };
+const addUser=c=>{ const k=c.r+c.q+'|'+c.frets.join(','); if(FLAT.some(x=>x.r+x.q+'|'+x.frets.join(',')===k)) return false;
+  FLAT.push(Object.assign(C(c.r,c.q,c.frets.slice(),c.barre||undefined),{grp:c.grp,user:true})); return true; };
+userChords().forEach(addUser);
+/* 같은 근음 · 종류 안의 순서: 오픈 → 6 · 5 · 4 · 3번 줄 → 5번 줄 7th → 드롭2 → 드롭3 → 쉘 → 트라이어드 (저장한 모양도 이 순서로 섞임) */
+const GRANK=g=>{ if(/^오픈/.test(g)) return 0; let m=g.match(/^(\d)번 줄 (하이 코드|근음)/); if(m) return 1+(6-m[1])*0.1;
+  if(/7th 코드/.test(g)) return 2; if(/^드롭2/.test(g)) return 3; if(/^드롭3/.test(g)) return 4; if(/^쉘/.test(g)) return 5; if(/^트라이어드/.test(g)) return 6; return 7; };
+const chordsOf=(r,q,inv=0)=>FLAT.filter(c=>c.r===r&&c.q===q&&(c.inv||0)===inv).sort((a,b)=>LETTERS.indexOf(a.r)-LETTERS.indexOf(b.r)||QORD.indexOf(a.q)-QORD.indexOf(b.q)||GRANK(a.grp)-GRANK(b.grp));
 let cRoot=store.get('croot','C'); if(!LETTERS.includes(cRoot)) cRoot='C';   // '전체'는 뺌 (K 요청 2026-11-16 "필요없어")
 let cQual=store.get('cqual',''); if(!QORD.includes(cQual)) cQual='';
 const cgOf=q=>CGRP.find(g=>g.qs.includes(q));
@@ -1109,7 +1118,8 @@ function renderF(){
   if(showTen&&best){ const ts=tensOf(best);
     tens=`<div class="ften-row"><div class="th">쓸 수 있는 텐션 <small>코드 종류 기준 — 키에 따라 피해야 하는 음이 있을 수 있어요</small></div>`
       +(ts.length?`<div class="notes">${ts.map(t=>`<span class="note ten"><b>${krName(spell(best.root,t[0],t[1]))}</b><span>${t[2]}</span></span>`).join('')}</div>`:`<p class="none">이 코드에 더 붙일 텐션이 없어요</p>`)+`</div>`; }
-  $('fRes').innerHTML=left+(mid?`<div class="fmid">${mid}</div>`:'<div></div>')+btns+tens;
+  $('fRes').innerHTML=left+(mid?`<div class="fmid">${mid}</div>`:'<div></div>')+btns+tens+(saveMsg?`<p class="fsaved">${saveMsg}</p>`:'');
+  saveMsg='';
   draw();
 }
 async function hear(){                  // 낮은 줄부터 한 음씩 → 같이 한 번 (코드 카드 듣기와 같음)
@@ -1133,6 +1143,32 @@ $('ffb').addEventListener('click',async e=>{
   store.set('ffr',frets); renderF();
   if(frets[st]!=='x'){ audio(); await ready(); const a=audio(); tone(OPEN[st]+f,a.currentTime+0.02,1.4,0.85); }
 });
+/* 코드 사전에 저장 (K 요청 2026-11-17): 아래 색 설명의 "근음"을 누르면 (관리자 페이지 전까지 임시로 숨긴 버튼)
+   잡은 모양을 근음 7개(C~B)로 옮겨서 코드 사전에 넣음 — 기타는 모양 악기라서. 이름표 · 순서는 자동 */
+let saveMsg='';
+function save(){
+  const {ns,list}=result(), best=list[0];
+  const say=t=>{ saveMsg=t; renderF(); };
+  if(!best) return say('코드를 먼저 잡아 주세요');
+  const low=ns.slice().sort((a,b)=>a.m-b.m)[0];
+  if(low.m%12!==best.root.pc) return say('분수코드(베이스가 근음이 아닌 코드)는 코드 사전에 넣지 않아요');
+  if(!QUAL[best.q]||best.name!==best.root.label+best.q) return say(best.name+'은(는) 코드 사전에 없는 종류예요');
+  const root=best.root.pc, made=[];
+  LETTERS.forEach((r,li)=>{
+    const d=((SEMI[li]-root)%12+12)%12;
+    let fr=null; for(const sh of [d-12,d]){ const t=frets.map(f=>f==='x'?'x':f+sh); if(t.every(f=>f==='x'||f>=0)){ fr=t; break; } }   // 가장 낮은 자리 (개방현은 그만큼 위 프렛이 됨)
+    if(!fr||Math.max(...fr.filter(f=>f!=='x'))>FR) return;
+    const fs=fr.filter(f=>f!=='x'), lo=Math.min(...fs.filter(f=>f>0).concat([99]));
+    let barre=null; const bs=fr.map((f,st)=>f===lo?st:-1).filter(x=>x>=0);
+    if(!fs.includes(0)&&bs.length>=2){ const a=bs[0], b=bs[bs.length-1]; if(fr.slice(a,b+1).every(f=>f!=='x'&&f>=lo)) barre=[lo,a,b]; }
+    const bassSt=fr.findIndex(f=>f!=='x');
+    const grp=fs.includes(0)?'오픈 코드':(6-bassSt)+'번 줄 '+(barre?'하이 코드':'근음');
+    const c={r,q:best.q,frets:fr,barre,grp};
+    if(addUser(c)){ store.set('user',userChords().concat([c])); made.push(r+best.q); }
+  });
+  say(made.length?`코드 사전에 저장했어요 — ${made.join(' · ')}`:'이미 코드 사전에 있는 모양이에요');
+}
+$('fSave').addEventListener('click',()=>save());
 $('fnSel').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return;
   if(b.dataset.v==='ten'){ if(!result().list.length) return; showTen=!showTen; store.set('ften',showTen); }   // 텐션 찾기 (K 요청: 음 보기 다음 자리)
   else if(b.dataset.v==='nat'){ showNat=!showNat; store.set('fnat',showNat); }
