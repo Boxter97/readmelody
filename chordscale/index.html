@@ -244,6 +244,9 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 #ffb .fopen{fill:var(--tile)}
 #ffb .fmute{stroke:var(--muted);stroke-width:2.6;stroke-linecap:round;fill:none}
 #ffb .fdot{pointer-events:none}
+#ffb .fname{fill:var(--muted);stroke:var(--bg);stroke-width:7px;paint-order:stroke;stroke-linejoin:round;font-size:15px;font-weight:700;text-anchor:middle;dominant-baseline:central;font-family:var(--f-body);pointer-events:none}
+#ffb .fname.semi{fill-opacity:.55;font-weight:600}
+#fnSel button[aria-disabled="true"]{opacity:.4;cursor:default}
 #ffb .fdot .c{fill:var(--bg);stroke:var(--accent);stroke-width:2.5}
 #ffb .fdot text{fill:var(--accent);font-size:14px;font-weight:700;text-anchor:middle;dominant-baseline:central;font-family:var(--f-body)}
 #ffb .fdot text.sm{font-size:12px}
@@ -440,6 +443,9 @@ html[data-theme="dark"]{--vc0:#6C8CFF;--vc1:#FF6B6B;--vc2:#FFB020;--vc3:#40C057}
       </div></div>
       <div class="field"><span class="label">표시</span><div class="seg" id="fbLab" role="group" aria-label="점에 쓸 글자">
         <button type="button" data-v="deg">도수</button><button type="button" data-v="name">음이름</button>
+      </div></div>
+      <div class="field" id="fnField" hidden><span class="label">지판</span><div class="seg" id="fnSel" role="group" aria-label="빈 지판에 음이름 보기">
+        <button type="button" data-v="nat">음 보기</button><button type="button" data-v="semi">반음 보기</button>
       </div></div>
     </div>
     <div id="boardArea">
@@ -1031,6 +1037,8 @@ let frets=store.get('ffr',null); if(!Array.isArray(frets)||frets.length!==6) fre
 frets=frets.map(x=>x===0||(x>0&&x<=FR)?x:'x');
 const X0=50, W=58, T=28, G=36, H=T+5*G+48, WD=X0+FR*W+16;
 const fx=f=>f===0?24:X0+(f-.5)*W, sy=st=>T+(5-st)*G;
+// 지판 음 보기 (K 요청 2026-11-17): 음 보기 = 빈 칸에 도~시, 반음 보기 = ♯ · ♭ 음까지 (음 보기가 켜져 있을 때만)
+let showNat=store.get('fnat',false)===true, showSemi=store.get('fsemi',false)===true;
 const notes=()=>frets.map((f,st)=>f==='x'?null:{st,f,m:OPEN[st]+f}).filter(Boolean);
 function result(){ const ns=notes(); if(ns.length<2) return {ns,list:[]};
   const pcs=new Set(ns.map(n=>n.m%12)), bass=ns.slice().sort((a,b)=>a.m-b.m)[0].m%12;
@@ -1044,6 +1052,9 @@ function draw(){
   h+=`<text class="fnum" x="${fx(0)}" y="${T+5*G+36}">0</text>`;
   for(let st=0;st<6;st++) h+=`<line class="fstr" x1="${X0}" y1="${sy(st)}" x2="${WD-8}" y2="${sy(st)}" stroke-width="${(1+st*.3).toFixed(1)}"/>`;
   h+=`<line class="fnut" x1="${X0}" y1="${T-2}" x2="${X0}" y2="${T+5*G+2}"/>`;
+  if(showNat) for(let st=0;st<6;st++) for(let f=1;f<=FR;f++){ if(frets[st]===f) continue;
+    const pc=(OPEN[st]+f)%12, nat=RN[pc][1]===0; if(!nat&&!showSemi) continue;
+    h+=`<text class="fname${nat?'':' semi'}" x="${fx(f)}" y="${sy(st)}">${krName(spell(rootOf(pc),0,0))}</text>`; }
   frets.forEach((f,st)=>{ if(f==='x') h+=`<path class="fmute" d="M${fx(0)-7} ${sy(st)-7}l14 14M${fx(0)+7} ${sy(st)-7}l-14 14"/>`; });
   ns.forEach(n=>{ let t, root=false;
     if(best){ const s=((n.m-best.root.pc)%12+12)%12, v=best.iv.find(v=>v[1]===s); root=s===0; t=fbLab==='name'?krName(spell(best.root,v[0],v[1])):v[2]; }
@@ -1068,6 +1079,7 @@ function renderF(){
     left=`<div class="fname empty">${pcs.length<2?'음이 하나예요':ns.length<3||pcs.length<3?'음을 더 눌러 보세요':'이 음들로는 코드 이름을 못 찾았어요'}<small>${pcs.length<3?'코드는 서로 다른 음이 3개 이상 있어야 해요 (1 · 5 두 음은 파워 코드)':'아래 줄부터 누른 음이에요'}</small></div>`;
     mid=`<div class="notes">${pcs.map(p=>`<span class="note"><b>${krName(spell(rootOf(p),0,0))}</b><span>${LETTERS[RN[p][0]]+accTxt(RN[p][1])}</span></span>`).join('')}</div>`;
   }
+  $('fnSel').querySelectorAll('button').forEach(b=>{ const on=b.dataset.v==='nat'?showNat:showSemi&&showNat; b.setAttribute('aria-pressed',on); if(b.dataset.v==='semi') b.setAttribute('aria-disabled',!showNat); });
   $('fRes').innerHTML=left+(mid?`<div class="fmid">${mid}</div>`:'<div></div>')+btns;
   draw();
 }
@@ -1092,6 +1104,10 @@ $('ffb').addEventListener('click',async e=>{
   store.set('ffr',frets); renderF();
   if(frets[st]!=='x'){ audio(); await ready(); const a=audio(); tone(OPEN[st]+f,a.currentTime+0.02,1.4,0.85); }
 });
+$('fnSel').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return;
+  if(b.dataset.v==='nat'){ showNat=!showNat; store.set('fnat',showNat); }
+  else{ if(!showNat) return; showSemi=!showSemi; store.set('fsemi',showSemi); }   // 반음 보기는 음 보기가 켜져 있을 때만
+  renderF(); });
 $('fRes').addEventListener('click',e=>{
   if(e.target.closest('#fHear')) hear();
   if(e.target.closest('#fClear')){ stop(); frets=['x','x','x','x','x','x']; store.set('ffr',frets); renderF(); }
@@ -1101,7 +1117,7 @@ return {render:renderF,draw,identify};
 function render(){
   const isC=tab==='chord', isT=tab==='tri', isV=tab==='voi', isF=tab==='find';
   $('progs').querySelectorAll('.pcard').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===tab));
-  $('chordCtl').hidden=!isC; $('scaleCtl').hidden=isC||isT||isV||isF; $('triCtl').hidden=!isT; $('voiCtl').hidden=!isV; $('posField').hidden=isC||isT||isV||isF; $('minis').hidden=!isC; $('boardArea').hidden=isC||isT||isV||isF; $('tri').hidden=!isT; $('voi').hidden=!isV; $('find').hidden=!isF;
+  $('chordCtl').hidden=!isC; $('scaleCtl').hidden=isC||isT||isV||isF; $('triCtl').hidden=!isT; $('voiCtl').hidden=!isV; $('posField').hidden=isC||isT||isV||isF; $('minis').hidden=!isC; $('boardArea').hidden=isC||isT||isV||isF; $('tri').hidden=!isT; $('voi').hidden=!isV; $('find').hidden=!isF; $('fnField').hidden=!isF;
   $('legend').hidden=isT||isV||isF; $('scaleRows').hidden=isT||isV||isF;
   if(isF){
     FIND.render();
