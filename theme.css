@@ -88,3 +88,9 @@ html[data-theme="dark"] .band .nav .gbtn.cur{background:var(--accent);color:#161
 @media (hover:hover){ .band .nav .drop a:not([aria-current="page"]):hover,.band .nav > a:not([aria-current="page"]):hover,.band .nav .gbtn:not(.cur):hover{background:var(--tile);color:var(--ink)} }   /* 맨 위 메뉴 칸도 같이 (K "좋아" 2026-11-16) */   /* 펼친 메뉴 칸에 마우스를 올리면 색이 바뀜 (K 요청 2026-11-16) */
 .band .nav .drop a[aria-current="page"],html[data-theme="dark"] .band .nav .drop a[aria-current="page"]{background:var(--accent-soft);color:var(--accent)}
 @media (max-width:720px){ .band .nav .grp{flex:1 1 0;min-width:0} .band .nav .gbtn{flex:1;min-height:0;padding:4px 2px;font-size:15px;gap:3px} }
+
+/* 화성학 펼침 메뉴 (K 요청 2026-11-17): 기초 화성학 / 고급 화성학(아직 없음 — 회색, 누를 수 없음). 메뉴 오른쪽에 있어서 펼친 칸은 오른쪽 맞춤 */
+.band .nav .grp.r .drop{left:auto;right:0}
+.band .nav .drop .soon{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:46px;padding:0 14px;border-radius:10px;font-size:17px;font-weight:700;line-height:1.2;white-space:nowrap;color:#A9B0BC;cursor:default}
+.band .nav .drop .soon small{font-size:13px;font-weight:600;color:#A9B0BC;border:1.5px solid var(--line);border-radius:999px;padding:1px 8px}
+html[data-theme="dark"] .band .nav .drop .soon,html[data-theme="dark"] .band .nav .drop .soon small{color:#5E6672}
