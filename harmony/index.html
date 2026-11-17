@@ -245,7 +245,13 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 .result{font-size:17px;font-weight:700;color:var(--muted);min-height:1.5em;padding:0 4px}
 .result.good{color:var(--accent)}
 /* ===== 화성학 문제 (K 요청 2026-11-17, 교재 "화성학 첫걸음 VOL.01"을 보고 Claude가 만듦 — K가 보고 수정 예정) ===== */
-#levels{grid-template-columns:repeat(4,minmax(0,1fr))}   /* 7단계 + 랜덤 = 4칸씩 두 줄 */
+#levels{grid-template-columns:repeat(4,minmax(0,1fr))}   /* 휴대폰: 4칸씩 두 줄 */
+@media (min-width:721px){   /* 컴퓨터: 두 줄 그대로, 카드 낮게 (K 확정 2026-11-17 시안 3) */
+  #levels{gap:8px} .stage{padding:10px 12px 8px;gap:2px} .stage .num{font-size:28px}
+  .stage .lvl{margin-top:2px;font-size:17px} .prog{margin-top:2px} .modebox{padding:10px} #modes button{min-height:38px}
+}
+.stage .stars{display:none!important}   /* 별 뺌 (K "별 필요없어") */
+
 @media (max-width:720px){ #levels{grid-template-columns:repeat(4,minmax(0,1fr))} }
 .stage .pic.t{font-family:var(--f-body)}
 .stage .pic.m{font-family:var(--f-music);font-size:30px;font-weight:400;top:8px}
