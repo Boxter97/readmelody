@@ -253,6 +253,10 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 html[data-theme="dark"] .setbox.off .seg button{color:#565D69}
 .setrow{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px}
 .setnote{font-size:15px;color:var(--muted)}
+/* Hard 표시 (K 지적 2026-11-17 "글씨가 이상해"): 짧은 표시도 같은 글꼴 · 크기, 컴퓨터는 늘 전체 글자 */
+.hardtag .short{font-family:var(--f-body)!important;font-size:1em!important;font-weight:700!important}
+@media (min-width:721px){ .hardtag .full{display:inline!important} .hardtag .short{display:none!important} }
+@media (max-width:720px){ .hard .hardtag{display:none!important} }   /* 휴대폰은 카드가 4칸이라 좁아서 숨김 (Hard는 주황 색으로 보임) */
 
 /* 문제 칸 */
 .qbox{display:flex;flex-direction:column;align-items:center;gap:10px;padding:18px 10px 22px;text-align:center}
@@ -437,12 +441,12 @@ const romOf=(d,t)=>ROM[d]+CHORDS[t].suf;
 
 /* ---------- 단계 ---------- */
 const LEVELS=[
-  {n:1,name:'음이름',pc:'C 도',sym:'C도',desc:'계이름 ↔ 음이름 (도 = C)',hdesc:'♯ · ♭ 붙은 음까지',tag:'+ ♯♭',tagS:'♯♭'},
+  {n:1,name:'음이름',pc:'C 도',sym:'C도',desc:'계이름 ↔ 음이름 (도 = C)',hdesc:'♯ · ♭ 붙은 음까지',tag:'+ ♯♭',tagS:'+ ♯♭'},
   {n:2,name:'♯ 키',pc:'♯',m:1,sym:'♯',desc:'♯ 붙는 순서와 개수를 보고 무슨 키인지',hdesc:'♯ 개수만 보고 (순서는 외워서)',tag:'개수만',tagS:'개수'},
   {n:3,name:'♭ 키',pc:'♭',m:1,sym:'♭',desc:'♭ 붙는 순서와 개수를 보고 무슨 키인지',hdesc:'♭ 개수만 보고 (순서는 외워서)',tag:'개수만',tagS:'개수'},
-  {n:4,name:'인터벌',pc:'3도',sym:'3도',desc:'두 음 사이가 몇 도인지 (완전1도 ~ 장7도)',hdesc:'♯ · ♭ 근음 + 증5도 · 감5도',tag:'+ 증·감',tagS:'증감'},
+  {n:4,name:'인터벌',pc:'3도',sym:'3도',desc:'두 음 사이가 몇 도인지 (완전1도 ~ 장7도)',hdesc:'♯ · ♭ 근음 + 증5도 · 감5도',tag:'+ 증·감',tagS:'+ 증감'},
   {n:5,name:'코드',pc:'C7',sym:'C7',desc:'구성음을 보고 코드 맞히기 (M · m · sus4 · aug · dim)',hdesc:'♯ · ♭ 근음 + 7th 코드 (M7 · 7 · m7 · m7♭5 · aug7 · dim7)',tag:'+ 7th',tagS:'7th'},
-  {n:6,name:'스케일',pc:'도~시',sym:'도~시',desc:'스케일 음 7개를 보고 맞히기 (메이저 · 내추럴 마이너)',hdesc:'♯ · ♭ 근음 + 하모닉 · 멜로딕 마이너',tag:'+ 하모닉·멜로딕',tagS:'+α'},
+  {n:6,name:'스케일',pc:'도~시',sym:'도~시',desc:'스케일 음 7개를 보고 맞히기 (메이저 · 내추럴 마이너)',hdesc:'♯ · ♭ 근음 + 하모닉 · 멜로딕 마이너',tag:'+ 마이너',tagS:'+ 마이너'},
   {n:7,name:'다이어토닉',pc:'Ⅰ~Ⅶ',sym:'Ⅰ~Ⅶ',desc:'키의 다이어토닉 코드 맞히기 (3화음)',hdesc:'♭ · ♯ 많은 키 + 7th 다이어토닉',tag:'+ 7th',tagS:'7th'},
 ];
 
@@ -645,7 +649,7 @@ window.addEventListener('storage',e=>{ if(e.key!=='hm-done') return; try{ const 
 function levelInfo(n){ const c=(done[mode]||{})[n===0?'R':n]||0; const L=window.gmLevel?gmLevel(c):{lv:1,cur:c,need:20,max:false,pct:Math.min(100,c*5)}; return {c,pct:L.pct,L}; }
 function buildCards(){
   const box=$('levels');
-  LEVELS.concat([{n:0,name:'랜덤',pc:'1~7',sym:'1~7',tag:'+ 모두 Hard',tagS:'H'}]).forEach(L=>{
+  LEVELS.concat([{n:0,name:'랜덤',pc:'1~7',sym:'1~7',tag:'모두 Hard',tagS:'Hard'}]).forEach(L=>{
     const b=document.createElement('button'); b.type='button'; b.className='stage txt'+(L.n?'':' rnd'); b.dataset.v=L.n;
     b.innerHTML='<span class="top"><span class="num">'+(L.n||'R')+'</span><span class="hardtag" aria-hidden="true"><span class="full">'+L.tag+'</span><span class="short">'+L.tagS+'</span></span></span><span class="sym" aria-hidden="true">'+L.sym+'</span><span class="pic t'+(L.m?' m':'')+'" aria-hidden="true">'+L.pc+'</span><span class="name">'+L.name+'</span><span class="stars" aria-hidden="true">'+STARS+'</span><span class="prog"><span class="pbar"><i></i></span><span class="cnt"></span></span><span class="lvl"></span>';
     box.appendChild(b);
