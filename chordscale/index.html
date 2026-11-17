@@ -247,6 +247,8 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 #ffb .fname{fill:var(--muted);stroke:var(--bg);stroke-width:7px;paint-order:stroke;stroke-linejoin:round;font-size:15px;font-weight:700;text-anchor:middle;dominant-baseline:central;font-family:var(--f-body);pointer-events:none}
 #ffb .fname.semi{fill-opacity:.55;font-weight:600}
 #fnSel button[aria-disabled="true"]{opacity:.4;cursor:default}
+/* 코드 찾기 표시 줄 (K 지적 2026-11-17): 이름은 버튼에 붙이고, 묶음 사이는 넓게 — 컴퓨터만 */
+@media (min-width:721px){ .fbctl.fnd{column-gap:44px} .fbctl.fnd .field{gap:10px} .fbctl.fnd .label{min-width:0} }
 #ffb .fdot .c{fill:var(--bg);stroke:var(--accent);stroke-width:2.5}
 #ffb .fdot text{fill:var(--accent);font-size:14px;font-weight:700;text-anchor:middle;dominant-baseline:central;font-family:var(--f-body)}
 #ffb .fdot text.sm{font-size:12px}
@@ -1117,7 +1119,7 @@ return {render:renderF,draw,identify};
 function render(){
   const isC=tab==='chord', isT=tab==='tri', isV=tab==='voi', isF=tab==='find';
   $('progs').querySelectorAll('.pcard').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===tab));
-  $('chordCtl').hidden=!isC; $('scaleCtl').hidden=isC||isT||isV||isF; $('triCtl').hidden=!isT; $('voiCtl').hidden=!isV; $('posField').hidden=isC||isT||isV||isF; $('minis').hidden=!isC; $('boardArea').hidden=isC||isT||isV||isF; $('tri').hidden=!isT; $('voi').hidden=!isV; $('find').hidden=!isF; $('fnField').hidden=!isF;
+  $('chordCtl').hidden=!isC; $('scaleCtl').hidden=isC||isT||isV||isF; $('triCtl').hidden=!isT; $('voiCtl').hidden=!isV; $('posField').hidden=isC||isT||isV||isF; $('minis').hidden=!isC; $('boardArea').hidden=isC||isT||isV||isF; $('tri').hidden=!isT; $('voi').hidden=!isV; $('find').hidden=!isF; $('fnField').hidden=!isF; $('fbctl').classList.toggle('fnd',isF);
   $('legend').hidden=isT||isV||isF; $('scaleRows').hidden=isT||isV||isF;
   if(isF){
     FIND.render();
