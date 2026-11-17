@@ -246,6 +246,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 #ffb .fdot{pointer-events:none}
 #ffb .fname{fill:var(--muted);stroke:var(--bg);stroke-width:7px;paint-order:stroke;stroke-linejoin:round;font-size:15px;font-weight:700;text-anchor:middle;dominant-baseline:central;font-family:var(--f-body);pointer-events:none}
 #ffb .fname.semi{fill-opacity:.55;font-weight:600}
+#fnSel .ftbtn[aria-pressed="true"]{background:var(--ten-bg);color:var(--ten);box-shadow:inset 0 0 0 2px var(--ten)}
 #fnSel button[aria-disabled="true"]{opacity:.4;cursor:default}
 /* 코드 찾기 표시 줄 (K 지적 2026-11-17): 이름은 버튼에 붙이고, 묶음 사이는 넓게 — 컴퓨터만 */
 @media (min-width:721px){ .fbctl.fnd{column-gap:44px} .fbctl.fnd .field{gap:10px} .fbctl.fnd .label{min-width:0} }
@@ -266,7 +267,6 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 :root{--ten:#E8590C;--ten-bg:#FFF4E6} html[data-theme="dark"]{--ten:#FF922B;--ten-bg:rgba(255,146,43,.14)}
 #ffb .ften{pointer-events:none} #ffb .ften circle{fill:var(--ten-bg);stroke:var(--ten);stroke-width:2;stroke-dasharray:4 3}
 #ffb .ften text{fill:var(--ten);font-size:13.5px;font-weight:700;text-anchor:middle;dominant-baseline:central;font-family:var(--f-body)} #ffb .ften text.sm{font-size:11.5px}
-.ftbtn[aria-pressed="true"]{border-color:var(--ten);background:var(--ten-bg);color:var(--ten)}
 .ften-row{grid-column:1 / -1;padding-top:12px;border-top:1.5px solid var(--line)}
 .ften-row .th{font-size:16px;font-weight:700;color:var(--ink);margin-bottom:10px} .ften-row .th small{font-size:14.5px;font-weight:500;color:var(--muted);margin-left:6px}
 .note.ten{border-color:var(--ten);background:var(--ten-bg)} .note.ten b,.note.ten span{color:var(--ten)}
@@ -380,7 +380,7 @@ html[data-theme="dark"]{--vc0:#6C8CFF;--vc1:#FF6B6B;--vc2:#FFB020;--vc3:#40C057}
   #progs .pcard{padding:10px 8px} #progs .pcard .name{font-size:17px} #progs .pcard .sub{display:none}
   #progs{grid-template-columns:repeat(3,minmax(0,1fr))}   /* 휴대폰: 카드 5개 → 3칸 + 2칸 */
   #ffb{min-width:900px}
-  .fres{grid-template-columns:minmax(0,1fr)} .fres .fbtns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))} .fres .fbtns .btn{flex:1} .fname{font-size:40px}
+  .fres{grid-template-columns:minmax(0,1fr)} .fres .fbtns{justify-content:stretch} .fres .fbtns .btn{flex:1} .fname{font-size:40px}
   .scales .scsel{flex-direction:column;align-items:stretch;gap:6px}
   .scales .scsel .seg{display:grid;grid-auto-flow:row;grid-auto-columns:auto;grid-template-columns:repeat(4,minmax(0,1fr));flex:none}
   .scales .scsel .seg button{padding:6px 4px;font-size:16px;line-height:1.25;word-break:keep-all;border-right:1.5px solid var(--line);border-bottom:1.5px solid var(--line);margin:0 -1.5px -1.5px 0}
@@ -456,7 +456,7 @@ html[data-theme="dark"]{--vc0:#6C8CFF;--vc1:#FF6B6B;--vc2:#FFB020;--vc3:#40C057}
         <button type="button" data-v="deg">도수</button><button type="button" data-v="name">음이름</button>
       </div></div>
       <div class="field" id="fnField" hidden><span class="label">지판</span><div class="seg" id="fnSel" role="group" aria-label="빈 지판에 음이름 보기">
-        <button type="button" data-v="nat">음 보기</button><button type="button" data-v="semi">반음 보기</button>
+        <button type="button" data-v="nat">음 보기</button><button type="button" data-v="semi">반음 보기</button><button type="button" data-v="ten" class="ftbtn" id="fTen">텐션 찾기</button>
       </div></div>
     </div>
     <div id="boardArea">
@@ -1091,7 +1091,7 @@ function renderF(){
   $('boxTitle').textContent='코드 찾기';
   $('boxHint').textContent='지판을 눌러 코드를 잡으면 무슨 코드인지 알려 줘요. 줄마다 점은 하나, 누르지 않은 줄은 안 치는 줄이에요';
   const {ns,list}=result(), best=list[0];
-  const btns=`<div class="fbtns"><button type="button" class="btn sbtn" id="fHear"${ns.length?'':' aria-disabled="true"'}>${PLAY}</button><button type="button" class="btn sbtn ftbtn" id="fTen" aria-pressed="${showTen&&!!best}"${best?'':' aria-disabled="true"'}>텐션 찾기</button><button type="button" class="btn sbtn" id="fShot"${best?'':' aria-disabled="true"'}>캡처</button><button type="button" class="btn sbtn" id="fClear"${ns.length?'':' aria-disabled="true"'}>모두 지우기</button></div>`;
+  const btns=`<div class="fbtns"><button type="button" class="btn sbtn" id="fHear"${ns.length?'':' aria-disabled="true"'}>${PLAY}</button><button type="button" class="btn sbtn" id="fShot"${best?'':' aria-disabled="true"'}>캡처</button><button type="button" class="btn sbtn" id="fClear"${ns.length?'':' aria-disabled="true"'}>모두 지우기</button></div>`;
   let left, mid='';
   if(!ns.length) left=`<div class="fname empty">지판을 눌러 코드를 잡아 보세요</div>`;
   else if(best){
@@ -1103,7 +1103,8 @@ function renderF(){
     left=`<div class="fname empty">${pcs.length<2?'음이 하나예요':ns.length<3||pcs.length<3?'음을 더 눌러 보세요':'이 음들로는 코드 이름을 못 찾았어요'}<small>${pcs.length<3?'코드는 서로 다른 음이 3개 이상 있어야 해요 (1 · 5 두 음은 파워 코드)':'아래 줄부터 누른 음이에요'}</small></div>`;
     mid=`<div class="notes">${pcs.map(p=>`<span class="note"><b>${krName(spell(rootOf(p),0,0))}</b><span>${LETTERS[RN[p][0]]+accTxt(RN[p][1])}</span></span>`).join('')}</div>`;
   }
-  $('fnSel').querySelectorAll('button').forEach(b=>{ const on=b.dataset.v==='nat'?showNat:showSemi&&showNat; b.setAttribute('aria-pressed',on); if(b.dataset.v==='semi') b.setAttribute('aria-disabled',!showNat); });
+  $('fnSel').querySelectorAll('button').forEach(b=>{ const v=b.dataset.v, on=v==='nat'?showNat:v==='semi'?showSemi&&showNat:showTen&&!!best; b.setAttribute('aria-pressed',on);
+    if(v==='semi') b.setAttribute('aria-disabled',!showNat); if(v==='ten') b.setAttribute('aria-disabled',!best); });   // 텐션 찾기는 코드를 찾았을 때만
   let tens='';
   if(showTen&&best){ const ts=tensOf(best);
     tens=`<div class="ften-row"><div class="th">쓸 수 있는 텐션 <small>코드 종류 기준 — 키에 따라 피해야 하는 음이 있을 수 있어요</small></div>`
@@ -1133,7 +1134,8 @@ $('ffb').addEventListener('click',async e=>{
   if(frets[st]!=='x'){ audio(); await ready(); const a=audio(); tone(OPEN[st]+f,a.currentTime+0.02,1.4,0.85); }
 });
 $('fnSel').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return;
-  if(b.dataset.v==='nat'){ showNat=!showNat; store.set('fnat',showNat); }
+  if(b.dataset.v==='ten'){ if(!result().list.length) return; showTen=!showTen; store.set('ften',showTen); }   // 텐션 찾기 (K 요청: 음 보기 다음 자리)
+  else if(b.dataset.v==='nat'){ showNat=!showNat; store.set('fnat',showNat); }
   else{ if(!showNat) return; showSemi=!showSemi; store.set('fsemi',showSemi); }   // 반음 보기는 음 보기가 켜져 있을 때만
   renderF(); });
 /* 캡처 (K 요청 2026-11-17 "코드를 만들고 캡처 누르면 코드 사전 카드처럼"): 코드 이름 + 종류 + 작은 코드 그림을 PNG로 저장 */
@@ -1177,7 +1179,6 @@ async function shot(){
 $('fRes').addEventListener('click',e=>{
   if(e.target.closest('#fHear')) hear();
   if(e.target.closest('#fShot')) shot();
-  if(e.target.closest('#fTen')){ if(!result().list.length) return; showTen=!showTen; store.set('ften',showTen); renderF(); }
   if(e.target.closest('#fClear')){ stop(); frets=['x','x','x','x','x','x']; store.set('ffr',frets); renderF(); }
 });
 return {render:renderF,draw,identify};
