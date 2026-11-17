@@ -726,13 +726,14 @@ function loadSamples(){
     .then(a=>new Promise((ok,no)=>c.decodeAudioData(a,ok,no))).then(b=>{ let pk=0; const d=b.getChannelData(0); for(let i=0;i<d.length;i+=4) pk=Math.max(pk,Math.abs(d[i])); SAMP[m]={b,k:0.62/(pk||1)}; }).catch(()=>{})));
   return sampP;
 }
+const SUST=0.6;   // 기타 소리 길이 비율 — 더 줄이거나 늘리려면 이 숫자만 (1 = 예전 길이)
 function tone(midi,t,len,vol=1){
   const c=audio(), src=c.createBufferSource(), g=c.createGain(), sm=SAMP[midi];
   let v=1.15*vol;
   if(sm){ src.buffer=sm.b; v=sm.k*1.15*vol; } else { const s=gtr(c,midi); src.buffer=s.b; src.playbackRate.value=s.rate; }
-  const end=t+Math.max(len,0.15);
-  g.gain.setValueAtTime(v,t); g.gain.setValueAtTime(v,end); g.gain.setTargetAtTime(0,end,0.12);
-  src.connect(g); g.connect(gout); src.start(t); src.stop(end+0.8); keep(src,end+0.8);
+  const end=t+Math.max(len*SUST,0.15);   // 울리는 길이 = 원래 길이 × SUST (K 요청 2026-11-17 "음이 너무 길어")
+  g.gain.setValueAtTime(v,t); g.gain.setValueAtTime(v,end); g.gain.setTargetAtTime(0,end,0.08);
+  src.connect(g); g.connect(gout); src.start(t); src.stop(end+0.5); keep(src,end+0.5);
 }
 document.addEventListener('pointerdown',()=>loadSamples(),{once:true});   // 처음 누를 때 미리 받기 시작 (약 0.8MB)
 async function ready(){ try{ await Promise.race([loadSamples(),new Promise(r=>setTimeout(r,2500))]); }catch(e){} }   // 처음 한 번 소리를 받음 (늦으면 계산 소리로)
