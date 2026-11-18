@@ -152,6 +152,20 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 .optlist .check{flex-direction:row-reverse;justify-content:space-between;gap:12px;min-height:46px;padding:0;border:0;border-top:1.5px solid var(--line);border-radius:0;background:transparent;font-size:17px}
 .optlist .check:first-child{border-top:0}
 .optlist .check:has(input:checked){background:transparent;border-color:var(--line)}
+.optlist .pair{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);border-top:1.5px solid var(--line)}   /* 음이름 보기 · 기타 지판은 한 줄에 둘 (코드 초견 도수·구성음과 같은 모양) */
+.optlist .pair .check{border-top:0;min-width:0;white-space:nowrap}
+.optlist .pair .check+.check{border-left:1.5px solid var(--line);padding-left:12px}
+.optlist .pair .check:first-child{padding-right:12px}
+/* 기타 지판 (악보 아래, 기타 지판 스위치를 켜면) */
+.gfb{margin:6px 0 0;padding:10px 4px 0;border-top:1.5px solid var(--line)}
+.gfb .gcap{display:flex;flex-wrap:wrap;gap:4px 14px;padding:0 6px 4px;font-size:15px;color:var(--muted)}
+.gfb .gcap b{color:var(--ink)}
+.gfbwrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+#gfb{display:block;width:100%;height:auto;margin:0 auto}
+#gfb .fstr{stroke:var(--muted)} #gfb .ffret{stroke:var(--line);stroke-width:2} #gfb .fnut{stroke:var(--ink);stroke-width:5}
+#gfb .fmark{fill:var(--line)} #gfb .fnum{fill:var(--muted);font-size:15px;font-weight:700;text-anchor:middle;font-family:var(--f-body)}
+#gfb .fdot .c{fill:var(--bg);stroke:var(--line);stroke-width:1.6} #gfb .fdot text{fill:var(--muted);font-size:14px;font-weight:700;text-anchor:middle;dominant-baseline:central;font-family:var(--f-body)}
+#gfb .fdot.on .c{fill:var(--accent);stroke:var(--accent)} #gfb .fdot.on text{fill:var(--bg)}
 
 /* 악보 */
 .sheet{background:var(--bg);border:1.5px solid var(--line);border-radius:18px;padding:20px 14px 14px;box-shadow:0 10px 30px rgba(24,32,46,.07);overflow:hidden}
@@ -272,7 +286,10 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
         <div class="optlist">
           <label class="check"><input type="checkbox" id="countin" checked> 한 마디 세고 시작</label>
           <label class="check"><input type="checkbox" id="metro"> 메트로놈</label>
-          <label class="check"><input type="checkbox" id="names"> 음이름 보기</label>
+          <div class="pair">
+            <label class="check"><input type="checkbox" id="names"> 음이름 보기</label>
+            <label class="check"><input type="checkbox" id="gtr"> 기타 지판</label>
+          </div>
         </div>
       </div>
     </div>
@@ -281,6 +298,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
   <section class="sheet" aria-label="악보">
     <div class="meta" id="meta"></div>
     <svg id="score" role="img" aria-label="초견 멜로디 악보"></svg>
+    <div class="gfb" id="gfbBox" hidden><div class="gcap" id="gfbCap"></div><div class="gfbwrap"><svg id="gfb" role="img" aria-label="기타 지판"></svg></div></div>
     <div class="actions">
       <button type="button" class="btn new" id="newBtn">새 멜로디</button>
       <button type="button" class="btn primary" id="playBtn"><svg viewBox="0 0 16 16" id="playIcon"><path d="M4 2l10 6-10 6z"/></svg><span id="playTxt">정답 듣기</span></button>
@@ -802,7 +820,7 @@ async function ready(){
 function stop(){ if(window.gmCount) gmCount(0);
   playing=false; timers.forEach(clearTimeout); timers=[];
   nodes.forEach(o=>{try{o.stop()}catch(e){}}); nodes=[];
-  noteEls.forEach(n=>n.ref&&n.ref.classList.remove('on'));
+  noteEls.forEach(n=>n.ref&&n.ref.classList.remove('on')); gtrOff();
   $('playTxt').textContent='정답 듣기'; $('playIcon').innerHTML='<path d="M4 2l10 6-10 6z"/>'; $('status').textContent='';
 }
 async function play(){
@@ -830,8 +848,9 @@ async function play(){
       tone(pitchOf(n.deg,song.key,n.alt).midi,t,total*0.95);
     }
     const on=(t-c.currentTime)*1000, off=on+len*1000;
-    timers.push(setTimeout(()=>n.ref.classList.add('on'),on));
-    timers.push(setTimeout(()=>n.ref.classList.remove('on'),off-15));
+    const gm=n.rest?null:pitchOf(n.deg,song.key,n.alt).midi-12;
+    timers.push(setTimeout(()=>{ n.ref.classList.add('on'); if(gm!=null) gtrOn(gm,true); },on));
+    timers.push(setTimeout(()=>{ n.ref.classList.remove('on'); if(gm!=null) gtrOn(gm,false); },off-15));
     t+=len;
   });
   if($('metro').checked){ const total=bars*nClick; for(let b=0;b<total;b++) click(startT+b*ci,M.accent[b%nClick]); }
@@ -848,12 +867,45 @@ async function playRef(){
   timers.push(setTimeout(()=>{ if(!playing&&window.gmCount) gmCount(0) },3400));
 }
 
+/* ---------- 기타 지판 (K 요청 2026-11-18: 켜면 치는 음이 지판에 보이게) ----------
+   기타 악보는 실제 소리보다 한 옥타브 높게 적음 → 악보 음 - 12 = 기타에서 나는 음 */
+const GOPEN=[40,45,50,55,59,64];               // 6번 줄 ~ 1번 줄 개방현
+let showGtr=store.get('gtr',false), gDots=[];
+function gtrPos(m){                             // 1포지션: 가장 낮은 프렛 한 자리 (K 고름 2026-11-18, 시안 1)
+  let best=null;
+  GOPEN.forEach((o,st)=>{ const f=m-o; if(f<0||f>7) return; if(!best||f<best.f) best={st,f}; });
+  return best;
+}
+function renderGtr(){
+  $('gfbBox').hidden=!showGtr; if(!showGtr) return;
+  const narrow=$('gfbBox').parentElement.clientWidth<520;          // 휴대폰은 글씨·점을 크게
+  const FR=7, X0=48, W=narrow?46:84, T=26, G=narrow?42:36, R=narrow?19:16, H=T+5*G+46, WD=X0+FR*W+16;
+  const fx=f=>f===0?24:X0+(f-.5)*W, sy=st=>T+(5-st)*G;
+  let h='';
+  [3,5,7].forEach(f=>h+=`<circle class="fmark" cx="${X0+(f-.5)*W}" cy="${T+2.5*G}" r="7"/>`);
+  for(let f=1;f<=FR;f++) h+=`<line class="ffret" x1="${X0+f*W}" y1="${T}" x2="${X0+f*W}" y2="${T+5*G}"/><text class="fnum" x="${X0+(f-.5)*W}" y="${T+5*G+34}">${f}</text>`;
+  for(let st=0;st<6;st++) h+=`<line class="fstr" x1="${X0}" y1="${sy(st)}" x2="${WD-8}" y2="${sy(st)}" stroke-width="${(1+st*.3).toFixed(1)}"/>`;
+  h+=`<line class="fnut" x1="${X0}" y1="${T-2}" x2="${X0}" y2="${T+5*G+2}"/>`;
+  const seen=new Map();                          // 자리마다 점 하나
+  song.measures.flat().filter(e=>!e.rest).forEach(n=>{
+    const p=pitchOf(n.deg,song.key,n.alt), m=p.midi-12, q=gtrPos(m);
+    if(q&&!seen.has(m)) seen.set(m,{...q,name:p.name});
+  });
+  seen.forEach((d,m)=>{ h+=`<g class="fdot" data-m="${m}" transform="translate(${fx(d.f)} ${sy(d.st)})"><circle class="c" r="${R}"/><text style="font-size:${narrow?17:14}px">${d.name}</text></g>`; });
+  const svg=$('gfb'); svg.setAttribute('viewBox',`0 0 ${WD} ${H}`); svg.innerHTML=h;
+  svg.style.maxWidth=narrow?'':Math.round(WD*1.25)+'px';
+  gDots=[...svg.querySelectorAll('.fdot')];
+  $('gfbCap').innerHTML='<span>이 곡의 음 · 정답 듣기를 누르면 <b>지금 치는 음</b>이 켜져요</span>';
+}
+function gtrOn(m,on){ if(!showGtr) return; gDots.forEach(d=>{ if(+d.dataset.m===m) d.classList.toggle('on',on); }); }
+function gtrOff(){ gDots.forEach(d=>d.classList.remove('on')); }
+
 /* ---------- 화면 ---------- */
 function updateMeta(){
   const kn=Object.keys(song.key.acc).length, ksh=kn&&song.key.acc[Object.keys(song.key.acc)[0]]>0;
   $('meta').innerHTML=`<span>키 <b>${song.key.label}</b>${kn?' ('+(ksh?'♯':'♭')+kn+')':''}</span><span>박자 <b>${meter}</b></span><span>단계 <b>${sel===0?'랜덤':level}</b></span><span>모드 <b>${mode==='hard'?'Hard':'Easy'}</b></span>`;
 }
-function fresh(){ stop(); if(sel===0) level=LEVELS.length; song=makeSong(); updateMeta(); render(); updDesc(); }
+function fresh(){ stop(); if(sel===0) level=LEVELS.length; song=makeSong(); updateMeta(); render(); renderGtr(); updDesc(); }
 const STAR_AT=[0,5,20,50];
 const SYM=['♩','♫','♩.','♬','♩‿♩'], LV_NAME=['4분음표','8분음표','점음표','16분음표','이음줄'];
 const STAR3=[0,1,2,3,4].map(()=>'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.2 6.6.7-5 4.5 1.4 6.6L12 17.3 6.1 20.5l1.4-6.6-5-4.5 6.6-.7z"/></svg>').join('');
@@ -925,6 +977,8 @@ function buildUI(){
   $('tempo').addEventListener('input',e=>{tempo=+e.target.value;$('tempoOut').textContent='♩ = '+tempo});
   $('names').checked=showNames;
   $('names').addEventListener('change',e=>{showNames=e.target.checked;store.set('names',showNames);stop();render()});
+  $('gtr').checked=showGtr;
+  $('gtr').addEventListener('change',e=>{showGtr=e.target.checked;store.set('gtr',showGtr);stop();renderGtr()});
   $('newBtn').onclick=fresh; $('playBtn').onclick=play; /* 기준음 듣기 버튼은 뺌 (K 2026-11-13 "초견은 기준음이 필요없어") — 되살리려면 버튼 + 이 연결 + .actions 3칸 */
   // 연습 기록 초기화: 한 번 더 물어본 뒤 Easy·Hard 모든 단계의 곡 수를 0으로
   let resetT;
@@ -937,7 +991,7 @@ function buildUI(){
     resetT=setTimeout(()=>{ $('resetMsg').hidden=true; },2500);
   };
   $('resetAsk').addEventListener('keydown',e=>{ if(e.key==='Escape') $('resetNo').click(); });
-  let rt; window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{stop();render()},150)});
+  let rt; window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{stop();render();renderGtr()},150)});
   sync();
 }
 buildUI(); fresh();
