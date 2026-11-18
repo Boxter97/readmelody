@@ -548,9 +548,11 @@ const SH5={'':['x',0,2,2,2,0],'7':['x',0,2,0,2,0],'m':['x',0,2,2,1,0],'m7':['x',
 /* 7th 코드 (K 요청 2026-11-17 "7th 코드 왜 G밖에 없어"): 교재 7th 코드(G · C) 모양을 근음 7개로 — M7 · 7 · m7 · m7♭5 */
 const SV6={'M7':[0,'x',1,1,0,'x'],'7':[0,'x',0,1,0,'x'],'m7':[0,'x',0,0,0,'x'],'m7♭5':[0,'x',0,0,-1,'x']};   // GM7 3x443x · G7 3x343x · Gm7 3x333x · Gm7♭5 3x332x
 const SV5={'M7':['x',0,2,1,2,0],'7':['x',0,2,0,2,0],'m7':['x',0,2,0,1,0],'m7♭5':['x',0,1,0,1,'x']};       // CM7 x35453 · C7 x35353 · Cm7 x35343 · Cm7♭5 x3434x
+/* 가장 낮은 프렛을 두 줄 이상 누르는 바레 (그 사이 줄은 모두 그 프렛 이상) — m6 5 · 4번 줄 근음 (K 2026-11-19 "바레코드야") */
+const LOWBAR=fr=>{ const fs=fr.filter(x=>x!=='x'), lo=Math.min(...fs), bs=fr.map((x,i)=>x===lo?i:-1).filter(i=>i>=0); if(bs.length<2) return undefined; const a=bs[0], z=bs[bs.length-1]; return fr.slice(a,z+1).every(x=>x!=='x'&&x>=lo)?[lo,a,z]:undefined; };
 const MAKE=(s,shapes,label,barreOK)=>LETTERS.flatMap(r=>Object.keys(shapes).map(q=>{ const f=({6:ROOT6,5:ROOT5,4:ROOT4})[s][r], sh=shapes[q];
   let fr=sh.map(x=>x==='x'?'x':x+f); if(Math.min(...fr.filter(x=>x!=='x'))<1) fr=fr.map(x=>x==='x'?'x':x+12);   // 개방현이 생기면(F m7♭5) 12프렛 위로
-  const bar=barreOK(q)?[f,s===6?0:1,5]:undefined;
+  const bo=barreOK(q), bar=bo==='low'?LOWBAR(fr):bo?[f,s===6?0:1,5]:undefined;
   return Object.assign(C(r,q,fr,bar),{grp:s+'번 줄 '+label}); }));
 /* 새 종류 모양 (Claude가 많이 쓰는 모양으로 고름, K 확인 전) — 6번 줄 · 5번 줄 근음, 숫자는 근음 프렛에서 몇 칸 */
 const NEW6={'7sus4':[0,2,0,2,0,0],'mM7':[0,'x',1,0,0,'x'],'6':[0,'x',-1,1,0,'x'],'m6':[0,'x',-1,0,0,'x'],'add9':[0,-1,-3,-1,0,'x'],'aug7':[0,'x',0,1,1,'x'],'sus4':[0,2,2,2,0,0],'dim':[0,'x','x',0,-1,0],'aug':[0,'x',2,1,1,'x'],'dim7':[0,'x',-1,0,-1,'x']};
@@ -559,7 +561,7 @@ const NEW5={'7sus4':['x',0,2,0,3,0],'mM7':['x',0,2,1,1,0],'6':['x',0,-1,-1,-2,'x
 const NEW4={'6':['x','x',0,-1,0,-2],'m6':['x','x',0,-2,0,-2]};
 /* 바레가 아닌 모양은 "○번 줄 근음" 이름표 (K 2026-11-17 "하이코드가 아닌데") */
 const NOBAR=list=>list.map(c=>!c.barre?Object.assign(c,{grp:c.grp.replace('하이 코드','근음')}):c);
-const BAR6={'sus4':1,'7sus4':1}, BAR5={'sus4':1,'7sus4':1,'mM7':1};   // 6은 m6 모양에서 3음만 올린 모양이라 바레 없음 (K 요청 2026-11-17)
+const BAR6={'sus4':1,'7sus4':1}, BAR5={'sus4':1,'7sus4':1,'mM7':1,'m6':'low'}, BAR4={'m6':'low'};   // 6은 m6 모양에서 3음만 올린 모양이라 바레 없음 (K 요청 2026-11-17)
 /* 줄 모양 계산 (보이싱 · 트라이어드와 같은 규칙): ord = 아래 줄부터 코드 음 번호, strs = 줄(0 = 6번 줄), 개방현이 생기면 12프렛 위로 */
 const STRP=[40,45,50,55,59,64];
 function shapeFr(r,q,ord,strs){
@@ -598,9 +600,9 @@ const GROUPS=[
   {id:'opensus',name:'오픈 코드',title:'기본 코드',chords:[C('A','sus4','x02230'),C('D','sus4','xx0233'),C('E','sus4','022200'),C('A','6','x02222'),C('D','6','xx0202'),C('E','6','022120'),C('A','m6','x02212'),C('D','m6','xx0201'),C('E','m6','022020'),C('C','add9','x32030'),C('G','add9','3x0203'),C('E','add9','024100'),C('A','add9','x02420'),C('A','7sus4','x02030'),C('D','7sus4','xx0213'),C('E','7sus4','020200'),C('A','mM7','x02110'),C('D','mM7','xx0221'),C('E','mM7','021000')]},
   {id:'barre6',name:'하이 코드',title:'6번 줄 하이 코드',chords:MAKE(6,SH6,'하이 코드',()=>true)},
   {id:'barre5',name:'하이 코드',title:'5번 줄 하이 코드',chords:MAKE(5,SH5,'하이 코드',()=>true)},
-  {id:'new6',name:'하이 코드',title:'6번 줄 하이 코드',chords:NOBAR(MAKE(6,NEW6,'하이 코드',q=>!!BAR6[q]))},
-  {id:'new5',name:'하이 코드',title:'5번 줄 하이 코드',chords:NOBAR(MAKE(5,NEW5,'하이 코드',q=>!!BAR5[q]))},
-  {id:'new4',name:'하이 코드',title:'4번 줄 하이 코드',chords:NOBAR(MAKE(4,NEW4,'하이 코드',()=>false))},
+  {id:'new6',name:'하이 코드',title:'6번 줄 하이 코드',chords:NOBAR(MAKE(6,NEW6,'하이 코드',q=>BAR6[q]))},
+  {id:'new5',name:'하이 코드',title:'5번 줄 하이 코드',chords:NOBAR(MAKE(5,NEW5,'하이 코드',q=>BAR5[q]))},
+  {id:'new4',name:'하이 코드',title:'4번 줄 하이 코드',chords:NOBAR(MAKE(4,NEW4,'하이 코드',q=>BAR4[q]))},
   // 6번 줄 7th 코드(seven6)는 뺌 — 드롭3 · 6 · 4 · 3 · 2번 줄 기본 위치와 같은 모양이라 드롭3 카드로 나옴 (K 요청 2026-11-17)
   {id:'seven5',name:'7th 코드',title:'5번 줄 7th 코드',chords:MAKE(5,{'M7':SV5['M7']},'7th 코드',()=>true)},   // M7만 (K 2026-11-17 뺐다가 다시 넣음). 7 · m7은 5번 줄 하이 코드, m7♭5는 드롭2 · 5~2번 줄과 똑같은 모양이라 그쪽으로 나옴
   {id:'gen',name:'보이싱',title:'보이싱',chords:GEN},
