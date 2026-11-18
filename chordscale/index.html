@@ -626,6 +626,7 @@ const MODES=[
   {id:'aeolian',name:'에올리안',sub:'내추럴 마이너와 같아요',iv:SCALES[1].iv},
   {id:'locrian',name:'로크리안',sub:'마이너에서 2 · 5음을 반음 내림',mark:MK,iv:[[0,0,'1'],[1,1,'♭2'],[2,3,'♭3'],[3,5,'4'],[4,6,'♭5',1],[5,8,'♭6'],[6,10,'♭7']]},
 ];
+MODES.forEach(m=>m.mode=1); SCALES.find(x=>x.id==='minor').mode=1;   // 모드 · 내추럴 마이너는 부모 메이저 박스 (fbBoxes)
 const ALLSC=SCALES.concat(MODES);
 /* 스케일 고르기 (K 요청 2026-11-16): 먼저 묶음(메이저 · 마이너 · 펜타토닉 · 모드) → 그 안의 종류 */
 const CATS=[
@@ -761,6 +762,16 @@ const at=(c,t,fn)=>timers.push(setTimeout(fn,Math.max(0,(t-c.currentTime)*1000))
 const OPEN=[40,45,50,55,59,64], FRETS=15;
 /* 포지션 = 펜타토닉 박스 1~5 (즉흥연주와 같음). 펜타토닉이 아닌 음은 그 박스 칸 안에 있는 자리에 넣음 */
 function fbBoxes(sc,rpc){
+  // 모드 = 부모 메이저 스케일과 같은 자리, 도수만 다름 (K 2026-11-19 "결국 메이저 스케일 위치가 바뀌는 거야"). 포지션 번호는 원래 계산(근음 기준)과 가장 많이 겹치는 메이저 박스로
+  if(sc.mode&&!sc.parentDone){
+    const sm=sc.iv.map(x=>x[1]), MJ=[0,2,4,5,7,9,11];
+    for(let o=0;o<12;o++) if(MJ.every(x=>sm.includes((x+o)%12))){
+      const par=fbBoxes({iv:MJ.map((x,i)=>[i,x,''])},(rpc+o)%12), own=fbBoxes(Object.assign({},sc,{parentDone:1}),rpc), used=new Set(), K=s=>[...s].map(k=>{ const [a,b]=k.split('-').map(Number); return a+'-'+(b%12); });
+      return own.map(b=>{ const ok=new Set(K(b.set)); let bi=-1,bs=-1; par.forEach((p,i)=>{ if(used.has(i)) return; const sc2=K(p.set).filter(x=>ok.has(x)).length; if(sc2>bs){ bs=sc2; bi=i; } }); used.add(bi);
+        let p=par[bi], sh=0; for(const d of [-12,12]){ if(Math.abs(p.lo+d-b.lo)<Math.abs(p.lo+sh-b.lo)&&p.lo+d>=0&&p.hi+d<=FRETS) sh=d; }
+        return {lo:p.lo+sh,hi:p.hi+sh,set:new Set([...p.set].map(k=>{ const [a,f]=k.split('-').map(Number); return a+'-'+(f+sh); }))}; });
+    }
+  }
   // 하모닉 마이너 = 내추럴 마이너 박스에서 ♭7을 빼고, 그 박스 칸 안의 7음 자리를 모두 넣음 (K가 준 1번 폼 그림 기준, 2026-11-19 — G면 6번 줄 2 · 4번 줄 4 · 1번 줄 2)
   const sm=sc.iv.map(x=>x[1]);
   const UP=sm.includes(3)?[10,8].filter(x=>!sm.includes(x)&&sm.includes(x+1)):[];   // 올린 음: 하모닉 ♭7→7, 멜로딕 ♭6→6 · ♭7→7 (멜로딕도 같은 방식, K "응 좋아" 2026-11-19)
