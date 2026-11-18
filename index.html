@@ -881,40 +881,30 @@ const GOPEN=[40,45,50,55,59,64];               // 6번 줄 ~ 1번 줄 개방현
 let showGtr=store.get('gtr',false), gPos=store.get('gpos',1), gDots=[];
 if(!(gPos>=1&&gPos<=5)) gPos=1;
 const GFR=15;
-/* 메이저 스케일 포지션 1~5 (K 요청 2026-11-18) — 코드&스케일 스케일 화면 포지션과 같은 계산(fbBoxes).
-   1포지션 = 6번 줄 으뜸음에서 시작 (C키면 6번 줄 8프렛). 키가 바뀌면 그만큼 옮김 */
-function majorBox(tpc,k){
-  const A=[0,2,4,7,9], extra=[5,11], rf=((tpc-4)%12+12)%12;
-  let notes=[];
-  for(let j=0;j<12;j++){ const st=j>>1, m=40+rf+A[(k+j)%5]+12*Math.floor((k+j)/5); notes.push([st,m-GOPEN[st]]); }
-  let lo=Math.min(...notes.map(n=>n[1])), hi=Math.max(...notes.map(n=>n[1]));
-  let sh=0; if(hi>GFR&&lo-12>=0) sh=-12; if(lo<0) sh=12;
-  notes=notes.map(([st,f])=>[st,f+sh]); lo+=sh; hi+=sh;
-  const first=st=>GOPEN[st]+notes.find(n=>n[0]===st)[1];
-  const isX=m=>extra.includes(((m-40-rf)%12+12)%12), has=m=>notes.some(n=>GOPEN[n[0]]+n[1]===m);
-  for(let f=lo;f<=hi;f++){ let m=GOPEN[0]+f; if(isX(m)&&m<first(0)) notes.push([0,f]); m=GOPEN[5]+f; if(isX(m)&&m>first(5)&&!has(m)) notes.push([5,f]); }
-  const ps=notes.map(n=>GOPEN[n[0]]+n[1]), pmin=Math.min(...ps), pmax=Math.max(...ps);
-  for(let m=pmin+1;m<pmax;m++){ if(!isX(m)||has(m)) continue; let best=null;
-    for(let st=0;st<6;st++){ const f=m-GOPEN[st]; if(f<0||f>GFR) continue;
-      const out=f<lo?lo-f:f>hi?f-hi:0, ord=(st>0&&m<=first(st)?1:0)+(st<5&&m>=first(st+1)?1:0), sc=out*10+ord;
-      if(!best||sc<best[0]) best=[sc,st,f]; }
-    if(best) notes.push([best[1],best[2]]); }
-  notes=notes.filter(n=>n[1]>=0&&n[1]<=GFR);
-  const fs=notes.map(n=>n[1]); lo=Math.min(...fs); hi=Math.max(...fs);
-  return {lo,hi,notes};
-}
+/* C 메이저 스케일 포지션 1~5 (K 요청 2026-11-18) — 줄마다 프렛 (6번 줄 → 1번 줄).
+   다른 키도 이 C 메이저 자리 그대로 (K "무조건"): 같은 줄에서 조표만큼(♯ +1 · ♭ −1) 옮김.
+   5포지션 시는 3번 줄 4프렛 (K 2026-11-18 "시 위치 달라" — 예전엔 4번 줄 9프렛) */
+const CPOS=[
+  [[7,8,10],[7,8,10],[7,9,10],[7,9,10],[8,10],[7,8,10]],
+  [[10,12,13],[10,12],[9,10,12],[9,10,12],[10,12,13],[10,12,13]],
+  [[12,13,15],[12,14,15],[12,14,15],[12,14],[12,13,15],[12,13,15]],
+  [[3,5],[2,3,5],[2,3,5],[2,4,5],[3,5,6],[3,5]],
+  [[5,7,8],[5,7,8],[5,7],[4,5,7],[5,6,8],[5,7,8]],
+];
 function renderGtr(){
   $('gfbBox').hidden=!showGtr; if(!showGtr) return;
   $('gpos').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.v===gPos));
   const key=song.key, tpc=(SEMI[key.letter]+(key.acc[LETTERS[key.letter]]||0)+12)%12;
   const nameOf={};                                   // 음높이 → 이 키의 음이름 (도~시)
   for(let i=0;i<7;i++){ const p=pitchOf(key.letter+i,key); nameOf[((p.midi%12)+12)%12]=p.name; }
-  const box=majorBox(0,gPos-1);                      // 자리는 늘 C 메이저 포지션 (K 2026-11-18 "다른 키도 C 메이저 스케일에서, 무조건") → 그 프렛 안에서 이 키의 음
-  const inKey=new Set(Object.keys(nameOf).map(Number));
-  const X0=50, W=58, T=28, G=36, H=T+5*G+48, WD=X0+GFR*W+16;
+  const box={notes:[]};
+  CPOS[gPos-1].forEach((fs,st)=>fs.forEach(f=>{ const L=LETTERS[[0,2,4,5,7,9,11].indexOf((GOPEN[st]+f)%12)]; box.notes.push([st,f+(key.acc[L]||0)]); }));
+  { const fs=CPOS[gPos-1].flat(); box.lo=Math.min(...fs); box.hi=Math.max(...fs); }
+  const NF=Math.max(GFR,...box.notes.map(n=>n[1]));   // ♯으로 16프렛까지 가면 지판도 16칸
+  const X0=50, W=58, T=28, G=36, H=T+5*G+48, WD=X0+NF*W+16;
   const fx=f=>f===0?24:X0+(f-.5)*W, sy=st=>T+(5-st)*G;
   const dots=new Map();                              // "줄-프렛" → 점
-  for(let st=0;st<6;st++) for(let f=box.lo;f<=box.hi;f++){ const m=GOPEN[st]+f; if(inKey.has(m%12)) dots.set(st+'-'+f,{st,f,m,name:nameOf[m%12]}); }
+  box.notes.forEach(([st,f])=>{ const m=GOPEN[st]+f; dots.set(st+'-'+f,{st,f,m,name:nameOf[m%12]}); });
   let outN=0;
   song.measures.flat().filter(e=>!e.rest).forEach(n=>{   // 곡의 음: 포지션 안에 자리가 없으면 가장 가까운 자리에 (점선 점)
     const p=pitchOf(n.deg,key,n.alt), m=p.midi-12;
@@ -925,17 +915,18 @@ function renderGtr(){
   });
   const fl=Math.min(box.lo,...[...dots.values()].map(d=>d.f)), fh=Math.max(box.hi,...[...dots.values()].map(d=>d.f));
   let h='';
-  const x1=box.lo===0?4:X0+(box.lo-1)*W+3, x2=X0+box.hi*W-3;
+  const blo=Math.min(box.lo,...box.notes.map(n=>n[1])), bhi=Math.max(box.hi,...box.notes.map(n=>n[1]));   // ♯ · ♭으로 한 칸 밀린 음까지 칸 안에
+  const x1=blo===0?4:X0+(blo-1)*W+3, x2=X0+bhi*W-3;
   h+=`<rect class="fband" x="${x1}" y="${T-20}" width="${x2-x1}" height="${5*G+40}" rx="12"/>`;
   [3,5,7,9,15].forEach(f=>h+=`<circle class="fmark" cx="${X0+(f-.5)*W}" cy="${T+2.5*G}" r="7"/>`);
   h+=`<circle class="fmark" cx="${X0+11.5*W}" cy="${T+1.5*G}" r="7"/><circle class="fmark" cx="${X0+11.5*W}" cy="${T+3.5*G}" r="7"/>`;
-  for(let f=1;f<=GFR;f++) h+=`<line class="ffret" x1="${X0+f*W}" y1="${T}" x2="${X0+f*W}" y2="${T+5*G}"/><text class="fnum" x="${X0+(f-.5)*W}" y="${T+5*G+36}">${f}</text>`;
+  for(let f=1;f<=NF;f++) h+=`<line class="ffret" x1="${X0+f*W}" y1="${T}" x2="${X0+f*W}" y2="${T+5*G}"/><text class="fnum" x="${X0+(f-.5)*W}" y="${T+5*G+36}">${f}</text>`;
   for(let st=0;st<6;st++) h+=`<line class="fstr" x1="${X0}" y1="${sy(st)}" x2="${WD-8}" y2="${sy(st)}" stroke-width="${(1+st*.3).toFixed(1)}"/>`;
   h+=`<line class="fnut" x1="${X0}" y1="${T-2}" x2="${X0}" y2="${T+5*G+2}"/>`;
   dots.forEach(d=>{ const root=d.m%12===tpc&&!d.out; h+=`<g class="fdot${root?' root':''}${d.out?' out':''}" data-m="${d.m}" transform="translate(${fx(d.f)} ${sy(d.st)})"><circle class="c" r="15.5"/><text>${d.name}</text></g>`; });
   const svg=$('gfb'); svg.setAttribute('viewBox',`0 0 ${WD} ${H}`); svg.innerHTML=h; svg.style.minWidth='700px';
   gDots=[...svg.querySelectorAll('.fdot')];
-  $('gfbCap').innerHTML=`<span><b>${key.label} 메이저 · C 메이저 ${gPos}포지션 자리 (${box.lo===0?'개방현':box.lo}~${box.hi}프렛)</b> · 정답 듣기를 누르면 지금 치는 음이 검게 켜져요${outN?' · 점선 점 = 이 포지션 모양 밖의 음':''}</span>`;
+  $('gfbCap').innerHTML=`<span><b>${key.label==='C'?'C 메이저 스케일 '+gPos+'포지션':key.label+' 메이저 · C 메이저 '+gPos+'포지션 자리'}</b> · 정답 듣기를 누르면 지금 치는 음이 검게 켜져요${outN?' · 점선 점 = 이 포지션 모양 밖의 음':''}</span>`;
   const wrap=$('gfbWrap');
   requestAnimationFrame(()=>{ const k=svg.getBoundingClientRect().width/WD; if(wrap.scrollWidth>wrap.clientWidth+2) wrap.scrollLeft=Math.max(0,(fl===0?0:X0+(fl-1)*W)*k-24); });
 }
