@@ -658,7 +658,9 @@ function fbBoxes(sc,rpc){
         if(!best||sc<best[0]) best=[sc,st,f]; }   // 4번 줄 위로 뻗기보다 3번 줄 아래 자리 (C 메이저 5포지션 시 = 3번 줄 4프렛, K 2026-11-18 — 모든 스케일 같은 규칙)
       if(best) notes.push([best[1],best[2]]); }
     notes=notes.filter(n=>n[1]>=0&&n[1]<=FRETS);
-    const fs=notes.map(n=>n[1]); lo=Math.min(...fs); hi=Math.max(...fs);
+    let fs=notes.map(n=>n[1]); lo=Math.min(...fs); hi=Math.max(...fs);
+    // 박스 칸(lo~hi) 안에 있는데 박스 어디에도 없는 스케일 음 채우기 — 칸이 넓어진 뒤 1번 · 6번 줄 끝 음이 빠지던 것 (F 믹소리디안 4포지션 1번 줄 11프렛 ♭7, K 제보 2026-11-18)
+    for(let st=0;st<6;st++) for(let f=lo;f<=hi;f++){ const m=OPEN[st]+f; if((isX(m)||isA(m))&&!has(m)) notes.push([st,f]); }
     return {lo,hi,set:new Set(notes.map(n=>n[0]+'-'+n[1]))};
   });
 }
