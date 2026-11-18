@@ -771,10 +771,10 @@ function fbBoxes(sc,rpc){
     notes=notes.map(([st,f])=>[st,f+sh]); lo+=sh; hi+=sh;
     const first=st=>OPEN[st]+notes.find(n=>n[0]===st)[1];
     // 펜타토닉이 아닌 음: 박스 안에 자리가 있으면 거기, 없으면 박스에서 가장 가까운 자리 (스케일 음이 빠지지 않게 — 7음 스케일은 박스가 넓어질 수 있음)
-    const isX=m=>extra.includes(((m-40-rf)%12+12)%12), has=m=>notes.some(n=>OPEN[n[0]]+n[1]===m);
+    const isX=m=>extra.includes(((m-40-rf)%12+12)%12), isA=m=>A.includes(((m-40-rf)%12+12)%12), has=m=>notes.some(n=>n[1]>=0&&n[1]<=FRETS&&OPEN[n[0]]+n[1]===m);   // 15프렛 밖으로 나간 음은 없는 것으로 보고 다른 줄에 다시 넣음 (C 로크리안 3포지션 미♭ 빠짐, 2026-11-18)
     for(let f=lo;f<=hi;f++){ let m=OPEN[0]+f; if(isX(m)&&m<first(0)) notes.push([0,f]); m=OPEN[5]+f; if(isX(m)&&m>first(5)&&!has(m)) notes.push([5,f]); }   // 맨 아래 · 맨 위 줄의 바깥쪽 음
     const ps=notes.map(n=>OPEN[n[0]]+n[1]), pmin=Math.min(...ps), pmax=Math.max(...ps);
-    for(let m=pmin+1;m<pmax;m++){ if(!isX(m)||has(m)) continue; let best=null;
+    for(let m=pmin+1;m<pmax;m++){ if(!(isX(m)||isA(m))||has(m)) continue; let best=null;
       for(let st=0;st<6;st++){ const f=m-OPEN[st]; if(f<0||f>FRETS) continue;
         const out=f<lo?lo-f:f>hi?f-hi+(st===2?0.5:0):0, ord=(st>0&&m<=first(st)?1:0)+(st<5&&m>=first(st+1)?1:0), sc=out*10+ord;
         if(!best||sc<best[0]) best=[sc,st,f]; }   // 4번 줄 위로 뻗기보다 3번 줄 아래 자리 (C 메이저 5포지션 시 = 3번 줄 4프렛, K 2026-11-18 — 모든 스케일 같은 규칙)
