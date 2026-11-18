@@ -782,6 +782,9 @@ function fbBoxes(sc,rpc){
       for(let st=0;st<6;st++) for(let f=b.lo;f<=b.hi;f++) if(UP.includes(pcOf(st,f)-1)){ const m=OPEN[st]+f; if(!want.get(m)) want.set(m,[st,f]); }   // 칸 안의 7음 자리 (1번 폼 6번 줄 2 · 1번 줄 2)
       pts.forEach(([st,f])=>{ const m=OPEN[st]+f+1; if(UP.includes(pcOf(st,f))&&!want.get(m)&&f+1<=FRETS) want.set(m,[st,f+1]); });   // 칸 안에 자리가 없으면 칸 밖으로 한 칸
       want.forEach((v,m)=>{ if(!v){ let bd=99; for(let st=0;st<6;st++){ const f=m-OPEN[st]; if(f<0||f>FRETS) continue; const d=f<b.lo?b.lo-f:f>b.hi?f-b.hi:0; if(d<bd){ bd=d; v=[st,f]; } } } if(v) set.add(v[0]+'-'+v[1]); });   // 15프렛을 넘으면 다른 줄의 가장 가까운 자리
+      if(bi===1&&UP.includes(8)){   // 멜로딕 2포지션 (K 2026-11-19): 5번 줄 7 → 4번 줄 같은 음
+        [...set].forEach(k=>{ const [st,f]=k.split('-').map(Number); if(st===1&&pcOf(st,f)===11&&f-5>=0){ set.delete(k); set.add('2-'+(f-5)); } });
+      }
       if(bi===3&&UP.includes(8)){   // 멜로딕 4포지션 (K 2026-11-19): 4번 줄 6 → 3번 줄 같은 음, 맨 위(1번 줄) 7은 안 침
         [...set].forEach(k=>{ const [st,f]=k.split('-').map(Number); if(st===2&&pcOf(st,f)===9&&f-5>=0){ set.delete(k); set.add('3-'+(f-5)); } if(st===0&&pcOf(st,f)===11&&f-5>=0){ set.delete(k); set.add('1-'+(f-5)); } /* 6번 줄 7 → 5번 줄 같은 음 (K "7도도 5번 줄") */ });
         const top=[...set].map(k=>k.split('-').map(Number)).sort((x,y)=>(OPEN[y[0]]+y[1])-(OPEN[x[0]]+x[1]))[0]; if(top&&pcOf(top[0],top[1])===11) set.delete(top[0]+'-'+top[1]);
