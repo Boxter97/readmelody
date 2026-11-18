@@ -170,7 +170,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 #gfb .fdot.out .c{stroke-dasharray:4 3}
 #gfb .fdot.on .c{fill:var(--ink);stroke:var(--ink)} #gfb .fdot.on text{fill:var(--bg)}
 .gpos{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:0 6px 8px}
-.gpos .seg button{min-width:52px}
+.gpos .seg button{min-width:96px}
 @media (max-width:720px){ .gpos{flex-wrap:nowrap} .gpos .seg{flex:1;display:flex} .gpos .seg button{flex:1;min-width:0} }
 .gfbhint{margin:2px 6px 0;font-size:14px;color:var(--muted);text-align:center}
 @media (min-width:721px){ .gfbhint{display:none} }
@@ -306,7 +306,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
   <section class="sheet" aria-label="악보">
     <div class="meta" id="meta"></div>
     <svg id="score" role="img" aria-label="초견 멜로디 악보"></svg>
-    <div class="gfb" id="gfbBox" hidden><div class="gpos"><span class="label">포지션</span><div class="seg" id="gpos" role="group" aria-label="메이저 스케일 포지션"><button type="button" data-v="1">1</button><button type="button" data-v="2">2</button><button type="button" data-v="3">3</button><button type="button" data-v="4">4</button><button type="button" data-v="5">5</button></div></div><div class="gcap" id="gfbCap"></div><div class="gfbwrap" id="gfbWrap"><svg id="gfb" role="img" aria-label="기타 지판"></svg></div><div class="gfbhint">← 지판을 옆으로 밀어서 보세요 →</div></div>
+    <div class="gfb" id="gfbBox" hidden><div class="gpos"><span class="label">폼</span><div class="seg" id="gpos" role="group" aria-label="메이저 스케일 폼"><button type="button" data-v="3">3번 폼</button><button type="button" data-v="5">5번 폼</button></div></div><div class="gcap" id="gfbCap"></div><div class="gfbwrap" id="gfbWrap"><svg id="gfb" role="img" aria-label="기타 지판"></svg></div><div class="gfbhint">← 지판을 옆으로 밀어서 보세요 →</div></div>
     <div class="actions">
       <button type="button" class="btn new" id="newBtn">새 멜로디</button>
       <button type="button" class="btn primary" id="playBtn"><svg viewBox="0 0 16 16" id="playIcon"><path d="M4 2l10 6-10 6z"/></svg><span id="playTxt">정답 듣기</span></button>
@@ -878,8 +878,8 @@ async function playRef(){
 /* ---------- 기타 지판 (K 요청 2026-11-18: 켜면 치는 음이 지판에 보이게) ----------
    기타 악보는 실제 소리보다 한 옥타브 높게 적음 → 악보 음 - 12 = 기타에서 나는 음 */
 const GOPEN=[40,45,50,55,59,64];               // 6번 줄 ~ 1번 줄 개방현
-let showGtr=store.get('gtr',false), gPos=store.get('gpos',1), gDots=[];
-if(!(gPos>=1&&gPos<=5)) gPos=1;
+let showGtr=store.get('gtr',false), gForm=store.get('gform',5), gDots=[];
+if(gForm!==3&&gForm!==5) gForm=5;
 const GFR=15;
 /* C 메이저 스케일 포지션 1~5 (K 요청 2026-11-18) — 줄마다 프렛 (6번 줄 → 1번 줄).
    다른 키도 이 C 메이저 자리 그대로 (K "무조건"): 같은 줄에서 조표만큼(♯ +1 · ♭ −1) 옮김.
@@ -891,42 +891,55 @@ const CPOS=[
   [[3,5],[2,3,5],[2,3,5],[2,4,5],[3,5,6],[3,5]],
   [[5,7,8],[5,7,8],[5,7],[4,5,7],[5,6,8],[5,7,8]],
 ];
+/* 3번 폼 · 5번 폼만 씀 (K 2026-11-18 "3번폼과 5번폼만 남겨줘") — 음높이마다 자리 하나. 모든 키가 이 자리에서
+   5번 폼 반음 자리는 K가 정해 줌: 도♯ 5번 줄 4 · 레♯ 5번 줄 6 · 파♯ 4번 줄 4 · 솔♯ 4번 줄 6 · 라♯ 4번 줄 8 · 높은 도♯ 3번 줄 6 · 레♯ 2번 줄 4 · 파♯ 2번 줄 7 · 솔♯ 1번 줄 4
+   5번 폼에서 K가 안 정한 것과 3번 폼 반음 자리는 Claude가 채움 (K 확인 전)
+   줄 번호: 0 = 6번 줄 … 5 = 1번 줄. 다른 폼(1 · 2 · 4)은 CPOS에 남겨 둠 */
+const FORM_SEMI={
+  5:[[1,4],[1,6],[2,4],[2,6],[2,8],[3,6],[4,4],[4,7],[5,4],[0,4],[0,6],[5,6]],
+  3:[[0,14],[1,11],[1,13],[2,11],[2,13],[3,11],[3,13],[3,15],[4,14],[5,11],[5,14]],
+};
+const FORM_FR={5:'4~8프렛',3:'11~15프렛'};
+const FORMS={};
+[3,5].forEach(n=>{ const m={};
+  CPOS[n-1].forEach((fs,st)=>fs.forEach(f=>{ m[GOPEN[st]+f]=[st,f]; }));
+  FORM_SEMI[n].forEach(([st,f])=>{ m[GOPEN[st]+f]=[st,f]; });
+  FORMS[n]=m; });
 function renderGtr(){
   $('gfbBox').hidden=!showGtr; if(!showGtr) return;
-  $('gpos').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.v===gPos));
   const key=song.key, tpc=(SEMI[key.letter]+(key.acc[LETTERS[key.letter]]||0)+12)%12;
   const nameOf={};                                   // 음높이 → 이 키의 음이름 (도~시)
   for(let i=0;i<7;i++){ const p=pitchOf(key.letter+i,key); nameOf[((p.midi%12)+12)%12]=p.name; }
-  const box={notes:[]};
-  CPOS[gPos-1].forEach((fs,st)=>fs.forEach(f=>{ const L=LETTERS[[0,2,4,5,7,9,11].indexOf((GOPEN[st]+f)%12)]; box.notes.push([st,f+(key.acc[L]||0)]); }));
-  { const fs=CPOS[gPos-1].flat(); box.lo=Math.min(...fs); box.hi=Math.max(...fs); }
-  const NF=Math.max(GFR,...box.notes.map(n=>n[1]));   // ♯으로 16프렛까지 가면 지판도 16칸
-  const X0=50, W=58, T=28, G=36, H=T+5*G+48, WD=X0+NF*W+16;
+  $('gpos').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.v===gForm));
+  const P5=FORMS[gForm];
+  const NF=GFR, X0=50, W=58, T=28, G=36, H=T+5*G+48, WD=X0+NF*W+16;
   const fx=f=>f===0?24:X0+(f-.5)*W, sy=st=>T+(5-st)*G;
-  const dots=new Map();                              // "줄-프렛" → 점
-  box.notes.forEach(([st,f])=>{ const m=GOPEN[st]+f; dots.set(st+'-'+f,{st,f,m,name:nameOf[m%12]}); });
+  const dots=new Map();                              // 음높이 → 점
+  for(const k in P5){ const m=+k; if(m%12 in nameOf){ const [st,f]=P5[k]; dots.set(m,{st,f,m,name:nameOf[m%12]}); } }
   let outN=0;
-  song.measures.flat().filter(e=>!e.rest).forEach(n=>{   // 곡의 음: 포지션 안에 자리가 없으면 가장 가까운 자리에 (점선 점)
+  const box={lo:Math.min(...[...dots.values()].map(d=>d.f)),hi:Math.max(...[...dots.values()].map(d=>d.f))};
+  song.measures.flat().filter(e=>!e.rest).forEach(n=>{   // 스케일 밖 음(Hard 임시표)은 같은 폼 자리, 폼보다 낮거나 높은 음은 가장 가까운 자리 — 점선 점
     const p=pitchOf(n.deg,key,n.alt), m=p.midi-12;
-    if([...dots.values()].some(d=>d.m===m)) return;
-    let best=null;
-    GOPEN.forEach((o,st)=>{ const f=m-o; if(f<0||f>GFR) return; const out=f<box.lo?box.lo-f:f>box.hi?f-box.hi:0; if(!best||out<best.out) best={st,f,out}; });
-    if(best){ dots.set(best.st+'-'+best.f,{st:best.st,f:best.f,m,name:p.name,out:true}); outN++; }
+    if(dots.has(m)) return;
+    let q=P5[m];
+    if(!q){ let best=null; GOPEN.forEach((o,st)=>{ const f=m-o; if(f<0||f>GFR) return; const out=f<box.lo?box.lo-f:f>box.hi?f-box.hi:0; if(!best||out<best[0]) best=[out,st,f]; }); if(best) q=[best[1],best[2]]; }
+    if(!q) return;
+    dots.set(m,{st:q[0],f:q[1],m,name:p.name,out:true}); outN++;
   });
   const fl=Math.min(box.lo,...[...dots.values()].map(d=>d.f)), fh=Math.max(box.hi,...[...dots.values()].map(d=>d.f));
   let h='';
-  const blo=Math.min(box.lo,...box.notes.map(n=>n[1])), bhi=Math.max(box.hi,...box.notes.map(n=>n[1]));   // ♯ · ♭으로 한 칸 밀린 음까지 칸 안에
+  const blo=box.lo, bhi=box.hi;
   const x1=blo===0?4:X0+(blo-1)*W+3, x2=X0+bhi*W-3;
   h+=`<rect class="fband" x="${x1}" y="${T-20}" width="${x2-x1}" height="${5*G+40}" rx="12"/>`;
-  [3,5,7,9,15].forEach(f=>h+=`<circle class="fmark" cx="${X0+(f-.5)*W}" cy="${T+2.5*G}" r="7"/>`);
   h+=`<circle class="fmark" cx="${X0+11.5*W}" cy="${T+1.5*G}" r="7"/><circle class="fmark" cx="${X0+11.5*W}" cy="${T+3.5*G}" r="7"/>`;
+  [3,5,7,9,15].forEach(f=>h+=`<circle class="fmark" cx="${X0+(f-.5)*W}" cy="${T+2.5*G}" r="7"/>`);
   for(let f=1;f<=NF;f++) h+=`<line class="ffret" x1="${X0+f*W}" y1="${T}" x2="${X0+f*W}" y2="${T+5*G}"/><text class="fnum" x="${X0+(f-.5)*W}" y="${T+5*G+36}">${f}</text>`;
   for(let st=0;st<6;st++) h+=`<line class="fstr" x1="${X0}" y1="${sy(st)}" x2="${WD-8}" y2="${sy(st)}" stroke-width="${(1+st*.3).toFixed(1)}"/>`;
   h+=`<line class="fnut" x1="${X0}" y1="${T-2}" x2="${X0}" y2="${T+5*G+2}"/>`;
   dots.forEach(d=>{ const root=d.m%12===tpc&&!d.out; h+=`<g class="fdot${root?' root':''}${d.out?' out':''}" data-m="${d.m}" transform="translate(${fx(d.f)} ${sy(d.st)})"><circle class="c" r="15.5"/><text>${d.name}</text></g>`; });
-  const svg=$('gfb'); svg.setAttribute('viewBox',`0 0 ${WD} ${H}`); svg.innerHTML=h; svg.style.minWidth='700px';
+  const svg=$('gfb'); svg.setAttribute('viewBox',`0 0 ${WD} ${H}`); svg.innerHTML=h; svg.style.minWidth='600px';
   gDots=[...svg.querySelectorAll('.fdot')];
-  $('gfbCap').innerHTML=`<span><b>${key.label==='C'?'C 메이저 스케일 '+gPos+'포지션':key.label+' 메이저 · C 메이저 '+gPos+'포지션 자리'}</b> · 정답 듣기를 누르면 지금 치는 음이 검게 켜져요${outN?' · 점선 점 = 이 포지션 모양 밖의 음':''}</span>`;
+  $('gfbCap').innerHTML=`<span><b>${key.label} 메이저 스케일 · ${gForm}번 폼 (${FORM_FR[gForm]})</b> · 정답 듣기를 누르면 지금 치는 음이 검게 켜져요${outN?' · 점선 점 = 스케일 밖 · 폼 밖의 음':''}</span>`;
   const wrap=$('gfbWrap');
   requestAnimationFrame(()=>{ const k=svg.getBoundingClientRect().width/WD; if(wrap.scrollWidth>wrap.clientWidth+2) wrap.scrollLeft=Math.max(0,(fl===0?0:X0+(fl-1)*W)*k-24); });
 }
@@ -1010,9 +1023,9 @@ function buildUI(){
   $('tempo').addEventListener('input',e=>{tempo=+e.target.value;$('tempoOut').textContent='♩ = '+tempo});
   $('names').checked=showNames;
   $('names').addEventListener('change',e=>{showNames=e.target.checked;store.set('names',showNames);stop();render()});
+  $('gpos').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; gForm=+b.dataset.v; store.set('gform',gForm); stop(); renderGtr(); });   // 같은 곡 그대로, 폼만 바꿈
   $('gtr').checked=showGtr;
   $('gtr').addEventListener('change',e=>{showGtr=e.target.checked;store.set('gtr',showGtr);stop();renderGtr()});
-  $('gpos').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; gPos=+b.dataset.v; store.set('gpos',gPos); stop(); renderGtr(); });   // 같은 곡 그대로, 포지션만 바꿈
   $('newBtn').onclick=fresh; $('playBtn').onclick=play; /* 기준음 듣기 버튼은 뺌 (K 2026-11-13 "초견은 기준음이 필요없어") — 되살리려면 버튼 + 이 연결 + .actions 3칸 */
   // 연습 기록 초기화: 한 번 더 물어본 뒤 Easy·Hard 모든 단계의 곡 수를 0으로
   let resetT;
