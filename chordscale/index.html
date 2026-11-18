@@ -764,6 +764,7 @@ function fbBoxes(sc,rpc){
   const semis=sc.iv.map(x=>x[1]), A=semis.includes(3)?[0,3,5,semis.includes(7)?7:6,10]:[0,2,4,7,9];
   const rf=((rpc-4)%12+12)%12, extra=semis.filter(x=>!A.includes(x));
   return [0,1,2,3,4].map(k=>{
+    const lowFirst=sc.iv===SCALES[0].iv&&k===4;   // 메이저 5포지션: 박스 밖 음은 아래쪽 자리로 (C 메이저 시 = 3번 줄 4프렛, K 2026-11-18)
     let notes=[];
     for(let j=0;j<12;j++){ const st=j>>1, m=40+rf+A[(k+j)%5]+12*Math.floor((k+j)/5); notes.push([st,m-OPEN[st]]); }
     let lo=Math.min(...notes.map(n=>n[1])), hi=Math.max(...notes.map(n=>n[1]));
@@ -776,7 +777,7 @@ function fbBoxes(sc,rpc){
     const ps=notes.map(n=>OPEN[n[0]]+n[1]), pmin=Math.min(...ps), pmax=Math.max(...ps);
     for(let m=pmin+1;m<pmax;m++){ if(!isX(m)||has(m)) continue; let best=null;
       for(let st=0;st<6;st++){ const f=m-OPEN[st]; if(f<0||f>FRETS) continue;
-        const out=f<lo?lo-f:f>hi?f-hi:0, ord=(st>0&&m<=first(st)?1:0)+(st<5&&m>=first(st+1)?1:0), sc=out*10+ord;
+        const out=f<lo?lo-f:f>hi?f-hi+(lowFirst?0.5:0):0, ord=(st>0&&m<=first(st)?1:0)+(st<5&&m>=first(st+1)?1:0), sc=out*10+ord;
         if(!best||sc<best[0]) best=[sc,st,f]; }
       if(best) notes.push([best[1],best[2]]); }
     notes=notes.filter(n=>n[1]>=0&&n[1]<=FRETS);
