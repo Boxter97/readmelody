@@ -107,6 +107,32 @@
   window.addEventListener('storage',function(e){ if(e.key===KEY){ var v=parseInt(e.newValue,10); if(v>=0&&v<=100){ vol=v; apply(); if(window.__gmVolPaint) window.__gmVolPaint(); } } });
 })();
 
+/* 아이폰 무음(진동) 모드에서도 소리 나게 (K 제보 2026-11-18 "무음모드일 때 소리가 안 나") — 모든 페이지 공통.
+   아이폰은 웹 소리를 기본으로 "알림 소리"처럼 다뤄서 무음 스위치를 켜면 같이 꺼짐.
+   1) iOS 16.4 이상: 이 페이지 소리를 "미디어 재생"으로 알려 줌 (유튜브처럼 무음에서도 남)
+   2) 그보다 예전 iOS: 처음 화면을 누를 때 소리 없는 음원을 반복 재생해 두면 같은 효과 (페이지를 벗어나면 멈춤) */
+(function(){
+  var ios=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  try{ if(navigator.audioSession){ navigator.audioSession.type='playback'; return; } }catch(e){}
+  if(!ios) return;
+  var el=null;
+  function silentWav(){   // 0.5초 무음 wav (8kHz 8bit)
+    var n=4000, b=new ArrayBuffer(44+n), v=new DataView(b), s=function(o,t){ for(var i=0;i<t.length;i++) v.setUint8(o+i,t.charCodeAt(i)); };
+    s(0,'RIFF'); v.setUint32(4,36+n,true); s(8,'WAVEfmt '); v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
+    v.setUint32(24,8000,true); v.setUint32(28,8000,true); v.setUint16(32,1,true); v.setUint16(34,8,true); s(36,'data'); v.setUint32(40,n,true);
+    for(var i=0;i<n;i++) v.setUint8(44+i,128);
+    return URL.createObjectURL(new Blob([b],{type:'audio/wav'}));
+  }
+  function on(){
+    try{
+      if(!el){ el=document.createElement('audio'); el.setAttribute('playsinline',''); el.setAttribute('x-webkit-airplay','deny'); el.loop=true; el.preload='auto'; el.src=silentWav(); }
+      if(document.visibilityState!=='hidden'&&el.paused){ var p=el.play(); if(p&&p.catch) p.catch(function(){}); }
+    }catch(e){}
+  }
+  ['touchend','click','keydown'].forEach(function(t){ window.addEventListener(t,on,true); });
+  document.addEventListener('visibilitychange',function(){ if(!el) return; if(document.visibilityState==='hidden') el.pause(); });
+})();
+
 /* 단계 레벨 (K 요청 2026-11-13) — 단계마다 · Easy/Hard 따로, 연습한 곡(문제) 수가 경험치.
    다음 레벨까지: LV1→2 2곡, 2→3 3곡 … LV10→11 11곡, 그 뒤로는 2레벨마다 1곡씩 늘어 LV49→50 30곡. 최고 LV 50 (모두 874곡) */
 window.gmLevel=function(c){
