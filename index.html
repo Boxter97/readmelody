@@ -909,11 +909,12 @@ function renderGtr(){
   const key=song.key, tpc=(SEMI[key.letter]+(key.acc[LETTERS[key.letter]]||0)+12)%12;
   const nameOf={};                                   // 음높이 → 이 키의 음이름 (도~시)
   for(let i=0;i<7;i++){ const p=pitchOf(key.letter+i,key); nameOf[((p.midi%12)+12)%12]=p.name; }
-  const box=majorBox(tpc,gPos-1);
+  const box=majorBox(0,gPos-1);                      // 자리는 늘 C 메이저 포지션 (K 2026-11-18 "다른 키도 C 메이저 스케일에서, 무조건") → 그 프렛 안에서 이 키의 음
+  const inKey=new Set(Object.keys(nameOf).map(Number));
   const X0=50, W=58, T=28, G=36, H=T+5*G+48, WD=X0+GFR*W+16;
   const fx=f=>f===0?24:X0+(f-.5)*W, sy=st=>T+(5-st)*G;
   const dots=new Map();                              // "줄-프렛" → 점
-  box.notes.forEach(([st,f])=>{ const m=GOPEN[st]+f; dots.set(st+'-'+f,{st,f,m,name:nameOf[m%12]}); });
+  for(let st=0;st<6;st++) for(let f=box.lo;f<=box.hi;f++){ const m=GOPEN[st]+f; if(inKey.has(m%12)) dots.set(st+'-'+f,{st,f,m,name:nameOf[m%12]}); }
   let outN=0;
   song.measures.flat().filter(e=>!e.rest).forEach(n=>{   // 곡의 음: 포지션 안에 자리가 없으면 가장 가까운 자리에 (점선 점)
     const p=pitchOf(n.deg,key,n.alt), m=p.midi-12;
@@ -934,7 +935,7 @@ function renderGtr(){
   dots.forEach(d=>{ const root=d.m%12===tpc&&!d.out; h+=`<g class="fdot${root?' root':''}${d.out?' out':''}" data-m="${d.m}" transform="translate(${fx(d.f)} ${sy(d.st)})"><circle class="c" r="15.5"/><text>${d.name}</text></g>`; });
   const svg=$('gfb'); svg.setAttribute('viewBox',`0 0 ${WD} ${H}`); svg.innerHTML=h; svg.style.minWidth='700px';
   gDots=[...svg.querySelectorAll('.fdot')];
-  $('gfbCap').innerHTML=`<span><b>${key.label} 메이저 스케일 ${gPos}포지션</b> · 정답 듣기를 누르면 지금 치는 음이 검게 켜져요${outN?' · 점선 점 = 이 포지션 모양 밖의 음':''}</span>`;
+  $('gfbCap').innerHTML=`<span><b>${key.label} 메이저 · C 메이저 ${gPos}포지션 자리 (${box.lo===0?'개방현':box.lo}~${box.hi}프렛)</b> · 정답 듣기를 누르면 지금 치는 음이 검게 켜져요${outN?' · 점선 점 = 이 포지션 모양 밖의 음':''}</span>`;
   const wrap=$('gfbWrap');
   requestAnimationFrame(()=>{ const k=svg.getBoundingClientRect().width/WD; if(wrap.scrollWidth>wrap.clientWidth+2) wrap.scrollLeft=Math.max(0,(fl===0?0:X0+(fl-1)*W)*k-24); });
 }
