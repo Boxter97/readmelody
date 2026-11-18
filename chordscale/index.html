@@ -761,7 +761,7 @@ const at=(c,t,fn)=>timers.push(setTimeout(fn,Math.max(0,(t-c.currentTime)*1000))
 const OPEN=[40,45,50,55,59,64], FRETS=15;
 /* 포지션 = 펜타토닉 박스 1~5 (즉흥연주와 같음). 펜타토닉이 아닌 음은 그 박스 칸 안에 있는 자리에 넣음 */
 function fbBoxes(sc,rpc){
-  const semis=sc.iv.map(x=>x[1]), A=semis.includes(3)?[0,3,5,semis.includes(7)?7:6,10]:[0,2,4,7,9];
+  const semis=sc.iv.map(x=>x[1]), A=semis.includes(3)?[0,3,5,semis.includes(7)?7:6,semis.includes(10)?10:11]:[0,2,4,7,9];   // ♭7이 없는 마이너(하모닉 · 멜로딕)는 틀에 7 (K 제보 2026-11-19 "하모닉 마이너 모양 이상해" — ♭7로 깔아서 박스가 어긋났음)
   const rf=((rpc-4)%12+12)%12, extra=semis.filter(x=>!A.includes(x));
   return [0,1,2,3,4].map(k=>{
     let notes=[];
