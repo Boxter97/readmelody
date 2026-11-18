@@ -164,8 +164,16 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 #gfb{display:block;width:100%;height:auto;margin:0 auto}
 #gfb .fstr{stroke:var(--muted)} #gfb .ffret{stroke:var(--line);stroke-width:2} #gfb .fnut{stroke:var(--ink);stroke-width:5}
 #gfb .fmark{fill:var(--line)} #gfb .fnum{fill:var(--muted);font-size:15px;font-weight:700;text-anchor:middle;font-family:var(--f-body)}
-#gfb .fdot .c{fill:var(--bg);stroke:var(--line);stroke-width:1.6} #gfb .fdot text{fill:var(--muted);font-size:14px;font-weight:700;text-anchor:middle;dominant-baseline:central;font-family:var(--f-body)}
-#gfb .fdot.on .c{fill:var(--accent);stroke:var(--accent)} #gfb .fdot.on text{fill:var(--bg)}
+#gfb .fband{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5;stroke-dasharray:5 4}
+#gfb .fdot .c{fill:var(--bg);stroke:var(--ink);stroke-width:1.6} #gfb .fdot text{fill:var(--ink);font-size:14px;font-weight:700;text-anchor:middle;dominant-baseline:central;font-family:var(--f-body)}
+#gfb .fdot.root .c{fill:var(--accent);stroke:var(--accent)} #gfb .fdot.root text{fill:var(--bg)}
+#gfb .fdot.out .c{stroke-dasharray:4 3}
+#gfb .fdot.on .c{fill:var(--ink);stroke:var(--ink)} #gfb .fdot.on text{fill:var(--bg)}
+.gpos{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:0 6px 8px}
+.gpos .seg button{min-width:52px}
+@media (max-width:720px){ .gpos{flex-wrap:nowrap} .gpos .seg{flex:1;display:flex} .gpos .seg button{flex:1;min-width:0} }
+.gfbhint{margin:2px 6px 0;font-size:14px;color:var(--muted);text-align:center}
+@media (min-width:721px){ .gfbhint{display:none} }
 
 /* 악보 */
 .sheet{background:var(--bg);border:1.5px solid var(--line);border-radius:18px;padding:20px 14px 14px;box-shadow:0 10px 30px rgba(24,32,46,.07);overflow:hidden}
@@ -298,7 +306,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
   <section class="sheet" aria-label="악보">
     <div class="meta" id="meta"></div>
     <svg id="score" role="img" aria-label="초견 멜로디 악보"></svg>
-    <div class="gfb" id="gfbBox" hidden><div class="gcap" id="gfbCap"></div><div class="gfbwrap"><svg id="gfb" role="img" aria-label="기타 지판"></svg></div></div>
+    <div class="gfb" id="gfbBox" hidden><div class="gpos"><span class="label">포지션</span><div class="seg" id="gpos" role="group" aria-label="메이저 스케일 포지션"><button type="button" data-v="1">1</button><button type="button" data-v="2">2</button><button type="button" data-v="3">3</button><button type="button" data-v="4">4</button><button type="button" data-v="5">5</button></div></div><div class="gcap" id="gfbCap"></div><div class="gfbwrap" id="gfbWrap"><svg id="gfb" role="img" aria-label="기타 지판"></svg></div><div class="gfbhint">← 지판을 옆으로 밀어서 보세요 →</div></div>
     <div class="actions">
       <button type="button" class="btn new" id="newBtn">새 멜로디</button>
       <button type="button" class="btn primary" id="playBtn"><svg viewBox="0 0 16 16" id="playIcon"><path d="M4 2l10 6-10 6z"/></svg><span id="playTxt">정답 듣기</span></button>
@@ -870,32 +878,65 @@ async function playRef(){
 /* ---------- 기타 지판 (K 요청 2026-11-18: 켜면 치는 음이 지판에 보이게) ----------
    기타 악보는 실제 소리보다 한 옥타브 높게 적음 → 악보 음 - 12 = 기타에서 나는 음 */
 const GOPEN=[40,45,50,55,59,64];               // 6번 줄 ~ 1번 줄 개방현
-let showGtr=store.get('gtr',false), gDots=[];
-function gtrPos(m){                             // 1포지션: 가장 낮은 프렛 한 자리 (K 고름 2026-11-18, 시안 1)
-  let best=null;
-  GOPEN.forEach((o,st)=>{ const f=m-o; if(f<0||f>7) return; if(!best||f<best.f) best={st,f}; });
-  return best;
+let showGtr=store.get('gtr',false), gPos=store.get('gpos',1), gDots=[];
+if(!(gPos>=1&&gPos<=5)) gPos=1;
+const GFR=15;
+/* 메이저 스케일 포지션 1~5 (K 요청 2026-11-18) — 코드&스케일 스케일 화면 포지션과 같은 계산(fbBoxes).
+   1포지션 = 6번 줄 으뜸음에서 시작 (C키면 6번 줄 8프렛). 키가 바뀌면 그만큼 옮김 */
+function majorBox(tpc,k){
+  const A=[0,2,4,7,9], extra=[5,11], rf=((tpc-4)%12+12)%12;
+  let notes=[];
+  for(let j=0;j<12;j++){ const st=j>>1, m=40+rf+A[(k+j)%5]+12*Math.floor((k+j)/5); notes.push([st,m-GOPEN[st]]); }
+  let lo=Math.min(...notes.map(n=>n[1])), hi=Math.max(...notes.map(n=>n[1]));
+  let sh=0; if(hi>GFR&&lo-12>=0) sh=-12; if(lo<0) sh=12;
+  notes=notes.map(([st,f])=>[st,f+sh]); lo+=sh; hi+=sh;
+  const first=st=>GOPEN[st]+notes.find(n=>n[0]===st)[1];
+  const isX=m=>extra.includes(((m-40-rf)%12+12)%12), has=m=>notes.some(n=>GOPEN[n[0]]+n[1]===m);
+  for(let f=lo;f<=hi;f++){ let m=GOPEN[0]+f; if(isX(m)&&m<first(0)) notes.push([0,f]); m=GOPEN[5]+f; if(isX(m)&&m>first(5)&&!has(m)) notes.push([5,f]); }
+  const ps=notes.map(n=>GOPEN[n[0]]+n[1]), pmin=Math.min(...ps), pmax=Math.max(...ps);
+  for(let m=pmin+1;m<pmax;m++){ if(!isX(m)||has(m)) continue; let best=null;
+    for(let st=0;st<6;st++){ const f=m-GOPEN[st]; if(f<0||f>GFR) continue;
+      const out=f<lo?lo-f:f>hi?f-hi:0, ord=(st>0&&m<=first(st)?1:0)+(st<5&&m>=first(st+1)?1:0), sc=out*10+ord;
+      if(!best||sc<best[0]) best=[sc,st,f]; }
+    if(best) notes.push([best[1],best[2]]); }
+  notes=notes.filter(n=>n[1]>=0&&n[1]<=GFR);
+  const fs=notes.map(n=>n[1]); lo=Math.min(...fs); hi=Math.max(...fs);
+  return {lo,hi,notes};
 }
 function renderGtr(){
   $('gfbBox').hidden=!showGtr; if(!showGtr) return;
-  const narrow=$('gfbBox').parentElement.clientWidth<520;          // 휴대폰은 글씨·점을 크게
-  const FR=7, X0=48, W=narrow?46:84, T=26, G=narrow?42:36, R=narrow?19:16, H=T+5*G+46, WD=X0+FR*W+16;
+  $('gpos').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.v===gPos));
+  const key=song.key, tpc=(SEMI[key.letter]+(key.acc[LETTERS[key.letter]]||0)+12)%12;
+  const nameOf={};                                   // 음높이 → 이 키의 음이름 (도~시)
+  for(let i=0;i<7;i++){ const p=pitchOf(key.letter+i,key); nameOf[((p.midi%12)+12)%12]=p.name; }
+  const box=majorBox(tpc,gPos-1);
+  const X0=50, W=58, T=28, G=36, H=T+5*G+48, WD=X0+GFR*W+16;
   const fx=f=>f===0?24:X0+(f-.5)*W, sy=st=>T+(5-st)*G;
+  const dots=new Map();                              // "줄-프렛" → 점
+  box.notes.forEach(([st,f])=>{ const m=GOPEN[st]+f; dots.set(st+'-'+f,{st,f,m,name:nameOf[m%12]}); });
+  let outN=0;
+  song.measures.flat().filter(e=>!e.rest).forEach(n=>{   // 곡의 음: 포지션 안에 자리가 없으면 가장 가까운 자리에 (점선 점)
+    const p=pitchOf(n.deg,key,n.alt), m=p.midi-12;
+    if([...dots.values()].some(d=>d.m===m)) return;
+    let best=null;
+    GOPEN.forEach((o,st)=>{ const f=m-o; if(f<0||f>GFR) return; const out=f<box.lo?box.lo-f:f>box.hi?f-box.hi:0; if(!best||out<best.out) best={st,f,out}; });
+    if(best){ dots.set(best.st+'-'+best.f,{st:best.st,f:best.f,m,name:p.name,out:true}); outN++; }
+  });
+  const fl=Math.min(box.lo,...[...dots.values()].map(d=>d.f)), fh=Math.max(box.hi,...[...dots.values()].map(d=>d.f));
   let h='';
-  [3,5,7].forEach(f=>h+=`<circle class="fmark" cx="${X0+(f-.5)*W}" cy="${T+2.5*G}" r="7"/>`);
-  for(let f=1;f<=FR;f++) h+=`<line class="ffret" x1="${X0+f*W}" y1="${T}" x2="${X0+f*W}" y2="${T+5*G}"/><text class="fnum" x="${X0+(f-.5)*W}" y="${T+5*G+34}">${f}</text>`;
+  const x1=box.lo===0?4:X0+(box.lo-1)*W+3, x2=X0+box.hi*W-3;
+  h+=`<rect class="fband" x="${x1}" y="${T-20}" width="${x2-x1}" height="${5*G+40}" rx="12"/>`;
+  [3,5,7,9,15].forEach(f=>h+=`<circle class="fmark" cx="${X0+(f-.5)*W}" cy="${T+2.5*G}" r="7"/>`);
+  h+=`<circle class="fmark" cx="${X0+11.5*W}" cy="${T+1.5*G}" r="7"/><circle class="fmark" cx="${X0+11.5*W}" cy="${T+3.5*G}" r="7"/>`;
+  for(let f=1;f<=GFR;f++) h+=`<line class="ffret" x1="${X0+f*W}" y1="${T}" x2="${X0+f*W}" y2="${T+5*G}"/><text class="fnum" x="${X0+(f-.5)*W}" y="${T+5*G+36}">${f}</text>`;
   for(let st=0;st<6;st++) h+=`<line class="fstr" x1="${X0}" y1="${sy(st)}" x2="${WD-8}" y2="${sy(st)}" stroke-width="${(1+st*.3).toFixed(1)}"/>`;
   h+=`<line class="fnut" x1="${X0}" y1="${T-2}" x2="${X0}" y2="${T+5*G+2}"/>`;
-  const seen=new Map();                          // 자리마다 점 하나
-  song.measures.flat().filter(e=>!e.rest).forEach(n=>{
-    const p=pitchOf(n.deg,song.key,n.alt), m=p.midi-12, q=gtrPos(m);
-    if(q&&!seen.has(m)) seen.set(m,{...q,name:p.name});
-  });
-  seen.forEach((d,m)=>{ h+=`<g class="fdot" data-m="${m}" transform="translate(${fx(d.f)} ${sy(d.st)})"><circle class="c" r="${R}"/><text style="font-size:${narrow?17:14}px">${d.name}</text></g>`; });
-  const svg=$('gfb'); svg.setAttribute('viewBox',`0 0 ${WD} ${H}`); svg.innerHTML=h;
-  svg.style.maxWidth=narrow?'':Math.round(WD*1.25)+'px';
+  dots.forEach(d=>{ const root=d.m%12===tpc&&!d.out; h+=`<g class="fdot${root?' root':''}${d.out?' out':''}" data-m="${d.m}" transform="translate(${fx(d.f)} ${sy(d.st)})"><circle class="c" r="15.5"/><text>${d.name}</text></g>`; });
+  const svg=$('gfb'); svg.setAttribute('viewBox',`0 0 ${WD} ${H}`); svg.innerHTML=h; svg.style.minWidth='700px';
   gDots=[...svg.querySelectorAll('.fdot')];
-  $('gfbCap').innerHTML='<span>이 곡의 음 · 정답 듣기를 누르면 <b>지금 치는 음</b>이 켜져요</span>';
+  $('gfbCap').innerHTML=`<span><b>${key.label} 메이저 스케일 ${gPos}포지션</b> · 정답 듣기를 누르면 지금 치는 음이 검게 켜져요${outN?' · 점선 점 = 이 포지션 모양 밖의 음':''}</span>`;
+  const wrap=$('gfbWrap');
+  requestAnimationFrame(()=>{ const k=svg.getBoundingClientRect().width/WD; if(wrap.scrollWidth>wrap.clientWidth+2) wrap.scrollLeft=Math.max(0,(fl===0?0:X0+(fl-1)*W)*k-24); });
 }
 function gtrOn(m,on){ if(!showGtr) return; gDots.forEach(d=>{ if(+d.dataset.m===m) d.classList.toggle('on',on); }); }
 function gtrOff(){ gDots.forEach(d=>d.classList.remove('on')); }
@@ -979,6 +1020,7 @@ function buildUI(){
   $('names').addEventListener('change',e=>{showNames=e.target.checked;store.set('names',showNames);stop();render()});
   $('gtr').checked=showGtr;
   $('gtr').addEventListener('change',e=>{showGtr=e.target.checked;store.set('gtr',showGtr);stop();renderGtr()});
+  $('gpos').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; gPos=+b.dataset.v; store.set('gpos',gPos); stop(); renderGtr(); });   // 같은 곡 그대로, 포지션만 바꿈
   $('newBtn').onclick=fresh; $('playBtn').onclick=play; /* 기준음 듣기 버튼은 뺌 (K 2026-11-13 "초견은 기준음이 필요없어") — 되살리려면 버튼 + 이 연결 + .actions 3칸 */
   // 연습 기록 초기화: 한 번 더 물어본 뒤 Easy·Hard 모든 단계의 곡 수를 0으로
   let resetT;
