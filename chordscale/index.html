@@ -183,7 +183,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 #fb .fdot .c{fill:var(--bg);stroke:var(--ink);stroke-width:1.6}
 #fb2 .fdot .c{fill:var(--bg);stroke:var(--ink);stroke-width:1.6}
 #vfb .fdot .c{fill:var(--bg);stroke:var(--ink);stroke-width:1.6}
-#fb .fdot text{fill:var(--ink);font-size:14px;font-weight:700;text-anchor:middle;dominant-baseline:central;font-family:var(--f-body);pointer-events:none}
+#fb .fdot text{fill:var(--ink);font-size:14px;font-weight:700;text-anchor:middle;dominant-baseline:central;font-family:var(--f-body);pointer-events:none} #fb .fdot text.sm{font-size:12px;letter-spacing:-.5px}   /* ♭♭7 · ♯11 · 시♭♭ 처럼 긴 글자 (2026-11-19) */
 #fb2 .fdot text{fill:var(--ink);font-size:14px;font-weight:700;text-anchor:middle;dominant-baseline:central;font-family:var(--f-body);pointer-events:none}
 #vfb .fdot text{fill:var(--ink);font-size:14px;font-weight:700;text-anchor:middle;dominant-baseline:central;font-family:var(--f-body);pointer-events:none}
 #fb .fdot.root .c{fill:var(--accent);stroke:var(--accent)} #fb .fdot.root text{fill:var(--bg)}
@@ -394,7 +394,7 @@ html[data-theme="dark"]{--vc0:#6C8CFF;--vc1:#FF6B6B;--vc2:#FFB020;--vc3:#40C057}
   .scales .scsel{flex-direction:column;align-items:stretch;gap:6px}
   .scales .scsel .seg{display:grid;grid-auto-flow:row;grid-auto-columns:auto;grid-template-columns:repeat(4,minmax(0,1fr));flex:none}
   .scales .scsel .seg button{padding:6px 4px;font-size:16px;line-height:1.25;word-break:keep-all;border-right:1.5px solid var(--line);border-bottom:1.5px solid var(--line);margin:0 -1.5px -1.5px 0}
-  #crSel{grid-template-columns:repeat(7,minmax(0,1fr))} #cgSel{grid-template-columns:repeat(3,minmax(0,1fr))} #cqSel{grid-template-columns:repeat(var(--qn,4),minmax(0,1fr))} #cqSel[data-n="6"]{--qn:3} #cbSel{grid-template-columns:repeat(2,minmax(0,1fr))} #cqSel button{font-size:15px;padding:6px 1px} #rootSel,#trRoot,#vrSel{grid-template-columns:repeat(7,minmax(0,1fr))} .scales .scsel .seg.acc{margin:0;grid-template-columns:repeat(2,minmax(0,1fr))} #scSel{grid-template-columns:repeat(5,minmax(0,1fr))} #scSel button{min-width:0;padding-left:1px;padding-right:1px} #mdSel[data-n="3"]{grid-template-columns:repeat(3,minmax(0,1fr))} #mdSel[data-n="2"]{grid-template-columns:repeat(2,minmax(0,1fr))} #mdSel[data-n="4"]{grid-template-columns:repeat(4,minmax(0,1fr))}
+  #crSel{grid-template-columns:repeat(7,minmax(0,1fr))} #cgSel{grid-template-columns:repeat(3,minmax(0,1fr))} #cqSel{grid-template-columns:repeat(var(--qn,4),minmax(0,1fr))} #cqSel[data-n="6"]{--qn:3} #cbSel{grid-template-columns:repeat(2,minmax(0,1fr))} #cqSel button{font-size:15px;padding:6px 1px} #rootSel,#trRoot,#vrSel{grid-template-columns:repeat(7,minmax(0,1fr))} .scales .scsel .seg.acc{margin:0;grid-template-columns:repeat(2,minmax(0,1fr))} #scSel{grid-template-columns:repeat(5,minmax(0,1fr))} #scSel button{min-width:0;padding-left:1px;padding-right:1px} #mdSel[data-n="3"]{grid-template-columns:repeat(3,minmax(0,1fr))} #mdSel[data-n="2"]{grid-template-columns:repeat(2,minmax(0,1fr))} #mdSel[data-n="4"]{grid-template-columns:repeat(4,minmax(0,1fr))} #mdSel[data-n="5"]{grid-template-columns:repeat(3,minmax(0,1fr))}
   .scales .scsel #trMultiBox,.scales .scsel #vMultiBox{margin:0;grid-template-columns:minmax(0,1fr)}
   .minis{gap:10px}
 }
@@ -634,6 +634,7 @@ const SPECIAL=[
   {id:'altered',name:'얼터드',sub:'멜로딕 마이너 7번째 음부터',par:'melo',iv:[[0,0,'1'],[1,1,'♭9'],[1,3,'♯9'],[2,4,'3'],[4,6,'♭5'],[4,8,'♯5'],[6,10,'♭7']]},
   {id:'hwdim',name:'하프홀 디미니쉬',btn:'하프홀',sub:'반음 · 온음 반복',dim:1,iv:[[0,0,'1'],[1,1,'♭9'],[1,3,'♯9'],[2,4,'3'],[3,6,'♯11'],[4,7,'5'],[5,9,'13'],[6,10,'♭7']]},
   {id:'whdim',name:'홀하프 디미니쉬',btn:'홀하프',sub:'온음 · 반음 반복',dim:1,iv:[[0,0,'1'],[1,2,'2'],[2,3,'♭3'],[3,5,'4'],[4,6,'♭5'],[5,8,'♭6'],[5,9,'6'],[6,11,'7']]},
+  {id:'dim7arp',name:'dim7 아르페지오',btn:'dim7',sub:'단3도씩 쌓은 4음',dim:1,iv:[[0,0,'1'],[2,3,'♭3'],[4,6,'♭5'],[6,9,'♭♭7']]},   /* K 요청 2026-11-19 "단3도로 하는 디미니쉬" */
 ];
 MODES.forEach(m=>m.mode=1); SCALES.find(x=>x.id==='minor').mode=1;   // 모드 · 내추럴 마이너는 부모 메이저 박스 (fbBoxes)
 SPECIAL.forEach(m=>{ if(m.par) m.mode=1; });   // 리디안 ♭7 · 얼터드는 부모 멜로딕 마이너 박스, 디미니쉬는 따로 (fbBoxes)
@@ -876,7 +877,7 @@ function drawFB(){
   md.mutes.forEach(st=>{ h+=`<path class="fmute" d="M${fx(0)-7} ${sy(st)-7}l14 14M${fx(0)+7} ${sy(st)-7}l-14 14"/>`; });
   md.dots.forEach(n=>{
     const cls='fdot'+(n.root?' root':n.blue?' blue':'')+(n.dim?' dim':'');
-    h+=`<g class="${cls}" data-m="${n.m}" data-k="${n.k}" data-p="${n.st}-${n.f}" transform="translate(${fx(n.f)} ${sy(n.st)})"><circle class="bk" r="15.5"/><circle class="c" r="15.5"/><text>${fbLab==='name'?n.name:n.d}</text></g>`;
+    h+=`<g class="${cls}" data-m="${n.m}" data-k="${n.k}" data-p="${n.st}-${n.f}" transform="translate(${fx(n.f)} ${sy(n.st)})"><circle class="bk" r="15.5"/><circle class="c" r="15.5"/><text${(fbLab==='name'?n.name:n.d).length>2?' class="sm"':''}>${fbLab==='name'?n.name:n.d}</text></g>`;
   });
   const svg=$('fb'); svg.setAttribute('viewBox',`0 0 ${WD} ${H}`); svg.innerHTML=h;
   const wrap=$('fbWrap');
