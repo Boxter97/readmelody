@@ -185,7 +185,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 #vfb .fdot .c{fill:var(--bg);stroke:var(--ink);stroke-width:1.6}
 #fb .fdot text{fill:var(--ink);font-size:14px;font-weight:700;text-anchor:middle;dominant-baseline:central;font-family:var(--f-body);pointer-events:none} #fb .fdot text.sm{font-size:12px;letter-spacing:-.5px}   /* ♭♭7 · ♯11 · 시♭♭ 처럼 긴 글자 (2026-11-19) */
 #fb2 .fdot text{fill:var(--ink);font-size:14px;font-weight:700;text-anchor:middle;dominant-baseline:central;font-family:var(--f-body);pointer-events:none}
-#vfb .fdot text{fill:var(--ink);font-size:14px;font-weight:700;text-anchor:middle;dominant-baseline:central;font-family:var(--f-body);pointer-events:none}
+#vfb .fdot text{fill:var(--ink);font-size:14px;font-weight:700;text-anchor:middle;dominant-baseline:central;font-family:var(--f-body);pointer-events:none} #vfb .fdot text.sm{font-size:12px;letter-spacing:-.5px}
 #fb .fdot.root .c{fill:var(--accent);stroke:var(--accent)} #fb .fdot.root text{fill:var(--bg)}
 #fb2 .fdot.root .c{fill:var(--accent);stroke:var(--accent)} #fb2 .fdot.root text{fill:var(--bg)}
 #vfb .fdot.root .c{fill:var(--accent);stroke:var(--accent)} #vfb .fdot.root text{fill:var(--bg)}
@@ -1027,7 +1027,7 @@ function draw(){
   for(let st=0;st<6;st++) if(!used.has(st)) h+=`<path class="fmute" d="M${fx(0)-7} ${sy(st)-7}l14 14M${fx(0)+7} ${sy(st)-7}l-14 14"/>`;
   const seen=new Set();
   sp.forEach(p=>p.dots.forEach(n=>{ const key=n.st+'-'+n.f; if(seen.has(key)) return; seen.add(key);
-    h+=`<g class="fdot ${colorOf(p)}${n.root?' root':''}${focusOK(p)?'':' dim'}" data-m="${n.m}" data-p="${key}" transform="translate(${fx(n.f)} ${sy(n.st)})"><circle class="bk" r="15.5"/><circle class="c" r="15.5"/><text${fbLab==='name'&&n.name.length>2?' class="sm"':''}>${fbLab==='name'?n.name:n.d}</text></g>`; }));
+    h+=`<g class="fdot ${colorOf(p)}${n.root?' root':''}${focusOK(p)?'':' dim'}" data-m="${n.m}" data-p="${key}" transform="translate(${fx(n.f)} ${sy(n.st)})"><circle class="bk" r="15.5"/><circle class="c" r="15.5"/><text${(fbLab==='name'?n.name:n.d).length>2?' class="sm"':''}>${fbLab==='name'?n.name:n.d}</text></g>`; }));
   const svg=$('vfb'); svg.setAttribute('viewBox',`0 0 ${WD} ${H}`); svg.innerHTML=h;
   requestAnimationFrame(()=>{ const w=$('vfbWrap'); $('vfbHint').hidden=!(w.scrollWidth>w.clientWidth+2); });
 }
