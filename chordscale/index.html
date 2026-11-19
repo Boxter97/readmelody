@@ -394,7 +394,7 @@ html[data-theme="dark"]{--vc0:#6C8CFF;--vc1:#FF6B6B;--vc2:#FFB020;--vc3:#40C057}
   .scales .scsel{flex-direction:column;align-items:stretch;gap:6px}
   .scales .scsel .seg{display:grid;grid-auto-flow:row;grid-auto-columns:auto;grid-template-columns:repeat(4,minmax(0,1fr));flex:none}
   .scales .scsel .seg button{padding:6px 4px;font-size:16px;line-height:1.25;word-break:keep-all;border-right:1.5px solid var(--line);border-bottom:1.5px solid var(--line);margin:0 -1.5px -1.5px 0}
-  #crSel{grid-template-columns:repeat(7,minmax(0,1fr))} #cgSel{grid-template-columns:repeat(3,minmax(0,1fr))} #cqSel{grid-template-columns:repeat(var(--qn,4),minmax(0,1fr))} #cqSel[data-n="6"]{--qn:3} #cbSel{grid-template-columns:repeat(2,minmax(0,1fr))} #cqSel button{font-size:15px;padding:6px 1px} #rootSel,#trRoot,#vrSel{grid-template-columns:repeat(7,minmax(0,1fr))} .scales .scsel .seg.acc{margin:0;grid-template-columns:repeat(2,minmax(0,1fr))} #scSel{grid-template-columns:repeat(4,minmax(0,1fr))} #mdSel[data-n="3"]{grid-template-columns:repeat(3,minmax(0,1fr))}
+  #crSel{grid-template-columns:repeat(7,minmax(0,1fr))} #cgSel{grid-template-columns:repeat(3,minmax(0,1fr))} #cqSel{grid-template-columns:repeat(var(--qn,4),minmax(0,1fr))} #cqSel[data-n="6"]{--qn:3} #cbSel{grid-template-columns:repeat(2,minmax(0,1fr))} #cqSel button{font-size:15px;padding:6px 1px} #rootSel,#trRoot,#vrSel{grid-template-columns:repeat(7,minmax(0,1fr))} .scales .scsel .seg.acc{margin:0;grid-template-columns:repeat(2,minmax(0,1fr))} #scSel{grid-template-columns:repeat(5,minmax(0,1fr))} #scSel button{min-width:0;padding-left:1px;padding-right:1px} #mdSel[data-n="3"]{grid-template-columns:repeat(3,minmax(0,1fr))} #mdSel[data-n="2"]{grid-template-columns:repeat(2,minmax(0,1fr))}
   .scales .scsel #trMultiBox,.scales .scsel #vMultiBox{margin:0;grid-template-columns:minmax(0,1fr)}
   .minis{gap:10px}
 }
@@ -424,7 +424,7 @@ html[data-theme="dark"]{--vc0:#6C8CFF;--vc1:#FF6B6B;--vc2:#FFB020;--vc3:#40C057}
       <button type="button" class="pcard" data-v="chord"><span class="tag">CHORD</span><span class="name">코드</span><span class="sub">기본 코드 · 하이 코드 · 7th 코드</span></button>
       <button type="button" class="pcard" data-v="tri"><span class="tag">TRIAD</span><span class="name">트라이어드</span><span class="sub">기본 위치 · 1전위 · 2전위</span></button>
       <button type="button" class="pcard" data-v="voi"><span class="tag">VOICING</span><span class="name">보이싱</span><span class="sub">드롭2 · 드롭3 · 드롭2&amp;4 · 쉘</span></button>
-      <button type="button" class="pcard" data-v="scale"><span class="tag">SCALE</span><span class="name">스케일</span><span class="sub">메이저 · 마이너 · 펜타토닉 · 모드</span></button>
+      <button type="button" class="pcard" data-v="scale"><span class="tag">SCALE</span><span class="name">스케일</span><span class="sub">메이저 · 마이너 · 펜타토닉 · 모드 · 특수</span></button>
     </div>
   </section>
 
@@ -628,14 +628,21 @@ const MODES=[
   {id:'aeolian',name:'에올리안',sub:'내추럴 마이너와 같아요',iv:SCALES[1].iv},
   {id:'locrian',name:'로크리안',sub:'마이너에서 2 · 5음을 반음 내림',mark:MK,iv:[[0,0,'1'],[1,1,'♭2'],[2,3,'♭3'],[3,5,'4'],[4,6,'♭5',1],[5,8,'♭6'],[6,10,'♭7']]},
 ];
+/* 특수 (K 요청 2026-11-19): 멜로딕 마이너의 모드 — 멜로딕 마이너 박스 모양 그대로, 시작음(근음)만 다름. C 리디안 ♭7 = G 멜로딕 마이너 자리, C 얼터드 = D♭ 멜로딕 마이너 자리 */
+const SPECIAL=[
+  {id:'lyddom',name:'리디안 ♭7',sub:'멜로딕 마이너 4번째 음부터',mark:MK,par:'melo',iv:[[0,0,'1'],[1,2,'2'],[2,4,'3'],[3,6,'♯4',1],[4,7,'5'],[5,9,'6'],[6,10,'♭7',1]]},
+  {id:'altered',name:'얼터드',sub:'멜로딕 마이너 7번째 음부터',par:'melo',iv:[[0,0,'1'],[1,1,'♭9'],[1,3,'♯9'],[2,4,'3'],[4,6,'♭5'],[4,8,'♯5'],[6,10,'♭7']]},
+];
 MODES.forEach(m=>m.mode=1); SCALES.find(x=>x.id==='minor').mode=1;   // 모드 · 내추럴 마이너는 부모 메이저 박스 (fbBoxes)
-const ALLSC=SCALES.concat(MODES);
+SPECIAL.forEach(m=>m.mode=1);   // 특수는 부모 멜로딕 마이너 박스
+const ALLSC=SCALES.concat(MODES,SPECIAL);
 /* 스케일 고르기 (K 요청 2026-11-16): 먼저 묶음(메이저 · 마이너 · 펜타토닉 · 모드) → 그 안의 종류 */
 const CATS=[
   {id:'major',name:'메이저',items:[['major','메이저']]},
   {id:'minor',name:'마이너',items:[['minor','내추럴'],['harm','하모닉'],['melo','멜로딕']]},
   {id:'pent',name:'펜타토닉',items:[['majpent','메이저'],['minpent','마이너'],['blues','블루스']]},
   {id:'mode',name:'모드',items:MODES.map(m=>[m.id,m.name])},
+  {id:'special',name:'특수',items:SPECIAL.map(m=>[m.id,m.name])},
 ];
 const catOf=id=>CATS.find(c=>c.items.some(x=>x[0]===id));
 // 근음 고르기 (K 요청 2026-11-16): C D E F G A B + 오른쪽 ♯ · ♭ 체크. 아래 표는 예전에 저장된 근음(0~11)을 옮길 때만 씀
@@ -766,7 +773,7 @@ const OPEN=[40,45,50,55,59,64], FRETS=15;
 function fbBoxes(sc,rpc){
   // 모드 = 부모 메이저 스케일과 같은 자리, 도수만 다름 (K 2026-11-19 "결국 메이저 스케일 위치가 바뀌는 거야"). 포지션 번호는 원래 계산(근음 기준)과 가장 많이 겹치는 메이저 박스로
   if(sc.mode&&!sc.parentDone){
-    const sm=sc.iv.map(x=>x[1]), MJ=[0,2,4,5,7,9,11];
+    const sm=sc.iv.map(x=>x[1]), MJ=sc.par==='melo'?[0,2,3,5,7,9,11]:[0,2,4,5,7,9,11];   // 특수 = 부모 멜로딕 마이너 (K 2026-11-19)
     for(let o=0;o<12;o++) if(MJ.every(x=>sm.includes((x+o)%12))){
       const par=fbBoxes({iv:MJ.map((x,i)=>[i,x,''])},(rpc+o)%12), own=fbBoxes(Object.assign({},sc,{parentDone:1}),rpc), used=new Set(), K=s=>[...s].map(k=>{ const [a,b]=k.split('-').map(Number); return a+'-'+(b%12); });
       return own.map(b=>{ const ok=new Set(K(b.set)); let bi=-1,bs=-1; par.forEach((p,i)=>{ if(used.has(i)) return; const sc2=K(p.set).filter(x=>ok.has(x)).length; if(sc2>bs){ bs=sc2; bi=i; } }); used.add(bi);
