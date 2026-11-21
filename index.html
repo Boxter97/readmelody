@@ -5,7 +5,7 @@
 <meta name="google-site-verification" content="TiUiczCTHK2J1TaFgmaIFe3RTUhD63hM8pQdpysvils" />
 <meta name="naver-site-verification" content="dfab6511063579e364173027560169e07708b17d" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<script src="theme.js?v=4"></script>
+<script src="theme.js?v=5"></script>
 <link rel="stylesheet" href="theme.css?v=6">
 <meta name="description" content="기타MT — 무료 기타 연습 사이트. 멜로디·코드 초견, 청음, 즉흥연주, 코드&amp;스케일, 화성학, 메트로놈">
 <meta property="og:type" content="website">
@@ -388,6 +388,9 @@ const levelOf=n=>mode==='hard'?{...LEVELS[n-1],...HARD_LEAP}:LEVELS[n-1];
 /* ---------- 상태 ---------- */
 const store={get(k,d){try{const v=localStorage.getItem('sr-'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},
              set(k,v){try{localStorage.setItem('sr-'+k,JSON.stringify(v))}catch(e){}}};
+/* 들어올 때마다 설정은 처음으로 — 스위치 · 연습 기록만 기억 (K 요청 2026-11-21) */
+try{ const KEEP=['names','gtr','countin','metro','done','done2']; Object.keys(localStorage).forEach(k=>{ if(k.startsWith('sr-')&&!KEEP.includes(k.slice(3))) localStorage.removeItem(k); }); }catch(e){}
+['countin','metro'].forEach(id=>{ const el=document.getElementById(id); if(!el) return; const v=store.get(id,null); if(v!==null) el.checked=!!v; el.addEventListener('change',()=>store.set(id,el.checked)); });   /* 한 마디 세고 시작 · 메트로놈 스위치도 기억 */
 let sel=1 /* 들어올 때마다 첫 카드 (K 요청 2026-11-21) */, bars=store.get('bars',4), meter=store.get('meter','4/4'), keyName=store.get('key','C');
 if(sel!==0&&!LEVELS[sel-1]) sel=1;
 let level=sel||LEVELS.length;                       // sel 0 = 랜덤 (한 곡 안에 1~5단계를 섞어서)

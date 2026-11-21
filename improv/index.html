@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<script src="../theme.js?v=4"></script>
+<script src="../theme.js?v=5"></script>
 <link rel="stylesheet" href="../theme.css?v=6">
 <meta name="description" content="유명한 코드 진행을 반복해서 들으며 초견과 즉흥연주를 연습하는 페이지 (마이너 블루스 · 메이저 블루스 · 재즈 블루스)">
 <meta property="og:type" content="website">
@@ -382,6 +382,8 @@ const BACKING={
 /* ---------- 상태 ---------- */
 const store={get(k,d){try{const v=localStorage.getItem('im-'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},
              set(k,v){try{localStorage.setItem('im-'+k,JSON.stringify(v))}catch(e){}}};
+/* 들어올 때마다 설정은 처음으로 — 스위치 · 연습 기록만 기억 (K 요청 2026-11-21) */
+try{ const KEEP=['deg','tones']; Object.keys(localStorage).forEach(k=>{ if(k.startsWith('im-')&&!KEEP.includes(k.slice(3))) localStorage.removeItem(k); }); }catch(e){}
 let progId=PROGS[0].id; /* 들어올 때마다 첫 카드 (K 요청 2026-11-21) */ if(!PROGS.some(p=>p.id===progId)) progId=PROGS[0].id;   // 카드 순서: 마이너 · 메이저 · 재즈 블루스 (K 요청)
 let keys=store.get('keys',{}); if(!keys||typeof keys!=='object') keys={};
 let vars=store.get('vars',{}); if(!vars||typeof vars!=='object') vars={};   // 진행마다 고른 변형

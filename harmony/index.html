@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<script src="../theme.js?v=4"></script>
+<script src="../theme.js?v=5"></script>
 <link rel="stylesheet" href="../theme.css?v=6">
 <meta name="description" content="화성학 문제 — 음이름 · ♯ 키 · ♭ 키 · 인터벌 · 코드 · 스케일 · 다이어토닉 코드를 계속 맞히며 익히기">
 <meta property="og:type" content="website">
@@ -468,6 +468,8 @@ const LEVELS=[
 /* ---------- 상태 ---------- */
 const store={get(k,d){try{const v=localStorage.getItem('hm-'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},
              set(k,v){try{localStorage.setItem('hm-'+k,JSON.stringify(v))}catch(e){}}};
+/* 들어올 때마다 설정은 처음으로 — 스위치 · 연습 기록만 기억 (K 요청 2026-11-21) */
+try{ const KEEP=['done']; Object.keys(localStorage).forEach(k=>{ if(k.startsWith('hm-')&&!KEEP.includes(k.slice(3))) localStorage.removeItem(k); }); }catch(e){}
 let sel=1; /* 들어올 때마다 첫 카드 (K 요청 2026-11-21) */ if(sel!==0&&!LEVELS[sel-1]) sel=1;   // 0 = 랜덤
 let mode=store.get('mode','easy'); if(mode!=='hard') mode='easy';
 let sys=store.get('names','sol'); if(sys!=='let') sys='sol';        // 문제 표기: 계이름(처음) · 음이름

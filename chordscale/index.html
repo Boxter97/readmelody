@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<script src="../theme.js?v=4"></script>
+<script src="../theme.js?v=5"></script>
 <link rel="stylesheet" href="../theme.css?v=6">
 <meta name="description" content="코드 찾기 · 코드 사전 · 트라이어드 · 보이싱 · 스케일을 기타 지판에서 보고 듣기">
 <meta property="og:type" content="website">
@@ -666,6 +666,8 @@ const INV=['기본 위치','1전위','2전위'];
 /* ---------- 상태 ---------- */
 const store={get(k,d){try{const v=localStorage.getItem('cs-'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},
              set(k,v){try{localStorage.setItem('cs-'+k,JSON.stringify(v))}catch(e){}}};
+/* 들어올 때마다 설정은 처음으로 — 스위치 · 연습 기록만 기억 (K 요청 2026-11-21) */
+try{ const KEEP=['user']; Object.keys(localStorage).forEach(k=>{ if(k.startsWith('cs-')&&!KEEP.includes(k.slice(3))) localStorage.removeItem(k); }); }catch(e){}
 const $=id=>document.getElementById(id);
 let tab='find'; /* 들어올 때마다 첫 카드 (K 요청 2026-11-21) */
 if(new URLSearchParams(location.search).get('tab')) tab=new URLSearchParams(location.search).get('tab');

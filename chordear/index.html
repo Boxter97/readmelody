@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<script src="../theme.js?v=4"></script>
+<script src="../theme.js?v=5"></script>
 <link rel="stylesheet" href="../theme.css?v=6">
 <meta name="description" content="코드 청음 연습 — 코드 종류(메이저 · 마이너 · sus4 · dim · aug, Hard는 7th)와 코드 진행을 듣고 맞히기">
 <meta property="og:type" content="website">
@@ -441,6 +441,9 @@ function hardVocab(lv){                                // Hard: 부속화음 · 
 /* ---------- 상태 ---------- */
 const store={get(k,d){try{const v=localStorage.getItem('cear-'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},
              set(k,v){try{localStorage.setItem('cear-'+k,JSON.stringify(v))}catch(e){}}};
+/* 들어올 때마다 설정은 처음으로 — 스위치 · 연습 기록만 기억 (K 요청 2026-11-21) */
+try{ const KEEP=['hint','firstc','padsnd','countin','done','lv2611']; Object.keys(localStorage).forEach(k=>{ if(k.startsWith('cear-')&&!KEEP.includes(k.slice(5))) localStorage.removeItem(k); }); }catch(e){}
+['countin','metro'].forEach(id=>{ const el=document.getElementById(id); if(!el) return; const v=store.get(id,null); if(v!==null) el.checked=!!v; el.addEventListener('change',()=>store.set(id,el.checked)); });   /* 한 마디 세고 시작 · 메트로놈 스위치도 기억 */
 let sel=1; /* 들어올 때마다 첫 카드 (K 요청 2026-11-21) */ if(sel!==0&&!LEVELS[sel-1]) sel=1;   // 0 = 랜덤
 let keyName=store.get('key','C'); if(!KEYS[keyName]) keyName='C';
 let mode=store.get('mode','easy'); if(mode!=='hard') mode='easy';

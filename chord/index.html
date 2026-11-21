@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<script src="../theme.js?v=4"></script>
+<script src="../theme.js?v=5"></script>
 <link rel="stylesheet" href="../theme.css?v=6">
 <meta name="description" content="코드 진행을 보고 박자에 맞춰 쳐 본 다음, 피아노 소리로 정답을 확인하는 코드 초견 연습">
 <meta property="og:type" content="website">
@@ -381,6 +381,9 @@ const LEVELS=[
 /* ---------- 상태 ---------- */
 const store={get(k,d){try{const v=localStorage.getItem('ch-'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},
              set(k,v){try{localStorage.setItem('ch-'+k,JSON.stringify(v))}catch(e){}}};
+/* 들어올 때마다 설정은 처음으로 — 스위치 · 연습 기록만 기억 (K 요청 2026-11-21) */
+try{ const KEEP=['deg','tones','countin','metro','done','done2','merged23']; Object.keys(localStorage).forEach(k=>{ if(k.startsWith('ch-')&&!KEEP.includes(k.slice(3))) localStorage.removeItem(k); }); }catch(e){}
+['countin','metro'].forEach(id=>{ const el=document.getElementById(id); if(!el) return; const v=store.get(id,null); if(v!==null) el.checked=!!v; el.addEventListener('change',()=>store.set(id,el.checked)); });   /* 한 마디 세고 시작 · 메트로놈 스위치도 기억 */
 if(!store.get('merged23',false)){                 // 2·3단계 합치기 전 저장값 → 새 번호 (3→2, 4→3, 5→4, 6→5)
   const mv=n=>n>=3?n-1:n, ol=store.get('level',1); store.set('level',ol===0?0:mv(ol));
   const od=store.get('done2',null); if(od&&typeof od==='object'){ ['easy','hard'].forEach(m=>{ const d=od[m]||{}, nd={}; Object.keys(d).forEach(k=>{ const nk=k==='R'?'R':mv(+k); nd[nk]=(nd[nk]||0)+d[k]; }); od[m]=nd; }); store.set('done2',od); }

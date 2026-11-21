@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<script src="../theme.js?v=4"></script>
+<script src="../theme.js?v=5"></script>
 <link rel="stylesheet" href="../theme.css?v=6">
 <meta name="description" content="빠르기·박자·강박·음표 나누기·탭 템포가 있는 무료 온라인 메트로놈">
 <meta property="og:type" content="website">
@@ -298,6 +298,7 @@ function syncSubs(){
 }
 function audio(){ if(!ctx) ctx=new (window.AudioContext||window.webkitAudioContext)(); if(ctx.state==='suspended') ctx.resume(); return ctx; }
 const SOUNDS=[['wood','우드'],['beep','비프'],['hihat','하이햇']];   // 모두 브라우저에서 합성 (파일 없음)
+try{ localStorage.removeItem('mt-sound'); }catch(e){}   /* 들어올 때마다 설정은 처음으로 — 스위치 · 연습 기록만 기억 (K 요청 2026-11-21) */
 let sound=(()=>{ try{ const v=localStorage.getItem('mt-sound'); return SOUNDS.some(x=>x[0]===v)?v:'wood'; }catch(e){ return 'wood'; } })();
 let noiseBuf=null;
 function noise(){ if(!noiseBuf){ noiseBuf=ctx.createBuffer(1,ctx.sampleRate*0.3,ctx.sampleRate); const d=noiseBuf.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1; } const n=ctx.createBufferSource(); n.buffer=noiseBuf; return n; }

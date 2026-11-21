@@ -184,3 +184,6 @@ window.gmCount=function(n){
   el.textContent=n; el.hidden=false;
   el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');
 };
+
+/* 뒤로 가기로 돌아와도 처음 상태로 — 브라우저가 예전 화면을 그대로 꺼내 보여 주지 않게 (K 요청 2026-11-21) */
+window.addEventListener('pageshow',function(e){ if(e.persisted) location.reload(); });
