@@ -388,7 +388,7 @@ const levelOf=n=>mode==='hard'?{...LEVELS[n-1],...HARD_LEAP}:LEVELS[n-1];
 /* ---------- 상태 ---------- */
 const store={get(k,d){try{const v=localStorage.getItem('sr-'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},
              set(k,v){try{localStorage.setItem('sr-'+k,JSON.stringify(v))}catch(e){}}};
-let sel=store.get('level',1), bars=store.get('bars',4), meter=store.get('meter','4/4'), keyName=store.get('key','C');
+let sel=1 /* 들어올 때마다 첫 카드 (K 요청 2026-11-21) */, bars=store.get('bars',4), meter=store.get('meter','4/4'), keyName=store.get('key','C');
 if(sel!==0&&!LEVELS[sel-1]) sel=1;
 let level=sel||LEVELS.length;                       // sel 0 = 랜덤 (한 곡 안에 1~5단계를 섞어서)
 if(!METERS[meter]) meter='4/4';

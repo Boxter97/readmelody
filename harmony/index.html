@@ -468,7 +468,7 @@ const LEVELS=[
 /* ---------- 상태 ---------- */
 const store={get(k,d){try{const v=localStorage.getItem('hm-'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},
              set(k,v){try{localStorage.setItem('hm-'+k,JSON.stringify(v))}catch(e){}}};
-let sel=store.get('level',1); if(sel!==0&&!LEVELS[sel-1]) sel=1;   // 0 = 랜덤
+let sel=1; /* 들어올 때마다 첫 카드 (K 요청 2026-11-21) */ if(sel!==0&&!LEVELS[sel-1]) sel=1;   // 0 = 랜덤
 let mode=store.get('mode','easy'); if(mode!=='hard') mode='easy';
 let sys=store.get('names','sol'); if(sys!=='let') sys='sol';        // 문제 표기: 계이름(처음) · 음이름
 let done=store.get('done',null); if(!done||typeof done!=='object'||!done.easy) done={easy:{},hard:{}};

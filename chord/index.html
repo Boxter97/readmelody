@@ -386,7 +386,7 @@ if(!store.get('merged23',false)){                 // 2·3단계 합치기 전 �
   const od=store.get('done2',null); if(od&&typeof od==='object'){ ['easy','hard'].forEach(m=>{ const d=od[m]||{}, nd={}; Object.keys(d).forEach(k=>{ const nk=k==='R'?'R':mv(+k); nd[nk]=(nd[nk]||0)+d[k]; }); od[m]=nd; }); store.set('done2',od); }
   store.set('merged23',true);
 }
-let sel=store.get('level',1), bars=store.get('bars',4), meter=store.get('meter','4/4'), keyName=store.get('key','C');
+let sel=1 /* 들어올 때마다 첫 카드 (K 요청 2026-11-21) */, bars=store.get('bars',4), meter=store.get('meter','4/4'), keyName=store.get('key','C');
 if(sel!==0&&!LEVELS[sel-1]) sel=1;
 let level=sel||LEVELS.length;                       // sel 0 = 랜덤 (한 곡 안에 1~5단계를 섞어서)
 if(!METERS[meter]) meter='4/4';

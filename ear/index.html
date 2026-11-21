@@ -382,7 +382,7 @@ const LEVELS=[
 /* ---------- 상태 ---------- */
 const store={get(k,d){try{const v=localStorage.getItem('ear-'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},
              set(k,v){try{localStorage.setItem('ear-'+k,JSON.stringify(v))}catch(e){}}};
-let sel=store.get('level',1); if(sel!==0&&!LEVELS[sel-1]) sel=1;     // sel 0 = 랜덤
+let sel=1; /* 들어올 때마다 첫 카드 (K 요청 2026-11-21) */ if(sel!==0&&!LEVELS[sel-1]) sel=1;     // sel 0 = 랜덤
 let keyName=store.get('key','C'); if(!KEYS[keyName]) keyName='C';
 let mode=store.get('mode','easy'); if(mode!=='hard') mode='easy';
 let padSound=store.get('padsnd',true);              // 답 누를 때 소리 (K 요청 2026-11-12, 처음엔 켜짐)

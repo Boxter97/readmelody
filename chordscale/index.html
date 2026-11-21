@@ -667,7 +667,7 @@ const INV=['기본 위치','1전위','2전위'];
 const store={get(k,d){try{const v=localStorage.getItem('cs-'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},
              set(k,v){try{localStorage.setItem('cs-'+k,JSON.stringify(v))}catch(e){}}};
 const $=id=>document.getElementById(id);
-let tab=store.get('tab','chord'); if(!['scale','tri','voi','find'].includes(tab)) tab='chord';
+let tab='find'; /* 들어올 때마다 첫 카드 (K 요청 2026-11-21) */
 if(new URLSearchParams(location.search).get('tab')) tab=new URLSearchParams(location.search).get('tab');
 /* 코드 찾기 (K 요청 2026-11-16 "종류별로 모아 놓으면 찾기 힘들다"): 근음을 누르면 그 근음의 코드가 작은 그림으로 모두 나옴 */
 const FLAT=(()=>{ const seen=new Set(), out=[];

@@ -441,7 +441,7 @@ function hardVocab(lv){                                // Hard: 부속화음 · 
 /* ---------- 상태 ---------- */
 const store={get(k,d){try{const v=localStorage.getItem('cear-'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},
              set(k,v){try{localStorage.setItem('cear-'+k,JSON.stringify(v))}catch(e){}}};
-let sel=store.get('level2',1); if(sel!==0&&!LEVELS[sel-1]) sel=1;   // 0 = 랜덤
+let sel=1; /* 들어올 때마다 첫 카드 (K 요청 2026-11-21) */ if(sel!==0&&!LEVELS[sel-1]) sel=1;   // 0 = 랜덤
 let keyName=store.get('key','C'); if(!KEYS[keyName]) keyName='C';
 let mode=store.get('mode','easy'); if(mode!=='hard') mode='easy';
 let firstc=store.get('firstc',false);                // 첫 코드 알려주기: 첫 코드를 미리 보여 줌 (코드 초견처럼, K 요청 2026-11-12)
