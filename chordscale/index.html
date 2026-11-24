@@ -896,7 +896,8 @@ function arpShape(i){            // 모양 하나: 근음 자리 + 칸(lo~hi) + 
     else if(byM[m]) continue;
     byM[m]={st,f}; set.add(st+'-'+f); }
   const hi2=Math.max(hi,...[...set].map(x=>+x.split('-')[1]));   /* 칸 밖으로 넓힌 음(5번 줄 → 맨 위 7)도 박스 안에 (K 요청 2026-11-24) */
-  return {lo,hi:hi2,set};
+  const lo2=i===3?Math.min(...[...set].map(x=>+x.split('-')[1])):lo;   /* 5번 줄 ← 박스 왼쪽 끝 = 모양 안 가장 낮은 프렛 (K 요청 2026-11-24 "박스도 거기에 맞게 줄여줘") */
+  return {lo:lo2,hi:hi2,set};
 }
 function arpModel(){
   const r=arR(), map={}, dots=[], ch=QUAL[arQ].iv, ts=arTen?tensOf({q:arQ,iv:ch}):[];
