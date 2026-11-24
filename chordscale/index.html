@@ -728,7 +728,7 @@ const scRoot=()=>mkRoot(scL,scA);
 const chRoot=c=>mkRoot(LETTERS.indexOf(c.r),0);
 /* 코드톤 (K 요청 2026-11-24 "스케일 앞에 코드톤"): 7th 코드의 코드 음만 지판에. 근음에서 시작하는 모양 5개 —
    6번 줄 근음 → (근음 왼쪽 1칸 ~ 오른쪽 3칸) · ← (근음 왼쪽 4칸 ~ 근음) · 5번 줄 → · ← · 4번 줄 (4~1번 줄, → 와 같은 칸).
-   근음보다 낮은 음은 안 넣음, 3 · 2번 줄에서 겹치는 같은 음은 2번 줄 쪽만 (스케일 디미니쉬와 같은 규칙). 칸 나누기 · 7sus4를 넣은 것은 Claude가 정함 (K 확인 전) */
+   칸 안의 코드 음은 근음 줄의 근음보다 낮은 음도 넣음 (K 2026-11-24 "7도 포함"), 3 · 2번 줄에서 겹치는 같은 음은 2번 줄 쪽만 (스케일 디미니쉬와 같은 규칙). 칸 나누기 · 7sus4를 넣은 것은 Claude가 정함 (K 확인 전) */
 const ARQ=['M7','7','m7','m7♭5','dim7','aug7','7sus4'];
 const ARSH=[{st:0,dir:1,name:'6번 줄 →'},{st:0,dir:-1,name:'6번 줄 ←'},{st:1,dir:1,name:'5번 줄 →'},{st:1,dir:-1,name:'5번 줄 ←'},{st:2,dir:1,name:'4번 줄'}];
 let [arL,arA]=[0,0], arQ='M7', arSh=0, arTen=false;   // arSh: 0 = 전체, 1~5 = 모양
@@ -887,8 +887,8 @@ function scaleModel(){
 function arpShape(i){            // 모양 하나: 근음 자리 + 칸(lo~hi) + 그 안의 음 자리
   const sh=ARSH[i], r=arR(), iv=QUAL[arQ].iv.concat(arTen?tensOf({q:arQ,iv:QUAL[arQ].iv}):[]);
   let rf=((r.pc-OPEN[sh.st])%12+12)%12; const need=sh.dir>0?1:4; while(rf<need) rf+=12;   // 개방현 없이 들어가는 가장 낮은 근음 자리
-  const lo=sh.dir>0?Math.max(1,rf-1):rf-4, hi=sh.dir>0?rf+3:rf, rm=OPEN[sh.st]+rf, set=new Set(), byM={};
-  for(let st=sh.st;st<6;st++) for(let f=lo;f<=hi;f++){ const m=OPEN[st]+f; if(m<rm) continue;
+  const lo=sh.dir>0?Math.max(1,rf-1):rf-4, hi=sh.dir>0?rf+3:rf, set=new Set(), byM={};
+  for(let st=sh.st;st<6;st++) for(let f=lo;f<=hi;f++){ const m=OPEN[st]+f;   /* 근음 줄의 근음보다 낮은 칸 음(M7의 7 등)도 넣음 (K 요청 2026-11-24 "7도 포함") */
     const s0=((m-r.pc)%12+12)%12; if(!iv.some(v=>v[1]===s0)) continue;
     if(byM[m]&&byM[m].st===2&&st===3) set.delete(byM[m].st+'-'+byM[m].f);   // 3 · 2번 줄 같은 음은 2번 줄 쪽
     else if(byM[m]) continue;
