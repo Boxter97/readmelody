@@ -894,7 +894,8 @@ function arpShape(i){            // 모양 하나: 근음 자리 + 칸(lo~hi) + 
     if(byM[m]&&byM[m].st===2&&st===3) set.delete(byM[m].st+'-'+byM[m].f);   // 3 · 2번 줄 같은 음은 2번 줄 쪽
     else if(byM[m]) continue;
     byM[m]={st,f}; set.add(st+'-'+f); }
-  return {lo,hi,set};
+  const hi2=Math.max(hi,...[...set].map(x=>+x.split('-')[1]));   /* 칸 밖으로 넓힌 음(5번 줄 → 맨 위 7)도 박스 안에 (K 요청 2026-11-24) */
+  return {lo,hi:hi2,set};
 }
 function arpModel(){
   const r=arR(), map={}, dots=[], ch=QUAL[arQ].iv, ts=arTen?tensOf({q:arQ,iv:ch}):[];
