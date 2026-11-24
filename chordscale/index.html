@@ -889,7 +889,7 @@ function arpShape(i){            // 모양 하나: 근음 자리 + 칸(lo~hi) + 
   let rf=((r.pc-OPEN[sh.st])%12+12)%12; const need=sh.dir>0?1:4; while(rf<need) rf+=12;   // 개방현 없이 들어가는 가장 낮은 근음 자리
   const lo=sh.dir>0?Math.max(1,rf-1):rf-4, hi=sh.dir>0?rf+3:rf, set=new Set(), byM={};
   const low=sh.st===2, rm=OPEN[sh.st]+rf;   /* 4번 줄 모양은 6 · 5번 줄로 한 옥타브 아래 근음까지 내려감 — 7 · 5 · 3 · 1 (K 요청 2026-11-24 "4번 줄 시작하는 거, 6 위에 7531까지"). 6번 줄 근음 = 4번 줄 근음 2칸 왼쪽이라 6 · 5번 줄 칸은 한 칸 더 왼쪽부터 */
-  for(let st=low?0:sh.st;st<6;st++) for(let f=(low&&st<2?Math.max(1,lo-1):lo);f<=hi;f++){ const m=OPEN[st]+f; if(low&&m<rm-12) continue; if(i<2&&m<rm) continue;   /* 6번 줄 → · ← 은 근음 왼쪽 7을 회색으로 (K 요청 2026-11-24) */   /* 근음 줄의 근음보다 낮은 칸 음(M7의 7 등)도 넣음 (K 요청 2026-11-24 "7도 포함") */
+  for(let st=low?0:sh.st;st<6;st++) for(let f=(low&&st<2?Math.max(1,lo-1):lo);f<=hi+(i===2&&st===5?1:0);f++){   /* 5번 줄 → 은 1번 줄만 한 칸 더 — 맨 위 7 (K 요청 2026-11-24 "여기 7 포함") */ const m=OPEN[st]+f; if(low&&m<rm-12) continue; if(i<2&&m<rm) continue;   /* 6번 줄 → · ← 은 근음 왼쪽 7을 회색으로 (K 요청 2026-11-24) */   /* 근음 줄의 근음보다 낮은 칸 음(M7의 7 등)도 넣음 (K 요청 2026-11-24 "7도 포함") */
     const s0=((m-r.pc)%12+12)%12; if(!iv.some(v=>v[1]===s0)) continue;
     if(byM[m]&&byM[m].st===2&&st===3) set.delete(byM[m].st+'-'+byM[m].f);   // 3 · 2번 줄 같은 음은 2번 줄 쪽
     else if(byM[m]) continue;
