@@ -494,6 +494,17 @@ html[data-theme="dark"] .metro.xmas{--accent:#E5484D;--accent-soft:rgba(229,72,7
 .metro.xmas .beats i.sub.on{background:#F3CF6A;box-shadow:0 0 8px rgba(243,207,106,.8)}
 html[data-theme="dark"] .metro.xmas .beats i:not(.on):not(.first){background:radial-gradient(circle at 35% 30%,#5A6375 0%,#343B48 60%,#262C36 100%)}
 
+/* 버튼 군데군데 쌓인 눈 (K 2026-11-25) — 장식만, 누르기에 영향 없음 */
+.metro.xmas .round,.metro.xmas .presets,.metro.xmas .side .ic,.metro.xmas .morebtn{position:relative;overflow:visible}
+.metro.xmas .dial .round{position:absolute}
+.metro.xmas #minus::after,.metro.xmas #plus::after,.metro.xmas .presets::after,.metro.xmas #tap .ic::after,.metro.xmas .morebtn::after{content:"";position:absolute;pointer-events:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 26' preserveAspectRatio='none'%3E%3Cpath d='M2,11 Q4,3 14,4 Q24,-1 36,4 Q48,0 60,4 Q74,-1 86,4 Q97,3 98,11 Q99,15 94,14 Q91,22 87,14 Q76,17 64,14 Q60,24 55,14 Q42,17 30,14 Q26,20 22,14 Q10,16 6,14 Q1,15 2,11 Z' fill='%23FFFFFF' stroke='%239FB4D8' stroke-width='1.4'/%3E%3C/svg%3E") center/100% 100% no-repeat;filter:drop-shadow(0 2px 2px rgba(43,85,201,.18))}
+.metro.xmas #minus::after{top:-7px;left:8%;width:78%;height:26px;transform:rotate(-10deg)}
+.metro.xmas #plus::after{top:-6px;left:18%;width:68%;height:23px;transform:rotate(8deg)}
+.metro.xmas .presets::after{top:-14px;left:5%;width:30%;height:28px}
+.metro.xmas #tap .ic::after{top:-6px;left:12%;width:76%;height:24px}
+.metro.xmas .morebtn::after{top:-13px;right:9%;width:30%;height:27px}
+html[data-theme="dark"] .metro.xmas #minus::after,html[data-theme="dark"] .metro.xmas #plus::after,html[data-theme="dark"] .metro.xmas .presets::after,html[data-theme="dark"] .metro.xmas #tap .ic::after,html[data-theme="dark"] .metro.xmas .morebtn::after{opacity:.92}
+
 /* 메트로놈 상자 크기 80% (K 요청 2026-11-17 "10%만 줄여줘" → "10프로만 더") — 컴퓨터만, 휴대폰은 그대로 */
 @media (min-width:721px){ .metro{zoom:.8} }
 </style>
