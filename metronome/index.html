@@ -480,6 +480,16 @@ html[data-theme="dark"] .metro.xmas{--accent:#E5484D;--accent-soft:rgba(229,72,7
 .metro.xmas .beats i.first.on{background:#C62835}
 .metro.xmas .sw input:checked{background:var(--xg)}
 
+/* 박 점 = 작은 크리스마스 방울 (K 2026-11-25 "이 부분도 바꿔줘") */
+.metro.xmas .beats i{position:relative;overflow:visible;background:radial-gradient(circle at 35% 30%,#FFFFFF 0%,#E6EBF2 55%,#C9D2DE 100%);box-shadow:none}
+.metro.xmas .beats i:not(.sub)::before{content:"";position:absolute;left:50%;top:-5px;width:36%;height:6px;transform:translateX(-50%);border-radius:2px;background:linear-gradient(90deg,#B07A12,#F3CF6A,#B07A12)}
+.metro.xmas .beats i.first{background:radial-gradient(circle at 35% 30%,#FFE3E5 0%,#F4AEB3 60%,#E0858C 100%);box-shadow:none}
+.metro.xmas .beats i.on{background:radial-gradient(circle at 35% 30%,#7FE0A6 0%,#1F8A4C 55%,#0F5C30 100%);box-shadow:0 0 12px rgba(31,138,76,.45)}
+.metro.xmas .beats i.first.on{background:radial-gradient(circle at 35% 30%,#FF8A8F 0%,#E0313F 45%,#A3121F 100%);box-shadow:0 0 14px rgba(224,49,63,.5)}
+.metro.xmas .beats i.sub{background:#FFFFFF;box-shadow:0 0 0 1.5px #C9D2DE}
+.metro.xmas .beats i.sub.on{background:#F3CF6A;box-shadow:0 0 8px rgba(243,207,106,.8)}
+html[data-theme="dark"] .metro.xmas .beats i:not(.on):not(.first){background:radial-gradient(circle at 35% 30%,#5A6375 0%,#343B48 60%,#262C36 100%)}
+
 /* 메트로놈 상자 크기 80% (K 요청 2026-11-17 "10%만 줄여줘" → "10프로만 더") — 컴퓨터만, 휴대폰은 그대로 */
 @media (min-width:721px){ .metro{zoom:.8} }
 </style>
@@ -546,7 +556,7 @@ html[data-theme="dark"] .metro.xmas{--accent:#E5484D;--accent-soft:rgba(229,72,7
           <g class="grid" clip-path="url(#dialIn)"><line x1="34" y1="0" x2="34" y2="300"/><line x1="50" y1="0" x2="50" y2="300"/><line x1="66" y1="0" x2="66" y2="300"/><line x1="82" y1="0" x2="82" y2="300"/><line x1="98" y1="0" x2="98" y2="300"/><line x1="114" y1="0" x2="114" y2="300"/><line x1="130" y1="0" x2="130" y2="300"/><line x1="146" y1="0" x2="146" y2="300"/><line x1="162" y1="0" x2="162" y2="300"/><line x1="178" y1="0" x2="178" y2="300"/><line x1="194" y1="0" x2="194" y2="300"/><line x1="210" y1="0" x2="210" y2="300"/><line x1="226" y1="0" x2="226" y2="300"/><line x1="242" y1="0" x2="242" y2="300"/><line x1="258" y1="0" x2="258" y2="300"/><line x1="274" y1="0" x2="274" y2="300"/><line x1="290" y1="0" x2="290" y2="300"/><line x1="0" y1="38" x2="300" y2="38"/><line x1="0" y1="54" x2="300" y2="54"/><line x1="0" y1="70" x2="300" y2="70"/><line x1="0" y1="86" x2="300" y2="86"/><line x1="0" y1="102" x2="300" y2="102"/><line x1="0" y1="118" x2="300" y2="118"/><line x1="0" y1="134" x2="300" y2="134"/><line x1="0" y1="150" x2="300" y2="150"/><line x1="0" y1="166" x2="300" y2="166"/><line x1="0" y1="182" x2="300" y2="182"/><line x1="0" y1="198" x2="300" y2="198"/><line x1="0" y1="214" x2="300" y2="214"/><line x1="0" y1="230" x2="300" y2="230"/><line x1="0" y1="246" x2="300" y2="246"/><line x1="0" y1="262" x2="300" y2="262"/><line x1="0" y1="278" x2="300" y2="278"/><line x1="0" y1="294" x2="300" y2="294"/></g>
           <path class="cross" d="M150,40 v10 M150,250 v10 M40,150 h10 M250,150 h10"/></g>
         <circle class="knob" id="dialKnob" cx="150" cy="14" r="9"/>
-        <g class="hat" transform="translate(208 44) rotate(26) scale(-.72 .72)">
+        <g class="hat" transform="translate(200 40) rotate(24) scale(.72)">
           <path class="cone" d="M-54,-2 C-50,-46 -18,-88 30,-92 C58,-94 80,-78 88,-54 C74,-62 58,-62 46,-56 C40,-38 44,-18 54,-2 Z"/>
           <path class="cone-sh" d="M10,-2 C14,-40 30,-66 46,-56 C40,-38 44,-18 54,-2 Z"/>
           <rect class="fur" x="-66" y="-14" width="132" height="26" rx="13"/>
