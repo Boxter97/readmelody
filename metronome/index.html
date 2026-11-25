@@ -344,6 +344,55 @@ html[data-theme="dark"] .dial .playic svg{fill:#16181D}
   .metro.hov .dial:has(.dialplay:hover) .bpmbox{opacity:.18;transform:scale(.96)}
 }
 
+/* HUD (K 요청 2026-11-25 레퍼런스 "HUD Elements" 느낌) — .metro.hud (흰 바탕) · .metro.hud.navy (남색 상자) */
+.dial .hudb,.dial .hudf{display:none}
+.metro.hud .dial .hudb,.metro.hud .dial .hudf{display:inline}
+.metro.hud{--hc:var(--accent);--hc2:var(--acc2);--hl:rgba(43,85,201,.28);--hbg:var(--bg)}
+.metro.hud.navy{--bg:#0A1628;--tile:#10213A;--line:#1E3555;--ink:#E6F4FF;--muted:#7FA3C8;--accent:#2E9BFF;--acc2:#4FE3FF;--accent-soft:rgba(79,227,255,.10);--accent-glow:rgba(79,227,255,.18);--accent-shadow:rgba(46,155,255,.45);--hl:rgba(79,227,255,.30);
+  background:radial-gradient(120% 70% at 50% 25%,#12305A 0%,#0A1628 60%);border-color:#1E3555;color:var(--ink);box-shadow:0 20px 50px rgba(5,15,30,.35)}
+.metro.hud .dial .hudb path,.metro.hud .dial .hudf path{fill:none;stroke:var(--hc2);stroke-width:1.5;stroke-linecap:round}
+.metro.hud .dial .spin1 path{stroke:var(--hl);stroke-width:3}
+.metro.hud .dial .fine line{stroke:var(--hl);stroke-width:1}
+.metro.hud .dial .brk{stroke:var(--hc)!important;stroke-width:2!important;opacity:.7}
+.metro.hud .dial .dotm{fill:var(--hc2);filter:url(#dialGlow)}
+.metro.hud .dial .lab{font:600 10px ui-monospace,'SFMono-Regular',Menlo,monospace;letter-spacing:.2em;fill:var(--muted)}
+.metro.hud .dial .spin2 path{stroke:var(--hc2);stroke-width:2;opacity:.55}
+.metro.hud .dial .grid line{stroke:var(--hl);stroke-width:.5;opacity:.45}
+.metro.hud .dial .cross{stroke:var(--hl)!important}
+.metro.hud .dial .spin1{transform-origin:150px 150px;animation:spin 24s linear infinite}
+.metro.hud .dial .spin2{transform-origin:150px 150px;animation:spin 16s linear infinite reverse}
+@keyframes spin{to{transform:rotate(360deg)}}
+.metro.hud .dial .ring2{stroke-opacity:.35;stroke-dasharray:1 4}
+.metro.hud .dial .rim{stroke:var(--hc2);stroke-opacity:.5;filter:url(#dialGlow)}
+.metro.hud .dial .gloss{display:none}
+.metro.hud .dial .disk{fill:var(--bg)}
+.metro.hud.navy .dial .disk{fill:#081323}
+.metro.hud .dial .led line{stroke-width:4}
+.metro.hud #bpm{text-shadow:0 0 24px var(--accent-glow)}
+.metro.hud .unit{font-family:ui-monospace,Menlo,monospace;letter-spacing:.3em}
+.metro.hud .term b{font-family:ui-monospace,Menlo,monospace;font-style:normal;letter-spacing:.18em;text-transform:uppercase;font-size:20px}
+.metro.hud.navy .term b{color:var(--acc2);text-shadow:0 0 12px var(--accent-shadow)}
+/* HUD 버튼: 모서리 깎은 판 + 가는 선 */
+.metro.hud .presets,.metro.hud .seg,.metro.hud .morebtn{border-radius:4px;background:linear-gradient(90deg,var(--accent-soft),transparent 40%,transparent 60%,var(--accent-soft));box-shadow:inset 0 0 0 1px var(--hl)}
+.metro.hud .presets button,.metro.hud .seg button{border-radius:0;clip-path:polygon(7px 0,100% 0,100% calc(100% - 7px),calc(100% - 7px) 100%,0 100%,0 7px)}
+.metro.hud .presets button[aria-pressed="true"],.metro.hud .seg button[aria-pressed="true"]{background:linear-gradient(135deg,var(--accent),var(--acc2));color:#fff;box-shadow:none}
+.metro.hud.navy .presets button[aria-pressed="true"],.metro.hud.navy .seg button[aria-pressed="true"]{color:#04101F}
+.metro.hud .round,.metro.hud .side .ic{background:transparent;box-shadow:inset 0 0 0 1px var(--hl);color:var(--ink)}
+.metro.hud .side svg{fill:var(--ink)}
+.metro.hud .beats i{background:transparent;box-shadow:inset 0 0 0 1.5px var(--hl);border-radius:2px;transform:rotate(45deg)}
+.metro.hud .beats i.first{box-shadow:inset 0 0 0 1.5px rgba(232,70,31,.6)}
+.metro.hud .beats i.on{background:linear-gradient(135deg,var(--accent),var(--acc2));box-shadow:0 0 12px var(--accent-shadow);transform:rotate(45deg) scale(1.15)}
+.metro.hud .beats i.first.on{background:var(--hard)}
+.metro.hud .beathint,.metro.hud .label,.metro.hud .side{color:var(--muted)}
+.metro.hud .morebtn .mlab{font-family:ui-monospace,Menlo,'IBM Plex Sans KR',monospace;letter-spacing:.1em}
+.metro.hud.navy .dial .bigic,html[data-theme="dark"] .metro.hud.navy .dial .bigic{background:rgba(8,19,35,.6);box-shadow:0 0 0 1.5px rgba(79,227,255,.35),0 0 30px rgba(79,227,255,.2)}
+/* 상자 네 모서리 꺾쇠 */
+.metro.hud{position:relative;border-radius:6px}
+.metro.hud::before,.metro.hud::after{content:"";position:absolute;width:40px;height:40px;pointer-events:none;border:3px solid var(--acc2);opacity:.9}
+.metro.hud::before{top:-2px;left:-2px;border-right:0;border-bottom:0}
+.metro.hud::after{bottom:-2px;right:-2px;border-left:0;border-top:0}
+@media (prefers-reduced-motion:reduce){ .metro.hud .dial .spin1,.metro.hud .dial .spin2{animation:none} }
+
 /* 메트로놈 상자 크기 80% (K 요청 2026-11-17 "10%만 줄여줘" → "10프로만 더") — 컴퓨터만, 휴대폰은 그대로 */
 @media (min-width:721px){ .metro{zoom:.8} }
 </style>
@@ -366,7 +415,7 @@ html[data-theme="dark"] .dial .playic svg{fill:#16181D}
 <div class="layout">
 <aside class="ad ad-side" aria-label="광고">광고<small>160×600</small></aside>
 <div class="wrap">
-  <section class="metro v-led hov" aria-label="메트로놈">
+  <section class="metro v-led hov hud navy" aria-label="메트로놈">
     <div class="term"><b id="termIt">Largo</b><span id="termKo">아주 느리고 폭넓게</span></div>
     <div class="dial" id="dial">
       <svg viewBox="0 0 300 300" aria-hidden="true">
@@ -379,6 +428,12 @@ html[data-theme="dark"] .dial .playic svg{fill:#16181D}
           <radialGradient id="dialDisk" cx=".5" cy=".38" r=".7"><stop class="d1" offset="0"/><stop class="d2" offset="1"/></radialGradient>
           <filter id="dialGlow" filterUnits="userSpaceOnUse" x="-400" y="-500" width="1200" height="1300"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
         </defs>
+<g class="hudb">
+          <g class="spin1"><path d="M-11.6,91.2 A172,172 0 0 1 91.2,-11.6"/><path d="M208.8,-11.6 A172,172 0 0 1 299.0,64.0"/><path d="M311.6,208.8 A172,172 0 0 1 236.0,299.0"/><path d="M120.1,319.4 A172,172 0 0 1 39.4,281.8"/></g>
+          <g class="fine"><line x1="308.0" y1="150.0" x2="316.0" y2="150.0"/><line x1="307.1" y1="166.5" x2="311.1" y2="166.9"/><line x1="304.5" y1="182.9" x2="308.5" y2="183.7"/><line x1="300.3" y1="198.8" x2="304.1" y2="200.1"/><line x1="294.3" y1="214.3" x2="298.0" y2="215.9"/><line x1="286.8" y1="229.0" x2="293.8" y2="233.0"/><line x1="277.8" y1="242.9" x2="281.1" y2="245.2"/><line x1="267.4" y1="255.7" x2="270.4" y2="258.4"/><line x1="255.7" y1="267.4" x2="258.4" y2="270.4"/><line x1="242.9" y1="277.8" x2="245.2" y2="281.1"/><line x1="229.0" y1="286.8" x2="233.0" y2="293.8"/><line x1="214.3" y1="294.3" x2="215.9" y2="298.0"/><line x1="198.8" y1="300.3" x2="200.1" y2="304.1"/><line x1="182.9" y1="304.5" x2="183.7" y2="308.5"/><line x1="166.5" y1="307.1" x2="166.9" y2="311.1"/><line x1="150.0" y1="308.0" x2="150.0" y2="316.0"/><line x1="133.5" y1="307.1" x2="133.1" y2="311.1"/><line x1="117.1" y1="304.5" x2="116.3" y2="308.5"/><line x1="101.2" y1="300.3" x2="99.9" y2="304.1"/><line x1="85.7" y1="294.3" x2="84.1" y2="298.0"/><line x1="71.0" y1="286.8" x2="67.0" y2="293.8"/><line x1="57.1" y1="277.8" x2="54.8" y2="281.1"/><line x1="44.3" y1="267.4" x2="41.6" y2="270.4"/><line x1="32.6" y1="255.7" x2="29.6" y2="258.4"/><line x1="22.2" y1="242.9" x2="18.9" y2="245.2"/><line x1="13.2" y1="229.0" x2="6.2" y2="233.0"/><line x1="5.7" y1="214.3" x2="2.0" y2="215.9"/><line x1="-0.3" y1="198.8" x2="-4.1" y2="200.1"/><line x1="-4.5" y1="182.9" x2="-8.5" y2="183.7"/><line x1="-7.1" y1="166.5" x2="-11.1" y2="166.9"/><line x1="-8.0" y1="150.0" x2="-16.0" y2="150.0"/><line x1="-7.1" y1="133.5" x2="-11.1" y2="133.1"/><line x1="-4.5" y1="117.1" x2="-8.5" y2="116.3"/><line x1="-0.3" y1="101.2" x2="-4.1" y2="99.9"/><line x1="5.7" y1="85.7" x2="2.0" y2="84.1"/><line x1="13.2" y1="71.0" x2="6.2" y2="67.0"/><line x1="22.2" y1="57.1" x2="18.9" y2="54.8"/><line x1="32.6" y1="44.3" x2="29.6" y2="41.6"/><line x1="44.3" y1="32.6" x2="41.6" y2="29.6"/><line x1="57.1" y1="22.2" x2="54.8" y2="18.9"/><line x1="71.0" y1="13.2" x2="67.0" y2="6.2"/><line x1="85.7" y1="5.7" x2="84.1" y2="2.0"/><line x1="101.2" y1="-0.3" x2="99.9" y2="-4.1"/><line x1="117.1" y1="-4.5" x2="116.3" y2="-8.5"/><line x1="133.5" y1="-7.1" x2="133.1" y2="-11.1"/><line x1="150.0" y1="-8.0" x2="150.0" y2="-16.0"/><line x1="166.5" y1="-7.1" x2="166.9" y2="-11.1"/><line x1="182.9" y1="-4.5" x2="183.7" y2="-8.5"/><line x1="198.8" y1="-0.3" x2="200.1" y2="-4.1"/><line x1="214.3" y1="5.7" x2="215.9" y2="2.0"/><line x1="229.0" y1="13.2" x2="233.0" y2="6.2"/><line x1="242.9" y1="22.2" x2="245.2" y2="18.9"/><line x1="255.7" y1="32.6" x2="258.4" y2="29.6"/><line x1="267.4" y1="44.3" x2="270.4" y2="41.6"/><line x1="277.8" y1="57.1" x2="281.1" y2="54.8"/><line x1="286.8" y1="71.0" x2="293.8" y2="67.0"/><line x1="294.3" y1="85.7" x2="298.0" y2="84.1"/><line x1="300.3" y1="101.2" x2="304.1" y2="99.9"/><line x1="304.5" y1="117.1" x2="308.5" y2="116.3"/><line x1="307.1" y1="133.5" x2="311.1" y2="133.1"/></g>
+          <path class="brk" d="M-8,96 L-16,104 L-16,196 L-8,204"/><path class="brk" d="M308,96 L316,104 L316,196 L308,204"/>
+          <circle class="dotm" cx="-16" cy="150" r="2.5"/><circle class="dotm" cx="316" cy="150" r="2.5"/>
+        </g>
         <g class="led" id="dialLed"></g>
         <g class="ticks" id="dialTicks"></g>
         <circle class="track" cx="150" cy="150" r="136" transform="rotate(135 150 150)"/>
@@ -395,6 +450,9 @@ html[data-theme="dark"] .dial .playic svg{fill:#16181D}
         </g>
         <circle class="rim" cx="150" cy="150" r="116"/>
         <circle class="ring2" cx="150" cy="150" r="104"/>
+        <g class="hudf"><g class="spin2"><path d="M205.0,54.7 A110,110 0 0 1 258.3,130.9"/><path d="M205.0,245.3 A110,110 0 0 1 130.9,258.3"/><path d="M54.7,205.0 A110,110 0 0 1 46.6,112.4"/></g>
+          <g class="grid" clip-path="url(#dialIn)"><line x1="34" y1="0" x2="34" y2="300"/><line x1="50" y1="0" x2="50" y2="300"/><line x1="66" y1="0" x2="66" y2="300"/><line x1="82" y1="0" x2="82" y2="300"/><line x1="98" y1="0" x2="98" y2="300"/><line x1="114" y1="0" x2="114" y2="300"/><line x1="130" y1="0" x2="130" y2="300"/><line x1="146" y1="0" x2="146" y2="300"/><line x1="162" y1="0" x2="162" y2="300"/><line x1="178" y1="0" x2="178" y2="300"/><line x1="194" y1="0" x2="194" y2="300"/><line x1="210" y1="0" x2="210" y2="300"/><line x1="226" y1="0" x2="226" y2="300"/><line x1="242" y1="0" x2="242" y2="300"/><line x1="258" y1="0" x2="258" y2="300"/><line x1="274" y1="0" x2="274" y2="300"/><line x1="290" y1="0" x2="290" y2="300"/><line x1="0" y1="38" x2="300" y2="38"/><line x1="0" y1="54" x2="300" y2="54"/><line x1="0" y1="70" x2="300" y2="70"/><line x1="0" y1="86" x2="300" y2="86"/><line x1="0" y1="102" x2="300" y2="102"/><line x1="0" y1="118" x2="300" y2="118"/><line x1="0" y1="134" x2="300" y2="134"/><line x1="0" y1="150" x2="300" y2="150"/><line x1="0" y1="166" x2="300" y2="166"/><line x1="0" y1="182" x2="300" y2="182"/><line x1="0" y1="198" x2="300" y2="198"/><line x1="0" y1="214" x2="300" y2="214"/><line x1="0" y1="230" x2="300" y2="230"/><line x1="0" y1="246" x2="300" y2="246"/><line x1="0" y1="262" x2="300" y2="262"/><line x1="0" y1="278" x2="300" y2="278"/><line x1="0" y1="294" x2="300" y2="294"/></g>
+          <path class="cross" d="M150,40 v10 M150,250 v10 M40,150 h10 M250,150 h10"/></g>
         <circle class="knob" id="dialKnob" cx="150" cy="14" r="9"/>
       </svg>
       <button type="button" class="round" id="minus" aria-label="1 느리게">−</button>
