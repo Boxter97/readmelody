@@ -94,3 +94,16 @@ html[data-theme="dark"] .band .nav .gbtn.cur{background:var(--accent);color:#161
 .band .nav .drop .soon{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:46px;padding:0 14px;border-radius:10px;font-size:17px;font-weight:700;line-height:1.2;white-space:nowrap;color:#A9B0BC;cursor:default}
 .band .nav .drop .soon small{font-size:13px;font-weight:600;color:#A9B0BC;border:1.5px solid var(--line);border-radius:999px;padding:1px 8px}
 html[data-theme="dark"] .band .nav .drop .soon,html[data-theme="dark"] .band .nav .drop .soon small{color:#5E6672}
+
+
+/* 크리스마스 시즌 (K 요청 2026-11-26) — theme.js 맨 아래 SEASON 한 줄로 켜고 끔 */
+.xm-snow{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:60}
+.xmas .band{position:relative}
+.xm-ledge{position:absolute;left:0;right:0;bottom:-12px;height:22px;pointer-events:none;z-index:2;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='22' viewBox='0 0 160 22'%3E%3Cpath d='M-2 6 Q10 2 20 5 Q30 8 40 4 Q52 1 62 5 Q72 8 84 4 Q96 1 106 5 Q116 8 128 3 Q140 1 150 5 Q156 7 162 6 L162 12 L136 12 Q134 18 132 12 L104 12 Q102 20 100 12 L66 12 Q64 16 62 12 L30 12 Q28 19 26 12 L-2 12 Z' fill='%23FFFFFF' stroke='%23AFC6E4' stroke-width='1.4' stroke-linejoin='round'/%3E%3C/svg%3E") repeat-x;background-size:160px 22px}
+html[data-theme="dark"] .xm-ledge{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='22' viewBox='0 0 160 22'%3E%3Cpath d='M-2 6 Q10 2 20 5 Q30 8 40 4 Q52 1 62 5 Q72 8 84 4 Q96 1 106 5 Q116 8 128 3 Q140 1 150 5 Q156 7 162 6 L162 12 L136 12 Q134 18 132 12 L104 12 Q102 20 100 12 L66 12 Q64 16 62 12 L30 12 Q28 19 26 12 L-2 12 Z' fill='%23E8EEF6' stroke='%238496AE' stroke-width='1.4' stroke-linejoin='round'/%3E%3C/svg%3E")}
+.xmas .site-foot{position:relative;margin-top:30px}
+.xm-bank{position:absolute;left:0;right:0;top:-26px;height:26px;pointer-events:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='26' viewBox='0 0 240 26'%3E%3Cpath d='M-2 14 Q20 4 46 11 Q66 17 88 9 Q112 1 138 10 Q156 16 176 8 Q204 0 224 10 Q234 14 242 14 L242 28 L-2 28 Z' fill='%23FFFFFF' stroke='%23AFC6E4' stroke-width='1.4' stroke-linejoin='round'/%3E%3C/svg%3E") repeat-x;background-size:240px 26px}
+html[data-theme="dark"] .xm-bank{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='26' viewBox='0 0 240 26'%3E%3Cpath d='M-2 14 Q20 4 46 11 Q66 17 88 9 Q112 1 138 10 Q156 16 176 8 Q204 0 224 10 Q234 14 242 14 L242 28 L-2 28 Z' fill='%23E8EEF6' stroke='%238496AE' stroke-width='1.4' stroke-linejoin='round'/%3E%3C/svg%3E")}
+/* 로고: 산타 모자 + 글자 위 눈 (로고 그림과 같은 자리 · 같은 크기로 겹침) */
+.xmas h1.logo{position:relative}
+.xm-deco{position:absolute;left:-5px;top:0;width:100%;height:100%;overflow:visible;pointer-events:none}

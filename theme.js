@@ -187,3 +187,48 @@ window.gmCount=function(n){
 
 /* 뒤로 가기로 돌아와도 처음 상태로 — 브라우저가 예전 화면을 그대로 꺼내 보여 주지 않게 (K 요청 2026-11-21) */
 window.addEventListener('pageshow',function(e){ if(e.persisted) location.reload(); });
+
+/* 크리스마스 시즌 (K 요청 2026-11-26 "홈페이지 전체 크리스마스 느낌, 눈 쌓이고 눈 오고" + "로고도 크리스마스 느낌") — 모든 페이지 공통.
+   시즌이 끝나면 아래 SEASON='' 한 줄만 바꾸면 전부 꺼짐 (메트로놈 크로매틱 크리스마스는 따로: metronome/index.html의 xmas 클래스)
+   - 화면 전체에 눈이 내림 (누르기에 영향 없음, '동작 줄이기' 설정이면 안 내림)
+   - 맨 위 띠 아래 선 · 맨 아래 꼬리말 위에 쌓인 눈
+   - 로고: 기타 헤드에 산타 모자 + 글자 위에 쌓인 눈 */
+(function(){
+  var SEASON='xmas'; if(SEASON!=='xmas') return;
+  var root=document.documentElement; root.classList.add('xmas');
+  var DECO='<svg class="xm-deco" viewBox="0 0 380 200" preserveAspectRatio="none" aria-hidden="true" focusable="false"><g fill="#fff" stroke="#1A1F2B" stroke-width="2" stroke-linejoin="round"><path d="M155.0 6.6 L155.0 4.6 Q155.0 4.6 157.0 3.0 Q159.0 1.4 161.0 2.8 Q163.0 4.2 165.0 4.3 Q167.0 4.4 168.5 7.1 L170.0 9.8 L170.0 12.8 L167.0 11.4 L163.0 10.5 L159.0 9.4 L155.0 7.6Z"/><path d="M212.0 133.9 L212.0 131.9 Q212.0 131.9 214.0 130.3 Q216.0 128.7 218.0 127.6 Q220.0 126.5 222.0 128.2 Q224.0 129.9 226.0 129.3 Q228.0 128.7 230.0 127.5 Q232.0 126.3 234.0 127.6 Q236.0 129.0 238.0 129.4 Q240.0 129.7 242.0 127.4 Q244.0 125.1 246.0 124.6 Q248.0 124.1 250.0 125.6 Q252.0 127.1 254.0 126.3 Q256.0 125.5 258.0 126.2 Q260.0 126.9 261.0 128.7 L262.0 130.5 L262.0 133.5 L260.0 133.5 L256.0 133.5 L252.0 133.6 L248.0 134.1 L244.0 134.9 L240.0 136.2 L236.0 137.2 L232.0 136.9 L228.0 136.5 L224.0 136.5 L220.0 136.5 L216.0 136.7 L212.0 134.9Z"/><path d="M180.0 61.2 L180.0 59.2 Q180.0 59.2 182.0 56.2 Q184.0 53.1 186.0 53.7 Q188.0 54.2 190.0 53.2 Q192.0 52.1 194.0 51.5 Q196.0 50.8 198.0 53.2 Q200.0 55.5 202.0 55.7 Q204.0 55.8 206.0 54.0 Q208.0 52.2 210.0 53.3 Q212.0 54.3 214.0 55.8 Q216.0 57.3 218.0 59.4 L220.0 61.5 L220.0 64.5 L216.0 62.9 L212.0 62.5 L208.0 62.8 L204.0 63.2 L200.0 62.6 L196.0 61.4 L192.0 60.7 L188.0 60.6 L184.0 61.3 L180.0 62.2Z"/><path d="M227.0 69.4 L227.0 67.4 Q227.0 67.4 229.0 67.0 Q231.0 66.5 233.0 64.0 Q235.0 61.5 237.0 61.8 Q239.0 62.2 241.0 62.7 Q243.0 63.2 245.0 61.1 Q247.0 59.0 249.0 60.3 Q251.0 61.5 253.0 62.6 Q255.0 63.7 257.0 61.9 Q259.0 60.2 261.0 61.0 Q263.0 61.9 265.0 61.8 Q267.0 61.8 269.0 59.9 Q271.0 57.9 273.0 59.3 Q275.0 60.6 277.0 60.8 Q279.0 61.0 281.0 59.0 Q283.0 56.9 285.0 58.4 Q287.0 59.9 289.0 60.1 Q291.0 60.3 293.0 60.3 Q295.0 60.4 296.5 63.5 L298.0 66.5 L298.0 69.5 L295.0 68.2 L291.0 67.5 L287.0 67.5 L283.0 67.6 L279.0 68.1 L275.0 68.5 L271.0 68.5 L267.0 68.7 L263.0 69.9 L259.0 70.7 L255.0 70.4 L251.0 69.8 L247.0 69.5 L243.0 69.8 L239.0 70.7 L235.0 71.8 L231.0 72.2 L227.0 70.4Z"/><path d="M289.0 117.5 L289.0 115.5 Q289.0 115.5 291.0 113.0 Q293.0 110.6 295.0 109.6 Q297.0 108.7 299.0 110.0 Q301.0 111.4 303.0 109.5 Q305.0 107.5 307.0 108.0 Q309.0 108.5 311.0 110.3 Q313.0 112.0 315.0 113.3 Q317.0 114.6 317.5 116.0 L318.0 117.4 L318.0 120.4 L317.0 119.7 L313.0 118.1 L309.0 117.5 L305.0 117.5 L301.0 117.7 L297.0 118.2 L293.0 118.5 L289.0 118.5Z"/><path d="M326.0 127.3 L326.0 125.3 Q326.0 125.3 328.0 124.7 Q330.0 124.1 332.0 122.7 Q334.0 121.4 336.0 119.7 Q338.0 118.0 340.0 119.1 Q342.0 120.1 344.0 120.4 Q346.0 120.7 348.0 119.0 Q350.0 117.3 352.0 117.6 Q354.0 118.0 356.0 119.2 Q358.0 120.3 360.0 118.9 Q362.0 117.4 364.0 117.3 Q366.0 117.2 368.0 120.5 Q370.0 123.7 370.5 124.6 L371.0 125.4 L371.0 128.4 L370.0 127.8 L366.0 126.7 L362.0 126.5 L358.0 126.6 L354.0 127.2 L350.0 127.6 L346.0 127.5 L342.0 127.7 L338.0 128.7 L334.0 129.6 L330.0 129.7 L326.0 128.3Z"/></g><g transform="translate(60 74) rotate(-24)" stroke="#1A1F2B" stroke-width="2" stroke-linejoin="round"><path d="M30 -4 C28 -30 14 -50 -8 -54 C-26 -57 -40 -48 -46 -34 C-40 -40 -30 -40 -26 -32 C-24 -20 -26 -12 -30 -4 Z" fill="#D4252F"/><path d="M-8 -54 C-26 -57 -40 -48 -46 -34 C-40 -40 -30 -40 -26 -32 C-26 -42 -18 -50 -8 -54Z" fill="#A81822" stroke="none"/><path d="M20 -12 C18 -28 10 -40 -2 -46" fill="none" stroke="#F0636C" stroke-width="3" stroke-linecap="round"/><rect x="-38" y="-10" width="76" height="18" rx="9" fill="#fff"/><circle cx="-46" cy="-30" r="9" fill="#fff"/></g></svg>';
+  function mount(){
+    document.querySelectorAll('h1.logo').forEach(function(h){ if(h.querySelector('.xm-deco')) return; h.insertAdjacentHTML('beforeend',DECO); });
+    var band=document.querySelector('.band'); if(band&&!band.querySelector('.xm-ledge')){ var l=document.createElement('div'); l.className='xm-ledge'; l.setAttribute('aria-hidden','true'); band.appendChild(l); }
+    var foot=document.querySelector('.site-foot'); if(foot&&!foot.querySelector('.xm-bank')){ var b=document.createElement('div'); b.className='xm-bank'; b.setAttribute('aria-hidden','true'); foot.insertBefore(b,foot.firstChild); }
+    snow();
+  }
+  function snow(){
+    try{ if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches) return; }catch(e){}
+    if(document.querySelector('.xm-snow')) return;
+    var cv=document.createElement('canvas'); cv.className='xm-snow'; cv.setAttribute('aria-hidden','true'); document.body.appendChild(cv);
+    var cx=cv.getContext('2d'); if(!cx) return;
+    var W=0,H=0,dpr=1,fl=[],last=0,run=true;
+    function size(){ dpr=Math.min(2,window.devicePixelRatio||1); W=window.innerWidth; H=window.innerHeight; cv.width=W*dpr; cv.height=H*dpr; cx.setTransform(dpr,0,0,dpr,0,0);
+      var n=Math.max(28,Math.min(90,Math.round(W*H/15000)));
+      while(fl.length<n) fl.push(mk(true)); fl.length=n; }
+    function mk(any){ var r=1.2+Math.random()*2.8; return {x:Math.random()*W,y:any?Math.random()*H:-8,r:r,v:18+r*9+Math.random()*10,a:Math.random()*6.28,w:0.6+Math.random()*1.2,s:8+Math.random()*18,o:0.55+Math.random()*0.4}; }
+    function frame(t){
+      if(!run) return;
+      var dt=last?Math.min(0.05,(t-last)/1000):0.016; last=t;
+      cx.clearRect(0,0,W,H);
+      var dark=root.getAttribute('data-theme')==='dark';
+      cx.fillStyle=dark?'#FFFFFF':'#9DB9DD';
+      for(var i=0;i<fl.length;i++){ var f=fl[i];
+        f.y+=f.v*dt; f.a+=f.w*dt; var x=f.x+Math.sin(f.a)*f.s;
+        if(f.y>H+8){ fl[i]=mk(false); continue; }
+        cx.globalAlpha=f.o*(dark?0.8:0.85); cx.beginPath(); cx.arc(x,f.y,f.r,0,6.2832); cx.fill(); }
+      cx.globalAlpha=1;
+      requestAnimationFrame(frame);
+    }
+    size(); window.addEventListener('resize',size);
+    document.addEventListener('visibilitychange',function(){ if(document.hidden){ run=false; } else if(!run){ run=true; last=0; requestAnimationFrame(frame); } });
+    requestAnimationFrame(frame);
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',mount); else mount();
+})();
