@@ -393,6 +393,44 @@ html[data-theme="dark"] .dial .playic svg{fill:#16181D}
 .metro.hud::after{bottom:-2px;right:-2px;border-left:0;border-top:0}
 @media (prefers-reduced-motion:reduce){ .metro.hud .dial .spin1,.metro.hud .dial .spin2{animation:none} }
 
+/* 공학 계기판 (K 2026-11-25 "HUD 좋은데 사이트와 결이 안 맞아, 결 맞게 공학적으로") — .metro.eng */
+.dial .engs,.dial .ptr{display:none}
+.metro.eng .dial .engs,.metro.eng .dial .ptr{display:inline}
+.metro.eng .dial .engs line{stroke:var(--muted);stroke-linecap:round}
+.metro.eng .dial .engs .mn{stroke-width:1;opacity:.35}
+.metro.eng .dial .engs .md{stroke-width:1.2;opacity:.6}
+.metro.eng .dial .engs .mj{stroke-width:1.8;stroke:var(--ink)}
+.metro.eng .dial .engs text{font:600 12px var(--f-body);fill:var(--muted);font-variant-numeric:tabular-nums}
+.metro.eng .dial .ptr{fill:var(--accent);transition:transform .3s cubic-bezier(.3,.7,.3,1)}
+.metro.eng .dial .led line{stroke-width:3.5}
+.metro.eng .dial .led line.hot{filter:none}
+.metro.eng .dial .disk{fill:var(--bg)}
+.metro.eng .dial .rim{stroke:var(--line);stroke-opacity:1;stroke-width:1.5}
+.metro.eng .dial .ring2{stroke:var(--line);stroke-opacity:1;stroke-dasharray:2 4}
+.metro.eng .dial .gloss{display:none}
+.metro.eng .dial .hudf{display:inline}
+.metro.eng .dial .hudf .spin2{display:none}
+.metro.eng .dial .grid line{stroke:var(--accent);stroke-width:.5;opacity:.10}
+.metro.eng .dial .cross{fill:none;stroke:var(--muted);stroke-width:1.2;opacity:.6}
+.metro.eng .dial .wv.l1 path,.metro.eng .dial .wv.l2 path{fill:var(--accent);opacity:.07}
+.metro.eng .dial .wv.l3 path{fill:var(--accent);opacity:.14}
+.metro.eng .dial .wv.l3 path.crest{fill:none;stroke:var(--accent);stroke-width:1.6;opacity:1;filter:none}
+.metro.eng .dial .bub{display:none}
+.metro.eng .unit{color:var(--muted);opacity:1}
+.metro.eng .dial .playic{background:var(--accent);box-shadow:0 6px 14px var(--accent-shadow)}
+.metro.eng .dial .bigic{background:rgba(255,255,255,.72);box-shadow:0 0 0 1.5px var(--line),0 10px 26px rgba(24,32,46,.10)}
+.metro.eng .dial .bigic svg{fill:var(--accent);filter:none}
+html[data-theme="dark"] .metro.eng .dial .bigic{background:rgba(22,24,29,.72)}
+html[data-theme="dark"] .metro.eng .dial .playic svg,html[data-theme="dark"] .metro.eng .dial .bigic svg{fill:var(--accent)}
+html[data-theme="dark"] .metro.eng .dial .playic svg{fill:#16181D}
+/* 아래 버튼: 사이트 결 (연회색 판 + 고른 칸 흰색·파란 글씨) */
+.metro.eng .presets button[aria-pressed="true"],.metro.eng .seg button[aria-pressed="true"]{background:var(--bg);color:var(--accent);box-shadow:0 1px 3px rgba(24,32,46,.12),0 0 0 1.5px var(--accent)}
+html[data-theme="dark"] .metro.eng .presets button[aria-pressed="true"],html[data-theme="dark"] .metro.eng .seg button[aria-pressed="true"]{background:#2A2F38;color:var(--accent);box-shadow:0 0 0 1.5px var(--accent)}
+.metro.eng .beats i.on{background:var(--accent);box-shadow:0 0 0 4px var(--accent-glow)}
+.metro.eng .sw input:checked{background:var(--accent)}
+.metro.eng #bpm{font-variant-numeric:tabular-nums}
+.metro.eng .dial{margin-top:14px}
+
 /* 메트로놈 상자 크기 80% (K 요청 2026-11-17 "10%만 줄여줘" → "10프로만 더") — 컴퓨터만, 휴대폰은 그대로 */
 @media (min-width:721px){ .metro{zoom:.8} }
 </style>
@@ -415,7 +453,7 @@ html[data-theme="dark"] .dial .playic svg{fill:#16181D}
 <div class="layout">
 <aside class="ad ad-side" aria-label="광고">광고<small>160×600</small></aside>
 <div class="wrap">
-  <section class="metro v-led hov hud navy" aria-label="메트로놈">
+  <section class="metro v-led hov eng" aria-label="메트로놈">
     <div class="term"><b id="termIt">Largo</b><span id="termKo">아주 느리고 폭넓게</span></div>
     <div class="dial" id="dial">
       <svg viewBox="0 0 300 300" aria-hidden="true">
@@ -434,6 +472,8 @@ html[data-theme="dark"] .dial .playic svg{fill:#16181D}
           <path class="brk" d="M-8,96 L-16,104 L-16,196 L-8,204"/><path class="brk" d="M308,96 L316,104 L316,196 L308,204"/>
           <circle class="dotm" cx="-16" cy="150" r="2.5"/><circle class="dotm" cx="316" cy="150" r="2.5"/>
         </g>
+        <g class="engs" id="dialScale"></g>
+        <path class="ptr" id="dialPtr" d="M150,4 l-6,-10 h12 z"/>
         <g class="led" id="dialLed"></g>
         <g class="ticks" id="dialTicks"></g>
         <circle class="track" cx="150" cy="150" r="136" transform="rotate(135 150 150)"/>
@@ -603,6 +643,7 @@ function drawDial(){
   const C=2*Math.PI*136, t=(bpm-30)/220, a=(135+270*t)*Math.PI/180;
   $('dialVal').setAttribute('stroke-dasharray',(C*.75*t).toFixed(2)+' '+C.toFixed(2));
   const k=$('dialKnob'); k.setAttribute('cx',(150+136*Math.cos(a)).toFixed(1)); k.setAttribute('cy',(150+136*Math.sin(a)).toFixed(1));
+  $('dialPtr').setAttribute('transform','rotate('+(270*t-135).toFixed(2)+' 150 150)');
   $('dial').style.setProperty('--wv',(240/bpm).toFixed(2)+'s');
   $('dialWater').style.transform='translateY('+(266-(.1+.8*t)*232).toFixed(1)+'px)';
   $('dialTicks').querySelectorAll('line').forEach(l=>l.classList.toggle('on',+l.dataset.v<=bpm));
@@ -620,6 +661,11 @@ function drawDial(){
   for(let i=0;i<45;i++){ const v=30+220*i/44, a=(135+270*i/44)*Math.PI/180;
     h+='<line data-v="'+v.toFixed(1)+'" x1="'+(150+128*Math.cos(a)).toFixed(1)+'" y1="'+(150+128*Math.sin(a)).toFixed(1)+'" x2="'+(150+144*Math.cos(a)).toFixed(1)+'" y2="'+(150+144*Math.sin(a)).toFixed(1)+'"/>'; }
   $('dialLed').innerHTML=h;
+  h=''; /* 공학 눈금: 2 BPM마다 짧은 눈금, 10마다 중간, 50마다 긴 눈금 + 숫자 */
+  for(let v=30;v<=250;v+=2){ const a=(135+270*(v-30)/220)*Math.PI/180, L=v%50===0?12:v%10===0?7:4, r1=150;
+    h+='<line class="'+(v%50===0?'mj':v%10===0?'md':'mn')+'" x1="'+(150+r1*Math.cos(a)).toFixed(1)+'" y1="'+(150+r1*Math.sin(a)).toFixed(1)+'" x2="'+(150+(r1+L)*Math.cos(a)).toFixed(1)+'" y2="'+(150+(r1+L)*Math.sin(a)).toFixed(1)+'"/>';
+    if(v%50===0&&v<250) h+='<text x="'+(150+171*Math.cos(a)).toFixed(1)+'" y="'+(150+171*Math.sin(a)+4).toFixed(1)+'" text-anchor="middle">'+v+'</text>'; }
+  $('dialScale').innerHTML=h;
 })();
 (function(){
   const sv=$('dial').querySelector('svg'); let drag=false;
