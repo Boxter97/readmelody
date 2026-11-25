@@ -107,3 +107,26 @@ html[data-theme="dark"] .xm-bank{background-image:url("data:image/svg+xml,%3Csvg
 /* 로고: 산타 모자 + 글자 위 눈 (로고 그림과 같은 자리 · 같은 크기로 겹침) */
 .xmas h1.logo{position:relative}
 .xm-deco{position:absolute;left:-5px;top:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+/* 썰매 + 순록 · 메뉴 눈 · 호랑가시 · 전구 줄 (K 2026-11-26 시안 2차) */
+.xmas h1.logo{isolation:isolate}
+.xmas h1.logo img{position:relative;z-index:1}
+.xm-deco{z-index:3}
+.xm-sleigh{position:absolute;left:calc(-5px - 21.0526%);top:-35%;width:284.2105%;height:165%;overflow:visible;pointer-events:none}
+.xm-sb{z-index:0} .xm-sf{z-index:2}
+.xm-sf.no-d2 .xm-d2,.xm-sf.no-d1 .xm-d1{display:none}
+.xmas .band .nav,.xmas .lvsnd-btn{position:relative}
+.xm-cap{position:absolute;left:6px;top:-9px;width:calc(100% - 12px);height:14px;overflow:visible;pointer-events:none}
+.xm-cap path{fill:#fff;stroke:#AFC6E4;stroke-width:1.3}
+html[data-theme="dark"] .xm-cap path{fill:#E8EEF6;stroke:#8496AE}
+.xm-cap-s{left:4px;top:-7px;width:70px;height:11px}
+.xm-holly{position:absolute;overflow:visible;pointer-events:none;width:48px;left:-20px;top:-20px}
+.lvsnd-btn .xm-holly{width:34px;left:auto;top:auto;right:-14px;bottom:-14px}
+.xm-lights{position:absolute;left:0;right:0;bottom:-28px;height:30px;pointer-events:none;z-index:3;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='30' viewBox='0 0 280 30'%3E%3Cpath d='M-2 6 Q35 18 70 6 Q105 18 140 6 Q175 18 210 6 Q245 18 282 6' fill='none' stroke='%233A4250' stroke-width='1.5'/%3E%3Crect x='32.5' y='10' width='5' height='4' rx='1' fill='%233A4250'/%3E%3Cellipse cx='35' cy='20' rx='4.6' ry='6.5' fill='%23E8323C' stroke='%231A1F2B' stroke-width='1.3'/%3E%3Cellipse cx='33.6' cy='18' rx='1.4' ry='2.4' fill='%23fff' opacity='.6'/%3E%3Crect x='102.5' y='10' width='5' height='4' rx='1' fill='%233A4250'/%3E%3Cellipse cx='105' cy='20' rx='4.6' ry='6.5' fill='%233BA55C' stroke='%231A1F2B' stroke-width='1.3'/%3E%3Cellipse cx='103.6' cy='18' rx='1.4' ry='2.4' fill='%23fff' opacity='.6'/%3E%3Crect x='172.5' y='10' width='5' height='4' rx='1' fill='%233A4250'/%3E%3Cellipse cx='175' cy='20' rx='4.6' ry='6.5' fill='%23F2C230' stroke='%231A1F2B' stroke-width='1.3'/%3E%3Cellipse cx='173.6' cy='18' rx='1.4' ry='2.4' fill='%23fff' opacity='.6'/%3E%3Crect x='242.5' y='10' width='5' height='4' rx='1' fill='%233A4250'/%3E%3Cellipse cx='245' cy='20' rx='4.6' ry='6.5' fill='%232F6FE0' stroke='%231A1F2B' stroke-width='1.3'/%3E%3Cellipse cx='243.6' cy='18' rx='1.4' ry='2.4' fill='%23fff' opacity='.6'/%3E%3C/svg%3E") repeat-x;background-size:280px 30px}
+html[data-theme="dark"] .xm-lights{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='30' viewBox='0 0 280 30'%3E%3Cpath d='M-2 6 Q35 18 70 6 Q105 18 140 6 Q175 18 210 6 Q245 18 282 6' fill='none' stroke='%238A93A3' stroke-width='1.5'/%3E%3Crect x='32.5' y='10' width='5' height='4' rx='1' fill='%238A93A3'/%3E%3Cellipse cx='35' cy='20' rx='4.6' ry='6.5' fill='%23E8323C' stroke='%231A1F2B' stroke-width='1.3'/%3E%3Cellipse cx='33.6' cy='18' rx='1.4' ry='2.4' fill='%23fff' opacity='.6'/%3E%3Crect x='102.5' y='10' width='5' height='4' rx='1' fill='%238A93A3'/%3E%3Cellipse cx='105' cy='20' rx='4.6' ry='6.5' fill='%233BA55C' stroke='%231A1F2B' stroke-width='1.3'/%3E%3Cellipse cx='103.6' cy='18' rx='1.4' ry='2.4' fill='%23fff' opacity='.6'/%3E%3Crect x='172.5' y='10' width='5' height='4' rx='1' fill='%238A93A3'/%3E%3Cellipse cx='175' cy='20' rx='4.6' ry='6.5' fill='%23F2C230' stroke='%231A1F2B' stroke-width='1.3'/%3E%3Cellipse cx='173.6' cy='18' rx='1.4' ry='2.4' fill='%23fff' opacity='.6'/%3E%3Crect x='242.5' y='10' width='5' height='4' rx='1' fill='%238A93A3'/%3E%3Cellipse cx='245' cy='20' rx='4.6' ry='6.5' fill='%232F6FE0' stroke='%231A1F2B' stroke-width='1.3'/%3E%3Cellipse cx='243.6' cy='18' rx='1.4' ry='2.4' fill='%23fff' opacity='.6'/%3E%3C/svg%3E")}
+/* 꼬리말 위 겨울 장면 (트리 · 선물 · 눈사람) */
+.xmas .site-foot{margin-top:160px}
+.xm-scene{position:absolute;left:0;right:0;top:0;height:0;pointer-events:none;z-index:1}
+.xm-tree,.xm-snowman{position:absolute;bottom:14px;overflow:visible}
+.xm-tree{left:max(14px,3%);height:140px;width:162.8px}
+.xm-snowman{right:max(14px,3%);height:152px;width:109.6px}
+@media (max-width:720px){ .xmas .site-foot{margin-top:116px} .xm-tree{height:92px;width:107px} .xm-snowman{height:102px;width:73.5px} .xmas .band .in{row-gap:30px} }
