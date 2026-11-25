@@ -170,7 +170,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 .term span{font-size:16px;color:var(--muted)}
 /* 빠르기 다이얼 (K 요청 2026-11-25, pure:smooth 다이얼 참고): 30~250을 270° 호로, 파란 호 = 지금 빠르기. 호를 끌어서 바꿀 수 있음 */
 .dial{position:relative;width:min(340px,78vw);aspect-ratio:1;display:grid;place-items:center}
-.dial svg{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:pointer;overflow:visible}
+.dial>svg{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:pointer;overflow:visible}
 .dial .track,.dial .val{fill:none;stroke-width:6;stroke-linecap:round}
 .dial .track{stroke:var(--line);stroke-dasharray:640.88 854.51}
 .dial .val{stroke:var(--accent)}
@@ -212,7 +212,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 .beats .bg{display:flex;align-items:center;gap:7px}                 /* 큰 박 + 나눈 박(작은 점) 묶음 */
 .beats i.sub{width:12px;height:12px}
 @media (max-width:720px){ .beats.dense{gap:10px} .beats.dense .bg{gap:5px} .beats.dense i{width:16px;height:16px} .beats.dense i.first{width:22px;height:22px} .beats.dense i.mid{width:19px;height:19px} .beats.dense i.sub{width:9px;height:9px} }
-.ctrl{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:18px;width:100%;max-width:520px}
+.ctrl{display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:18px;width:100%;max-width:520px}
 .side{display:flex;flex-direction:column;align-items:center;gap:6px;border:0;background:transparent;color:var(--ink);font-weight:700;font-size:16px;cursor:pointer}
 .side .ic{width:58px;height:58px;border-radius:50%;background:var(--tile);border:1.5px solid var(--line);display:grid;place-items:center}
 .side svg{width:28px;height:28px;fill:var(--ink)}
@@ -255,6 +255,80 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 @media (max-width:720px){ .metro .presets button{min-width:0;padding:0 12px} .metro #subs button{min-width:0;padding:6px 10px} .metro .seg button{padding:8px 11px} }
 html[data-theme="dark"] .metro .presets button[aria-pressed="true"],html[data-theme="dark"] .metro .seg button[aria-pressed="true"]{background:#2A2F38;box-shadow:none}
 
+/* 미래지향 (K 요청 2026-11-25 "더 미래지향적이게") — 시안 A 글로우(.v-glow) · 시안 B LED(.v-led) */
+.metro{--acc2:#3FB8FF}
+html[data-theme="dark"] .metro{--acc2:#FFE58A}
+.dial .s1{stop-color:var(--accent)} .dial .s2{stop-color:var(--acc2)}
+.dial .d1{stop-color:var(--bg)} .dial .d2{stop-color:var(--tile)}
+.dial .disk{fill:url(#dialDisk)}
+.dial .rim{stroke:var(--accent);stroke-opacity:.18}
+.dial .ring2{fill:none;stroke:var(--accent);stroke-opacity:.10;stroke-width:1;stroke-dasharray:2 5}
+.dial .wv path{fill:url(#dialFill);opacity:1}
+.dial .wv.back path{opacity:.6}
+.dial .wv.front path{opacity:1}
+.dial .wv path.crest{fill:none;stroke:var(--acc2);stroke-width:2;opacity:.9;filter:url(#dialGlow)}
+#bpm{font-family:var(--f-body);font-weight:300;letter-spacing:-.04em}
+.unit{font-size:13px;letter-spacing:.22em;color:var(--accent);opacity:.75}
+.dial .knob{fill:var(--bg);stroke:var(--acc2);stroke-width:3;filter:url(#dialGlow)}
+.metro.v-glow .dial .val{stroke:url(#dialArc);stroke-width:7;filter:url(#dialGlow)}
+.metro.v-glow .dial .track{stroke-width:3;stroke-opacity:.7}
+.metro.v-glow .dial .led{display:none}
+.metro.v-led .dial .track,.metro.v-led .dial .val,.metro.v-led .dial .ticks,.metro.v-led .dial .knob{display:none}
+.metro.v-led .dial .led line{stroke:var(--line);stroke-width:5;stroke-linecap:round}
+.metro.v-led .dial .led line.on{stroke:url(#dialArc);stroke:var(--accent);filter:url(#dialGlow)}
+.metro.v-led .dial .led line.on:nth-child(n+16){stroke:color-mix(in srgb,var(--accent) 55%,var(--acc2))}
+.metro.v-led .dial .led line.on:nth-child(n+31){stroke:var(--acc2)}
+/* 아래 조작부: 고른 칸은 파랑 그라데이션 + 빛 */
+.metro .presets button[aria-pressed="true"],.metro .seg button[aria-pressed="true"]{background:linear-gradient(135deg,var(--accent),var(--acc2));color:#fff;box-shadow:0 4px 14px var(--accent-shadow)}
+html[data-theme="dark"] .metro .presets button[aria-pressed="true"],html[data-theme="dark"] .metro .seg button[aria-pressed="true"]{background:linear-gradient(135deg,var(--accent),var(--acc2));color:#16181D;box-shadow:0 4px 14px rgba(242,194,48,.25)}
+.metro .bigplay{background:linear-gradient(135deg,var(--accent),var(--acc2));box-shadow:0 10px 30px var(--accent-shadow),0 0 0 8px var(--accent-soft),0 0 40px var(--accent-glow)}
+.metro .beats i.on{background:linear-gradient(135deg,var(--accent),var(--acc2));box-shadow:0 0 12px var(--accent-shadow),0 0 0 4px var(--accent-glow)}
+.metro .sw input:checked{background:linear-gradient(135deg,var(--accent),var(--acc2))}
+
+/* 설정 펼치기 버튼 */
+.metro .morebtn{display:inline-flex;align-items:center;gap:14px;min-height:50px;padding:0 18px 0 20px;margin-top:6px;border:0;border-radius:999px;background:var(--tile);color:var(--ink);font-size:16px;font-weight:700}
+.metro .morebtn .mlab{color:var(--muted)}
+.metro .morebtn .msum{display:inline-flex;align-items:center;gap:10px;color:var(--accent)}
+.metro .morebtn .msum i{width:4px;height:4px;border-radius:50%;background:var(--line)}
+.metro .morebtn .msum svg{height:22px;width:auto;fill:currentColor;display:block}
+.metro .morebtn>svg{width:14px;height:14px;fill:none;stroke:var(--muted);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s}
+.metro .morebtn[aria-expanded="true"]>svg{transform:rotate(180deg)}
+.metro .more{display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:-6px;animation:moreIn .22s ease-out}
+@keyframes moreIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.metro .more .sndrow{margin-top:0}
+
+/* 물결 고급화 + 숫자 누르면 시작 (K 2026-11-25) */
+.dial{--wv:4s}
+.dial .wv path{animation:none;opacity:1}
+.dial .wv.l1 path{fill:url(#dialFill);opacity:.35;animation:wave2 calc(var(--wv)*2.2) linear infinite}
+.dial .wv.l1{transform:translateY(-10px)}
+.dial .wv.l2 path{fill:url(#dialFill);opacity:.5;animation:wave1 calc(var(--wv)*1.5) linear infinite reverse}
+.dial .wv.l2{transform:translateY(-4px)}
+.dial .wv.l3 path{fill:url(#dialFill2);animation:wave3 var(--wv) linear infinite}
+.dial .wv.l3 path.crest{fill:none;stroke:var(--acc2);stroke-width:2.2;opacity:.95;filter:url(#dialGlow)}
+@keyframes wave1{from{transform:translateX(-150px)}to{transform:translateX(0)}}
+@keyframes wave2{from{transform:translateX(-200px)}to{transform:translateX(0)}}
+@keyframes wave3{from{transform:translateX(-120px)}to{transform:translateX(0)}}
+.dial .bub circle{fill:#fff;opacity:0;animation:bub 5s ease-in infinite}
+.dial .bub circle:nth-child(2){animation-delay:1.2s;animation-duration:6s} .dial .bub circle:nth-child(3){animation-delay:2.4s;animation-duration:4.5s}
+.dial .bub circle:nth-child(4){animation-delay:3.1s} .dial .bub circle:nth-child(5){animation-delay:.6s;animation-duration:5.5s}
+@keyframes bub{0%{transform:translateY(160px);opacity:0}20%{opacity:.7}90%{opacity:.5}100%{transform:translateY(10px);opacity:0}}
+.dial .gloss{fill:url(#dialGloss);opacity:.55;pointer-events:none}
+html[data-theme="dark"] .dial .gloss{display:none}
+html[data-theme="dark"] .dial .bub circle{fill:var(--acc2)}
+#dialSurge.surge{animation:surge .32s ease-out}
+@keyframes surge{0%{transform:translateY(0)}30%{transform:translateY(-5px)}100%{transform:translateY(0)}}
+.dial .dialplay{position:absolute;left:50%;top:50%;width:77%;height:77%;transform:translate(-50%,-50%);border:0;border-radius:50%;background:transparent;cursor:pointer;z-index:1}
+.dial .dialplay:focus-visible{outline:3px solid var(--accent);outline-offset:4px}
+.dial .playic{display:grid;place-items:center;width:44px;height:44px;margin-top:10px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--acc2));box-shadow:0 6px 16px var(--accent-shadow)}
+.dial .playic svg{width:18px;height:18px;fill:#fff;margin-left:2px}
+.dial.run .playic svg{margin-left:0}
+html[data-theme="dark"] .dial .playic svg{fill:#16181D}
+.dial .unit{margin-top:6px;opacity:1}
+.metro .ctrl{max-width:380px}
+.dial .bpmbox{margin-top:34px}
+@media (prefers-reduced-motion:reduce){ .dial .wv path,.dial .bub circle,#dialSurge.surge{animation:none} }
+
 /* 메트로놈 상자 크기 80% (K 요청 2026-11-17 "10%만 줄여줘" → "10프로만 더") — 컴퓨터만, 휴대폰은 그대로 */
 @media (min-width:721px){ .metro{zoom:.8} }
 </style>
@@ -277,38 +351,54 @@ html[data-theme="dark"] .metro .presets button[aria-pressed="true"],html[data-th
 <div class="layout">
 <aside class="ad ad-side" aria-label="광고">광고<small>160×600</small></aside>
 <div class="wrap">
-  <section class="metro" aria-label="메트로놈">
+  <section class="metro v-led" aria-label="메트로놈">
     <div class="term"><b id="termIt">Largo</b><span id="termKo">아주 느리고 폭넓게</span></div>
     <div class="dial" id="dial">
       <svg viewBox="0 0 300 300" aria-hidden="true">
-        <defs><clipPath id="dialIn"><circle cx="150" cy="150" r="116"/></clipPath></defs>
+        <defs>
+          <clipPath id="dialIn"><circle cx="150" cy="150" r="116"/></clipPath>
+          <linearGradient id="dialArc" x1="0" y1="1" x2="1" y2="0"><stop class="s1" offset="0"/><stop class="s2" offset="1"/></linearGradient>
+          <linearGradient id="dialFill" x1="0" y1="0" x2="0" y2="1"><stop class="s2" offset="0" stop-opacity=".42"/><stop class="s1" offset=".6" stop-opacity=".16"/></linearGradient>
+          <linearGradient id="dialFill2" x1="0" y1="0" x2="0" y2="1"><stop class="s2" offset="0" stop-opacity=".34"/><stop class="s1" offset="1" stop-opacity=".16"/></linearGradient>
+          <linearGradient id="dialGloss" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".75"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+          <radialGradient id="dialDisk" cx=".5" cy=".38" r=".7"><stop class="d1" offset="0"/><stop class="d2" offset="1"/></radialGradient>
+          <filter id="dialGlow" filterUnits="userSpaceOnUse" x="-400" y="-500" width="1200" height="1300"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        </defs>
+        <g class="led" id="dialLed"></g>
         <g class="ticks" id="dialTicks"></g>
         <circle class="track" cx="150" cy="150" r="136" transform="rotate(135 150 150)"/>
         <circle class="val" id="dialVal" cx="150" cy="150" r="136" transform="rotate(135 150 150)"/>
         <circle class="disk" cx="150" cy="150" r="116"/>
         <g clip-path="url(#dialIn)">
-          <g class="water" id="dialWater">
-            <g class="wv back"><path d="M0,0 Q37.5,-9 75,0 T150,0 T225,0 T300,0 T375,0 T450,0 T525,0 T600,0 L600,400 L0,400 Z"/></g>
-            <g class="wv front"><path d="M0,0 Q37.5,-9 75,0 T150,0 T225,0 T300,0 T375,0 T450,0 T525,0 T600,0 L600,400 L0,400 Z"/></g>
-          </g>
+          <g class="water" id="dialWater"><g id="dialSurge">
+            <g class="wv l1"><path d="M0,0 Q50.0,-7 100.0,0 T200.0,0 T300.0,0 T400.0,0 T500.0,0 T600.0,0 T700.0,0 T800.0,0 T900.0,0 T1000.0,0 T1100.0,0 L1200,400 L0,400 Z"/></g>
+            <g class="wv l2"><path d="M0,0 Q37.5,-9 75.0,0 T150.0,0 T225.0,0 T300.0,0 T375.0,0 T450.0,0 T525.0,0 T600.0,0 T675.0,0 T750.0,0 T825.0,0 T900.0,0 T975.0,0 T1050.0,0 T1125.0,0 L1200,400 L0,400 Z"/></g>
+            <g class="wv l3"><path class="crest" d="M0,0 Q30.0,-6 60.0,0 T120.0,0 T180.0,0 T240.0,0 T300.0,0 T360.0,0 T420.0,0 T480.0,0 T540.0,0 T600.0,0 T660.0,0 T720.0,0 T780.0,0 T840.0,0 T900.0,0 T960.0,0 T1020.0,0 T1080.0,0 T1140.0,0"/><path d="M0,0 Q30.0,-6 60.0,0 T120.0,0 T180.0,0 T240.0,0 T300.0,0 T360.0,0 T420.0,0 T480.0,0 T540.0,0 T600.0,0 T660.0,0 T720.0,0 T780.0,0 T840.0,0 T900.0,0 T960.0,0 T1020.0,0 T1080.0,0 T1140.0,0 L1200,400 L0,400 Z"/></g>
+            <g class="bub"><circle cx="105" cy="60" r="2.2"/><circle cx="170" cy="90" r="1.6"/><circle cx="200" cy="40" r="2.6"/><circle cx="135" cy="110" r="1.4"/><circle cx="85" cy="100" r="1.8"/></g>
+          </g></g>
+          <ellipse class="gloss" cx="118" cy="82" rx="62" ry="30" transform="rotate(-28 118 82)"/>
         </g>
         <circle class="rim" cx="150" cy="150" r="116"/>
+        <circle class="ring2" cx="150" cy="150" r="104"/>
         <circle class="knob" id="dialKnob" cx="150" cy="14" r="9"/>
       </svg>
       <button type="button" class="round" id="minus" aria-label="1 느리게">−</button>
       <button type="button" class="round" id="plus" aria-label="1 빠르게">+</button>
-      <div class="bpmbox"><output id="bpm" aria-live="polite">60</output><span class="unit" id="unit">BPM · ♩ 기준</span></div>
+      <button type="button" class="dialplay" id="startBtn" aria-label="시작"></button>
+      <div class="bpmbox"><output id="bpm" aria-live="polite">60</output><span class="unit" id="unit">BPM · ♩ 기준</span><span class="playic"><svg viewBox="0 0 16 16" id="startIcon"><path d="M4 2l10 6-10 6z"/></svg></span></div>
     </div>
     <div class="presets" id="presets"></div>
     <div class="beatbox"><div class="beats" id="beats"></div><div class="beathint">큰 점을 누르면 강박이 바뀌어요</div></div>
     <div class="ctrl">
       <button type="button" class="side" id="tap"><span class="ic"><svg viewBox="0 0 24 24"><path d="M9 11V5.5a2 2 0 1 1 4 0V10l4.6 1.2a2.4 2.4 0 0 1 1.8 2.6l-.7 5.4A3 3 0 0 1 15.7 22h-4.2a3 3 0 0 1-2.4-1.2L5.4 16a1.8 1.8 0 0 1 2.7-2.4L9 14.6z"/></svg></span>탭</button>
-      <button type="button" class="bigplay" id="startBtn" aria-label="시작"><svg viewBox="0 0 16 16" id="startIcon"><path d="M4 2l10 6-10 6z"/></svg></button>
       <label class="side sw"><input type="checkbox" id="accent" checked>첫 박 강세</label>
     </div>
-    <div class="meterrow sndrow"><span class="label">소리</span><div class="seg" id="sounds"></div></div>
-    <div class="meterrow"><span class="label">박자</span><div class="seg" id="meters"></div></div>
-    <div class="meterrow"><span class="label">음표</span><div class="seg" id="subs"></div></div>
+    <button type="button" class="morebtn" id="moreBtn" aria-expanded="false" aria-controls="more"><span class="mlab">설정</span><span class="msum" id="moreSum"></span><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4l4 4 4-4"/></svg></button>
+    <div class="more" id="more" hidden>
+      <div class="meterrow sndrow"><span class="label">소리</span><div class="seg" id="sounds"></div></div>
+      <div class="meterrow"><span class="label">박자</span><div class="seg" id="meters"></div></div>
+      <div class="meterrow"><span class="label">음표</span><div class="seg" id="subs"></div></div>
+    </div>
   </section>
   <aside class="ad ad-bottom" aria-label="광고">광고<small>320×100</small></aside>
 </div>
@@ -394,20 +484,20 @@ function paint(){                                // 소리 나는 순간에 맞�
   while(queue.length&&queue[0].t<=ctx.currentTime){
     const q=queue.shift();
     dots.forEach((d,i)=>d.classList.toggle('on',i===q.b));
-    if(q.big){ $('bpm').classList.remove('pulse'); void $('bpm').offsetWidth; $('bpm').classList.add('pulse'); }
+    if(q.big){ const w=$('dialSurge'); w.classList.remove('surge'); void w.getBoundingClientRect(); w.classList.add('surge'); $('bpm').classList.remove('pulse'); void $('bpm').offsetWidth; $('bpm').classList.add('pulse'); }
   }
   raf=requestAnimationFrame(paint);
 }
 async function start(){
   audio(); running=true; beat=0; subI=0; queue=[]; nextT=ctx.currentTime+0.08;
   schedule(); timer=setInterval(schedule,25); raf=requestAnimationFrame(paint);
-  $('startBtn').setAttribute('aria-label','멈춤'); $('startIcon').innerHTML='<path d="M3 2h4v12H3zM9 2h4v12H9z"/>';
+  $('startBtn').setAttribute('aria-label','멈춤'); $('dial').classList.add('run'); $('startIcon').innerHTML='<path d="M3 2h4v12H3zM9 2h4v12H9z"/>';
   try{ if('wakeLock' in navigator) lock=await navigator.wakeLock.request('screen'); }catch(e){}
 }
 function stop(){
   running=false; clearInterval(timer); cancelAnimationFrame(raf); queue=[];
   $('beats').querySelectorAll('i').forEach(d=>d.classList.remove('on'));
-  $('startBtn').setAttribute('aria-label','시작'); $('startIcon').innerHTML='<path d="M4 2l10 6-10 6z"/>';
+  $('startBtn').setAttribute('aria-label','시작'); $('dial').classList.remove('run'); $('startIcon').innerHTML='<path d="M4 2l10 6-10 6z"/>';
   try{ if(lock){ lock.release(); lock=null; } }catch(e){}
 }
 let taps=[];
@@ -440,14 +530,20 @@ function drawDial(){
   const C=2*Math.PI*136, t=(bpm-30)/220, a=(135+270*t)*Math.PI/180;
   $('dialVal').setAttribute('stroke-dasharray',(C*.75*t).toFixed(2)+' '+C.toFixed(2));
   const k=$('dialKnob'); k.setAttribute('cx',(150+136*Math.cos(a)).toFixed(1)); k.setAttribute('cy',(150+136*Math.sin(a)).toFixed(1));
+  $('dial').style.setProperty('--wv',(240/bpm).toFixed(2)+'s');
   $('dialWater').style.transform='translateY('+(266-(.1+.8*t)*232).toFixed(1)+'px)';
   $('dialTicks').querySelectorAll('line').forEach(l=>l.classList.toggle('on',+l.dataset.v<=bpm));
+  $('dialLed').querySelectorAll('line').forEach(l=>l.classList.toggle('on',+l.dataset.v<=bpm));
 }
 (function(){ /* 바깥 눈금: 10 BPM마다 (50 단위는 조금 길게) */
   let h='';
   for(let v=30;v<=250;v+=10){ const a=(135+270*(v-30)/220)*Math.PI/180, r1=v%50===0?146:148, r2=154;
     h+='<line data-v="'+v+'" x1="'+(150+r1*Math.cos(a)).toFixed(1)+'" y1="'+(150+r1*Math.sin(a)).toFixed(1)+'" x2="'+(150+r2*Math.cos(a)).toFixed(1)+'" y2="'+(150+r2*Math.sin(a)).toFixed(1)+'"/>'; }
   $('dialTicks').innerHTML=h;
+  h=''; /* LED 칸 45개 */
+  for(let i=0;i<45;i++){ const v=30+220*i/44, a=(135+270*i/44)*Math.PI/180;
+    h+='<line data-v="'+v.toFixed(1)+'" x1="'+(150+128*Math.cos(a)).toFixed(1)+'" y1="'+(150+128*Math.sin(a)).toFixed(1)+'" x2="'+(150+144*Math.cos(a)).toFixed(1)+'" y2="'+(150+144*Math.sin(a)).toFixed(1)+'"/>'; }
+  $('dialLed').innerHTML=h;
 })();
 (function(){
   const sv=$('dial').querySelector('svg'); let drag=false;
@@ -477,7 +573,15 @@ document.addEventListener('keydown',e=>{
   if(e.code==='ArrowDown'){ e.preventDefault(); setBpm(bpm-1); }
 });
 document.addEventListener('visibilitychange',async()=>{ if(running&&document.visibilityState==='visible'&&!lock){ try{ lock=await navigator.wakeLock.request('screen'); }catch(e){} } });
-setBpm(60); syncMeter(); syncSubs(); drawBeats(); syncAcc(); syncSounds();
+
+/* 설정 펼치기 (K 요청 2026-11-25): 소리·박자·음표를 접어 두고, 접힌 버튼에 지금 설정을 보여 줌. 처음엔 접힘 */
+function moreSum(){
+  const m=$('meters').querySelector('[aria-pressed="true"]'), so=$('sounds').querySelector('[aria-pressed="true"]'), su=$('subs').querySelector('[aria-pressed="true"]');
+  $('moreSum').innerHTML=(m?m.textContent:'')+'<i></i>'+(so?so.textContent:'')+'<i></i>'+(su?su.innerHTML:'');
+}
+['meters','sounds','subs'].forEach(id=>$(id).addEventListener('click',()=>setTimeout(moreSum,0)));
+$('moreBtn').onclick=()=>{ const open=$('more').hidden; $('more').hidden=!open; $('moreBtn').setAttribute('aria-expanded',open); };
+setBpm(60); syncMeter(); syncSubs(); drawBeats(); syncAcc(); syncSounds(); moreSum();
 })();
 </script>
 
