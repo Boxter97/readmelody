@@ -328,7 +328,7 @@ html[data-theme="dark"] .dial .playic svg{fill:#16181D}
 .dial .bpmbox{margin-top:34px}
 @media (prefers-reduced-motion:reduce){ .dial .wv path,.dial .bub circle,#dialSurge.surge{animation:none} }
 
-/* 시안: 마우스 대면 유리 원 (.metro.hov 일 때만) */
+/* 마우스 대면 유리 원 (K 고름 2026-11-25) — 컴퓨터만, 휴대폰은 작은 ▶ */
 .dial .bigic{display:none}
 @media (hover:hover) and (pointer:fine){
   .metro.hov .dial .playic{display:none}
@@ -366,7 +366,7 @@ html[data-theme="dark"] .dial .playic svg{fill:#16181D}
 <div class="layout">
 <aside class="ad ad-side" aria-label="광고">광고<small>160×600</small></aside>
 <div class="wrap">
-  <section class="metro v-led" aria-label="메트로놈">
+  <section class="metro v-led hov" aria-label="메트로놈">
     <div class="term"><b id="termIt">Largo</b><span id="termKo">아주 느리고 폭넓게</span></div>
     <div class="dial" id="dial">
       <svg viewBox="0 0 300 300" aria-hidden="true">
