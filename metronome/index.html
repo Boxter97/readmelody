@@ -275,9 +275,8 @@ html[data-theme="dark"] .metro{--acc2:#FFE58A}
 .metro.v-glow .dial .led{display:none}
 .metro.v-led .dial .track,.metro.v-led .dial .val,.metro.v-led .dial .ticks,.metro.v-led .dial .knob{display:none}
 .metro.v-led .dial .led line{stroke:var(--line);stroke-width:5;stroke-linecap:round}
-.metro.v-led .dial .led line.on{stroke:url(#dialArc);stroke:var(--accent);filter:url(#dialGlow)}
-.metro.v-led .dial .led line.on:nth-child(n+16){stroke:color-mix(in srgb,var(--accent) 55%,var(--acc2))}
-.metro.v-led .dial .led line.on:nth-child(n+31){stroke:var(--acc2)}
+.metro.v-led .dial .led line.on{stroke:var(--accent)}
+.metro.v-led .dial .led line.hot{stroke:var(--accent);filter:url(#dialGlow)}
 /* 아래 조작부: 고른 칸은 파랑 그라데이션 + 빛 */
 .metro .presets button[aria-pressed="true"],.metro .seg button[aria-pressed="true"]{background:linear-gradient(135deg,var(--accent),var(--acc2));color:#fff;box-shadow:0 4px 14px var(--accent-shadow)}
 html[data-theme="dark"] .metro .presets button[aria-pressed="true"],html[data-theme="dark"] .metro .seg button[aria-pressed="true"]{background:linear-gradient(135deg,var(--accent),var(--acc2));color:#16181D;box-shadow:0 4px 14px rgba(242,194,48,.25)}
@@ -328,6 +327,22 @@ html[data-theme="dark"] .dial .playic svg{fill:#16181D}
 .metro .ctrl{max-width:380px}
 .dial .bpmbox{margin-top:34px}
 @media (prefers-reduced-motion:reduce){ .dial .wv path,.dial .bub circle,#dialSurge.surge{animation:none} }
+
+/* 시안: 마우스 대면 유리 원 (.metro.hov 일 때만) */
+.dial .bigic{display:none}
+@media (hover:hover) and (pointer:fine){
+  .metro.hov .dial .playic{display:none}
+  .metro.hov .dial .bpmbox{margin-top:6px;transition:opacity .25s,transform .25s}
+  .metro.hov .dial .bigic{display:grid;place-items:center;position:absolute;left:50%;top:50%;width:46%;height:46%;border-radius:50%;
+    background:rgba(255,255,255,.62);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+    box-shadow:0 0 0 1.5px rgba(43,85,201,.22),0 12px 32px rgba(43,85,201,.18),inset 0 1px 0 rgba(255,255,255,.9);
+    opacity:0;transform:translate(-50%,-50%) scale(.85);transition:opacity .25s,transform .25s;pointer-events:none}
+  html[data-theme="dark"] .metro.hov .dial .bigic{background:rgba(31,35,42,.6);box-shadow:0 0 0 1.5px rgba(242,194,48,.3),0 12px 32px rgba(0,0,0,.35)}
+  .metro.hov .dial .bigic svg{width:38%;height:38%;fill:url(#playGrad);margin-left:6%;filter:drop-shadow(0 4px 10px var(--accent-shadow))}
+  .metro.hov .dial.run .bigic svg{margin-left:0}
+  .metro.hov .dial .dialplay:hover .bigic{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  .metro.hov .dial:has(.dialplay:hover) .bpmbox{opacity:.18;transform:scale(.96)}
+}
 
 /* 메트로놈 상자 크기 80% (K 요청 2026-11-17 "10%만 줄여줘" → "10프로만 더") — 컴퓨터만, 휴대폰은 그대로 */
 @media (min-width:721px){ .metro{zoom:.8} }
@@ -384,7 +399,7 @@ html[data-theme="dark"] .dial .playic svg{fill:#16181D}
       </svg>
       <button type="button" class="round" id="minus" aria-label="1 느리게">−</button>
       <button type="button" class="round" id="plus" aria-label="1 빠르게">+</button>
-      <button type="button" class="dialplay" id="startBtn" aria-label="시작"></button>
+      <button type="button" class="dialplay" id="startBtn" aria-label="시작"><span class="bigic"><svg viewBox="0 0 16 16" id="startIcon2"><defs><linearGradient id="playGrad" x1="0" y1="0" x2="1" y2="1"><stop class="s1" offset="0"/><stop class="s2" offset="1"/></linearGradient></defs><g id="startIcon2g"><path d="M4 2l10 6-10 6z"/></g></svg></span></button>
       <div class="bpmbox"><output id="bpm" aria-live="polite">60</output><span class="unit" id="unit">BPM · ♩ 기준</span><span class="playic"><svg viewBox="0 0 16 16" id="startIcon"><path d="M4 2l10 6-10 6z"/></svg></span></div>
     </div>
     <div class="presets" id="presets"></div>
@@ -491,13 +506,13 @@ function paint(){                                // 소리 나는 순간에 맞�
 async function start(){
   audio(); running=true; beat=0; subI=0; queue=[]; nextT=ctx.currentTime+0.08;
   schedule(); timer=setInterval(schedule,25); raf=requestAnimationFrame(paint);
-  $('startBtn').setAttribute('aria-label','멈춤'); $('dial').classList.add('run'); $('startIcon').innerHTML='<path d="M3 2h4v12H3zM9 2h4v12H9z"/>';
+  $('startBtn').setAttribute('aria-label','멈춤'); $('dial').classList.add('run'); $('startIcon').innerHTML=$('startIcon2g').innerHTML='<path d="M3 2h4v12H3zM9 2h4v12H9z"/>';
   try{ if('wakeLock' in navigator) lock=await navigator.wakeLock.request('screen'); }catch(e){}
 }
 function stop(){
   running=false; clearInterval(timer); cancelAnimationFrame(raf); queue=[];
   $('beats').querySelectorAll('i').forEach(d=>d.classList.remove('on'));
-  $('startBtn').setAttribute('aria-label','시작'); $('dial').classList.remove('run'); $('startIcon').innerHTML='<path d="M4 2l10 6-10 6z"/>';
+  $('startBtn').setAttribute('aria-label','시작'); $('dial').classList.remove('run'); $('startIcon').innerHTML=$('startIcon2g').innerHTML='<path d="M4 2l10 6-10 6z"/>';
   try{ if(lock){ lock.release(); lock=null; } }catch(e){}
 }
 let taps=[];
@@ -533,7 +548,10 @@ function drawDial(){
   $('dial').style.setProperty('--wv',(240/bpm).toFixed(2)+'s');
   $('dialWater').style.transform='translateY('+(266-(.1+.8*t)*232).toFixed(1)+'px)';
   $('dialTicks').querySelectorAll('line').forEach(l=>l.classList.toggle('on',+l.dataset.v<=bpm));
-  $('dialLed').querySelectorAll('line').forEach(l=>l.classList.toggle('on',+l.dataset.v<=bpm));
+  /* LED: 켜진 칸은 처음 약한 불 → 끝으로 갈수록 진한 불 (K 2026-11-25) */
+  const led=[...$('dialLed').querySelectorAll('line')], lit=led.filter(l=>+l.dataset.v<=bpm), n=lit.length;
+  led.forEach(l=>{ l.classList.remove('on','hot'); l.style.opacity=''; });
+  lit.forEach((l,i)=>{ l.classList.add('on'); const f=n>1?i/(n-1):1; l.style.opacity=(0.22+0.78*Math.pow(f,1.4)).toFixed(2); if(i>=n-3) l.classList.add('hot'); });
 }
 (function(){ /* 바깥 눈금: 10 BPM마다 (50 단위는 조금 길게) */
   let h='';
