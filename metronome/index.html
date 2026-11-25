@@ -329,6 +329,20 @@ html[data-theme="dark"] .dial .playic svg{fill:#16181D}
 .dial .bpmbox{margin-top:34px}
 @media (prefers-reduced-motion:reduce){ .dial .wv path,.dial .bub circle,#dialSurge.surge{animation:none} }
 
+/* 큰 시작 원 (K 요청 2026-11-25 "마우스를 대면 나오게, 큰 원으로") — 마우스 있는 화면만. 휴대폰은 작은 ▶ 그대로 */
+.dial .bigic{display:none}
+@media (hover:hover) and (pointer:fine){
+  .dial .playic{display:none}
+  .dial .bigic{display:grid;place-items:center;position:absolute;inset:10%;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--acc2));box-shadow:0 14px 36px var(--accent-shadow),0 0 0 10px var(--accent-glow);opacity:0;transform:scale(.88);transition:opacity .2s,transform .2s;pointer-events:none}
+  .dial .bigic svg{width:34%;height:34%;fill:#fff;margin-left:4%}
+  .dial.run .bigic svg{margin-left:0}
+  html[data-theme="dark"] .dial .bigic svg{fill:#16181D}
+  .dial .dialplay:hover .bigic,.dial .dialplay:focus-visible .bigic{opacity:.96;transform:scale(1)}
+  .dial .bpmbox{transition:opacity .2s}
+  .dial:has(.dialplay:hover) .bpmbox{opacity:0}
+  .dial .bpmbox{margin-top:6px}
+}
+
 /* 메트로놈 상자 크기 80% (K 요청 2026-11-17 "10%만 줄여줘" → "10프로만 더") — 컴퓨터만, 휴대폰은 그대로 */
 @media (min-width:721px){ .metro{zoom:.8} }
 </style>
@@ -384,7 +398,7 @@ html[data-theme="dark"] .dial .playic svg{fill:#16181D}
       </svg>
       <button type="button" class="round" id="minus" aria-label="1 느리게">−</button>
       <button type="button" class="round" id="plus" aria-label="1 빠르게">+</button>
-      <button type="button" class="dialplay" id="startBtn" aria-label="시작"></button>
+      <button type="button" class="dialplay" id="startBtn" aria-label="시작"><span class="bigic"><svg viewBox="0 0 16 16" id="startIcon2"><path d="M4 2l10 6-10 6z"/></svg></span></button>
       <div class="bpmbox"><output id="bpm" aria-live="polite">60</output><span class="unit" id="unit">BPM · ♩ 기준</span><span class="playic"><svg viewBox="0 0 16 16" id="startIcon"><path d="M4 2l10 6-10 6z"/></svg></span></div>
     </div>
     <div class="presets" id="presets"></div>
@@ -491,13 +505,13 @@ function paint(){                                // 소리 나는 순간에 맞�
 async function start(){
   audio(); running=true; beat=0; subI=0; queue=[]; nextT=ctx.currentTime+0.08;
   schedule(); timer=setInterval(schedule,25); raf=requestAnimationFrame(paint);
-  $('startBtn').setAttribute('aria-label','멈춤'); $('dial').classList.add('run'); $('startIcon').innerHTML='<path d="M3 2h4v12H3zM9 2h4v12H9z"/>';
+  $('startBtn').setAttribute('aria-label','멈춤'); $('dial').classList.add('run'); $('startIcon').innerHTML=$('startIcon2').innerHTML='<path d="M3 2h4v12H3zM9 2h4v12H9z"/>';
   try{ if('wakeLock' in navigator) lock=await navigator.wakeLock.request('screen'); }catch(e){}
 }
 function stop(){
   running=false; clearInterval(timer); cancelAnimationFrame(raf); queue=[];
   $('beats').querySelectorAll('i').forEach(d=>d.classList.remove('on'));
-  $('startBtn').setAttribute('aria-label','시작'); $('dial').classList.remove('run'); $('startIcon').innerHTML='<path d="M4 2l10 6-10 6z"/>';
+  $('startBtn').setAttribute('aria-label','시작'); $('dial').classList.remove('run'); $('startIcon').innerHTML=$('startIcon2').innerHTML='<path d="M4 2l10 6-10 6z"/>';
   try{ if(lock){ lock.release(); lock=null; } }catch(e){}
 }
 let taps=[];
