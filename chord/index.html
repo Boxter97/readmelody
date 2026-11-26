@@ -162,7 +162,23 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 .meta{display:flex;flex-wrap:wrap;gap:6px 18px;padding:0 10px 6px;font-size:16px;color:var(--muted)}
 .meta b{color:var(--ink)}
 #score{display:block;width:100%;height:auto;color:var(--ink)}
-.scorewrap{overflow-x:auto;-webkit-overflow-scrolling:touch}   /* 글씨를 줄이지 않으려고, 넘칠 때만 옆으로 밀어서 봄 */
+.scorewrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+/* 크게 보기 (K 요청 2026-11-26, 멜로디 초견과 같음) — 악보 · 정보 줄 · 아래 버튼만 화면 가득. 닫기 버튼 · Esc로 나감 */
+.sheethead{display:flex;align-items:flex-start;gap:10px}
+.sheethead .meta{flex:1;min-width:0}
+.focusbtn{display:inline-flex;align-items:center;gap:7px;flex:none;min-height:40px;margin:-8px 4px 0 0;padding:0 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);font-size:15px;font-weight:700;color:var(--ink)}
+.focusbtn svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+html.focus{zoom:1}
+html.focus body{overflow:hidden}
+html.focus .band,html.focus .panel,html.focus .ad,html.focus .status,html.focus .site-foot,html.focus .xm-snow{display:none!important}
+html.focus .layout,html.focus .wrap{max-width:none;margin:0;padding:0}
+html.focus .sheet{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;border:0;border-radius:0;box-shadow:none;padding:22px 28px 0}
+html.focus .meta{font-size:22px;gap:8px 26px}
+html.focus .focusbtn{min-height:48px;font-size:18px;margin-top:-6px}
+html.focus .scorewrap{flex:1;min-height:0;display:flex}
+html.focus #score{flex:none;margin:auto}   /* 가운데 (넘칠 때도 왼쪽이 안 잘리게 margin:auto) */
+html.focus .actions{margin:0 -28px;padding:16px 28px 20px}
+html.focus .btn{min-height:64px;font-size:21px}   /* 글씨를 줄이지 않으려고, 넘칠 때만 옆으로 밀어서 봄 */
 .scrollhint{padding:4px 10px 0;font-size:15px;font-weight:700;color:var(--muted);text-align:center}
 #score .on .nh,#score .on .st{fill:var(--accent);stroke:var(--accent)}
 #score .on text{fill:var(--accent)}
@@ -298,7 +314,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
   </section>
 
   <section class="sheet" aria-label="악보">
-    <div class="meta" id="meta"></div>
+    <div class="sheethead"><div class="meta" id="meta"></div><button type="button" class="focusbtn" id="focusBtn" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true" id="focusIcon"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></svg><span id="focusTxt">크게 보기</span></button></div>
     <div class="scorewrap"><svg id="score" role="img" aria-label="코드 진행 악보"></svg></div>
     <div class="scrollhint" id="scrollHint" hidden>← 악보를 옆으로 밀어서 보세요 →</div>
     <div class="actions">
@@ -691,7 +707,7 @@ function packSystems(natW,availFirst,availRest,maxPer,tol){
 let noteEls=[];
 function render(){
   const svg=$('score'); svg.innerHTML=''; noteEls=[];
-  const box=svg.parentElement.clientWidth;                      // 악보 상자 안쪽 너비
+  const box=(focusOn&&innerWidth>=720?1020:svg.parentElement.clientWidth);                      // 악보 상자 안쪽 너비
   const narrow=box<520;
   const M=song.M, key=song.key;
   const ks=Object.keys(key.acc), sharp=ks.length>0&&key.acc[ks[0]]>0;
@@ -735,11 +751,12 @@ function render(){
     let room=box;
     if(minW<=room+1){ over=false; } else sW=minW;
   }
+  if(focusOn&&innerWidth>=720) over=false;   /* 크게 보기 컴퓨터: 화면에 맞춰 키우니 밀기 없음 */
   svg.style.width=over?sW+'px':''; $('scrollHint').hidden=!over;
   const systems=[]; for(let m=0;m<song.measures.length;m+=per) systems.push(song.measures.slice(m,m+per).map((_,i)=>m+i));
   ms.remove();
   const sysH=S*4+84+(showDeg?26:0)+(showTones?26:0), top=72;
-  svg.setAttribute('viewBox',`0 0 ${W} ${top+systems.length*sysH}`);
+  svg.setAttribute('viewBox',`0 0 ${W} ${top+systems.length*sysH}`); if(!over) fitFocus(W,top+systems.length*sysH);
   const sysInfo=[]; let prevF=1.6;
 
   systems.forEach((ms,li)=>{
@@ -1007,6 +1024,26 @@ function updateMeta(){
   const kn=Object.keys(song.key.acc).length, ksh=kn&&song.key.acc[Object.keys(song.key.acc)[0]]>0;
   $('meta').innerHTML=`<span>키 <b>${song.key.label}</b>${kn?' ('+(ksh?'♯':'♭')+kn+')':''}</span><span>박자 <b>${meter}</b></span><span>단계 <b>${sel===0?'랜덤':level}</b></span><span>모드 <b>${mode==='hard'?'Hard':'Easy'}</b></span>`;
 }
+/* 크게 보기 */
+let focusOn=false;
+function fitFocus(w,h){
+  const svg=$('score');
+  if(!focusOn) return;
+  const b=svg.parentElement, k=Math.min(b.clientWidth/w,(b.clientHeight-10)/h);
+  svg.style.width=Math.floor(w*k)+'px';
+}
+function setFocus(on){
+  if(on===focusOn) return;
+  focusOn=on; document.documentElement.classList.toggle('focus',on);
+  $('focusBtn').setAttribute('aria-pressed',on); $('focusTxt').textContent=on?'닫기':'크게 보기';
+  $('focusIcon').innerHTML=on?'<path d="M6 6l12 12M18 6L6 18"/>':'<path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/>';
+  const fs=document.fullscreenElement;
+  try{
+    if(on&&!fs&&document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(()=>{});
+    if(!on&&fs) document.exitFullscreen().catch(()=>{});
+  }catch(e){}
+  render();
+}
 function fresh(){ stop(); if(sel===0) level=LEVELS.length; song=makeSong(); updateMeta(); render(); updDesc(); }
 const STAR3=LEVELS.map(()=>'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.2 6.6.7-5 4.5 1.4 6.6L12 17.3 6.1 20.5l1.4-6.6-5-4.5 6.6-.7z"/></svg>').join('');
 function updDesc(){ const L=LEVELS[level-1]; $('lvdesc').textContent=(sel===0?'1~'+LEVELS.length+'단계 코드가 한 곡에 섞여 나와요':L.chords)+(mode==='hard'?' · 부속화음·차용화음 추가':''); }
@@ -1090,6 +1127,9 @@ function buildUI(){
     resetT=setTimeout(()=>{ $('resetMsg').hidden=true; },2500);
   };
   $('resetAsk').addEventListener('keydown',e=>{ if(e.key==='Escape') $('resetNo').click(); });
+  $('focusBtn').onclick=()=>setFocus(!focusOn);
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&focusOn) setFocus(false); });
+  document.addEventListener('fullscreenchange',()=>{ if(!document.fullscreenElement&&focusOn) setFocus(false); });
   let rt; window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{stop();render()},150)});
   sync();
 }

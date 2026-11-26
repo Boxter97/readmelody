@@ -124,7 +124,23 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 .targets .seg button{min-width:64px}
 #score .tnote{fill:var(--accent);stroke:var(--accent)}
 #score{display:block;width:100%;height:auto;color:var(--ink)}
-.scorewrap{overflow-x:auto;-webkit-overflow-scrolling:touch}   /* 글씨를 줄이지 않으려고, 넘칠 때만 옆으로 밀어서 봄 */
+.scorewrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+/* 크게 보기 (K 요청 2026-11-26, 멜로디 초견과 같음) — 악보 · 정보 줄 · 아래 버튼만 화면 가득. 닫기 버튼 · Esc로 나감 */
+.sheethead{display:flex;align-items:flex-start;gap:10px}
+.sheethead .meta{flex:1;min-width:0}
+.focusbtn{display:inline-flex;align-items:center;gap:7px;flex:none;min-height:40px;margin:-8px 4px 0 0;padding:0 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);font-size:15px;font-weight:700;color:var(--ink)}
+.focusbtn svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+html.focus{zoom:1}
+html.focus body{overflow:hidden}
+html.focus .band,html.focus .panel,html.focus .ad,html.focus .status,html.focus .site-foot,html.focus .xm-snow,html.focus .scales{display:none!important}
+html.focus .layout,html.focus .wrap{max-width:none;margin:0;padding:0}
+html.focus .sheet{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;border:0;border-radius:0;box-shadow:none;padding:22px 28px 0}
+html.focus .meta{font-size:22px;gap:8px 26px}
+html.focus .focusbtn{min-height:48px;font-size:18px;margin-top:-6px}
+html.focus .scorewrap{flex:1;min-height:0;display:flex}
+html.focus #score{flex:none;margin:auto}   /* 가운데 (넘칠 때도 왼쪽이 안 잘리게 margin:auto) */
+html.focus .actions{margin:0 -28px;padding:16px 28px 20px}
+html.focus .btn{min-height:64px;font-size:21px}   /* 글씨를 줄이지 않으려고, 넘칠 때만 옆으로 밀어서 봄 */
 .scrollhint{padding:4px 10px 0;font-size:15px;font-weight:700;color:var(--muted);text-align:center}
 #score .barhl{fill:var(--accent-soft);opacity:0}
 #score .bar.on .barhl{opacity:1}
@@ -273,7 +289,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
   </section>
 
   <section class="sheet" aria-label="악보">
-    <div class="meta" id="meta"></div>
+    <div class="sheethead"><div class="meta" id="meta"></div><button type="button" class="focusbtn" id="focusBtn" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true" id="focusIcon"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></svg><span id="focusTxt">크게 보기</span></button></div>
     <div class="targets"><span class="label">타겟 노트</span><div class="seg" id="tgts" role="group" aria-label="타겟 노트">
       <button type="button" data-v="1">1도</button><button type="button" data-v="3">3도</button><button type="button" data-v="5">5도</button><button type="button" data-v="7">7도</button>
     </div></div>
@@ -417,7 +433,7 @@ function el(tag,attrs,parent,text){const e=document.createElementNS(NS,tag);for(
 let barEls=[];
 function render(){
   const svg=$('score'); svg.innerHTML=''; barEls=[];
-  const box=svg.parentElement.clientWidth, narrow=box<520, key=song.key;
+  const box=(focusOn&&innerWidth>=720?1020:svg.parentElement.clientWidth), narrow=box<520, key=song.key;
   const ks=Object.keys(key.acc), sharp=ks.length>0&&key.acc[ks[0]]>0;
   const accs=(sharp?['F','C','G','D','A','E']:['B','E','A','D','G']).filter(l=>key.acc[l]);
   const x0=6, clefW=narrow?42:46, headW=clefW+accs.length*S*0.95+6+(accs.length?S*0.5:0), tsW=S*2.4;
@@ -451,10 +467,11 @@ function render(){
     let room=box;
     if(minW<=room+1){ over=false; } else sW=minW;
   }
+  if(focusOn&&innerWidth>=720) over=false;   /* 크게 보기 컴퓨터: 화면에 맞춰 키우니 밀기 없음 */
   svg.style.width=over?sW+'px':''; $('scrollHint').hidden=!over;
   const extra=(showDeg?S*2.2:0)+(showTones?S*2.2:0);                     // 오선 아래 줄 (도수 · 구성음)
   const sysH=S*4+84+extra, top=72, nSys=Math.ceil(song.bars.length/per);
-  svg.setAttribute('viewBox',`0 0 ${W} ${top+(nSys-1)*sysH+4*S+S*2.6+extra}`);   // 마지막 줄 아래 빈칸은 줄임
+  svg.setAttribute('viewBox',`0 0 ${W} ${top+(nSys-1)*sysH+4*S+S*2.6+extra}`); if(!over) fitFocus(W,top+(nSys-1)*sysH+4*S+S*2.6+extra);   // 마지막 줄 아래 빈칸은 줄임
   const thick=(x,y0)=>el('rect',{x,y:y0,width:4,height:4*S,fill:'currentColor'},svg);
   const thin=(x,y0)=>el('line',{x1:x,x2:x,y1:y0,y2:y0+4*S,stroke:'currentColor','stroke-width':1.2},svg);
   const dots=(x,y0)=>[1.5,2.5].forEach(d=>el('circle',{cx:x,cy:y0+d*S,r:S*0.22,fill:'currentColor'},svg));
@@ -710,6 +727,26 @@ function checkBacking(){            // 음원 파일이 올라와 있는지 확�
   Object.keys(BACKING).forEach(id=>{ if(have[id]!=null) return; have[id]=false;
     fetch(BACKING[id].src,{method:'HEAD'}).then(r=>{ have[id]=r.ok; if(song&&bkId()===id) updBacking(); }).catch(()=>{}); });
 }
+/* 크게 보기 */
+let focusOn=false;
+function fitFocus(w,h){
+  const svg=$('score');
+  if(!focusOn) return;
+  const b=svg.parentElement, k=Math.min(b.clientWidth/w,(b.clientHeight-10)/h);
+  svg.style.width=Math.floor(w*k)+'px';
+}
+function setFocus(on){
+  if(on===focusOn) return;
+  focusOn=on; document.documentElement.classList.toggle('focus',on);
+  $('focusBtn').setAttribute('aria-pressed',on); $('focusTxt').textContent=on?'닫기':'크게 보기';
+  $('focusIcon').innerHTML=on?'<path d="M6 6l12 12M18 6L6 18"/>':'<path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/>';
+  const fs=document.fullscreenElement;
+  try{
+    if(on&&!fs&&document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(()=>{});
+    if(!on&&fs) document.exitFullscreen().catch(()=>{});
+  }catch(e){}
+  render(); if(!on) drawFB();
+}
 function fresh(){ stop(); song=makeSong(); updateMeta(); render(); renderScales(); updBacking(); }
 function buildUI(){
   $('progs').innerHTML=PROGS.map(p=>`<button type="button" class="pcard" data-v="${p.id}"><span class="tag">${p.tag}</span><span class="name">${p.name}</span><span class="sub">${p.sub}</span></button>`).join('');
@@ -745,6 +782,9 @@ function buildUI(){
   $('fbLab').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; fbLab=b.dataset.v; store.set('fblab',fbLab); drawFB();});
   $('fb').addEventListener('click',async e=>{const g=e.target.closest('.fdot'); if(!g) return; if(playing) stop(); audio(); await ready();
     const c=audio(); tone(+g.dataset.m,c.currentTime+0.02,0.6,0.85); /* 점 누르기 0.9 → 0.6초 (K "좀만 더 줄여줘") */ g.classList.add('on'); setTimeout(()=>g.classList.remove('on'),450);});
+  $('focusBtn').onclick=()=>setFocus(!focusOn);
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&focusOn) setFocus(false); });
+  document.addEventListener('fullscreenchange',()=>{ if(!document.fullscreenElement&&focusOn) setFocus(false); });
   let rt; window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{stop();render();drawFB()},150)});
   sync();
 }
