@@ -189,6 +189,7 @@ html.focus{zoom:1}
 html.focus body{overflow:hidden}
 html.focus .band,html.focus .panel,html.focus .ad,html.focus .status,html.focus .site-foot,html.focus .xm-snow,html.focus #gfbBox{display:none!important}
 html.focus .layout,html.focus .wrap{max-width:none;margin:0;padding:0}
+.sheet:fullscreen{width:100vw;height:100vh;max-width:none}
 html.focus .sheet{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;border:0;border-radius:0;box-shadow:none;padding:22px 28px 0}
 html.focus .meta{font-size:22px;gap:8px 26px}
 html.focus .focusbtn{min-height:48px;font-size:18px;margin-top:-6px}
@@ -985,7 +986,7 @@ function setFocus(on){
   $('focusIcon').innerHTML=on?'<path d="M6 6l12 12M18 6L6 18"/>':'<path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/>';
   const fs=document.fullscreenElement;
   try{
-    if(on&&!fs&&document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(()=>{});
+    const sh=document.querySelector('.sheet'); if(on&&!fs&&sh.requestFullscreen) sh.requestFullscreen().catch(()=>{});   /* 악보 상자만 전체 화면 (페이지 전체로 하면 맥 크롬에서 아래가 안 참, K 제보 2026-11-27) */
     if(!on&&fs) document.exitFullscreen().catch(()=>{});
   }catch(e){}
   render(); if(!on) renderGtr();
