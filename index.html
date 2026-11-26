@@ -180,6 +180,22 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 .meta{display:flex;flex-wrap:wrap;gap:6px 18px;padding:0 10px 6px;font-size:16px;color:var(--muted)}
 .meta b{color:var(--ink)}
 #score{display:block;width:100%;height:auto;color:var(--ink)}
+/* 크게 보기 (K 요청 2026-11-26 "수업할 때 악보만 크게") — 악보 · 정보 줄 · 아래 버튼만 화면 가득. 닫기 버튼 · Esc로 나감 */
+.sheethead{display:flex;align-items:flex-start;gap:10px}
+.sheethead .meta{flex:1;min-width:0}
+.focusbtn{display:inline-flex;align-items:center;gap:7px;flex:none;min-height:40px;margin:-8px 4px 0 0;padding:0 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);font-size:15px;font-weight:700;color:var(--ink)}
+.focusbtn svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+html.focus{zoom:1}
+html.focus body{overflow:hidden}
+html.focus .band,html.focus .panel,html.focus .ad,html.focus .status,html.focus .site-foot,html.focus .xm-snow,html.focus #gfbBox{display:none!important}
+html.focus .layout,html.focus .wrap{max-width:none;margin:0;padding:0}
+html.focus .sheet{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;border:0;border-radius:0;box-shadow:none;padding:22px 28px 0}
+html.focus .meta{font-size:22px;gap:8px 26px}
+html.focus .focusbtn{min-height:48px;font-size:18px;margin-top:-6px}
+html.focus #scorebox{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+html.focus #score{width:auto;flex:none}
+html.focus .actions{margin:0 -28px;padding:16px 28px 20px}
+html.focus .btn{min-height:64px;font-size:21px}
 #score .on .nh,#score .on .st{fill:var(--accent);stroke:var(--accent)}
 #score .on text{fill:var(--accent)}
 #score .on .hollow{fill:none}
@@ -304,8 +320,8 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
   </section>
 
   <section class="sheet" aria-label="악보">
-    <div class="meta" id="meta"></div>
-    <svg id="score" role="img" aria-label="초견 멜로디 악보"></svg>
+    <div class="sheethead"><div class="meta" id="meta"></div><button type="button" class="focusbtn" id="focusBtn" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true" id="focusIcon"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></svg><span id="focusTxt">크게 보기</span></button></div>
+    <div id="scorebox"><svg id="score" role="img" aria-label="초견 멜로디 악보"></svg></div>
     <div class="gfb" id="gfbBox" hidden><div class="gpos"><span class="label">폼</span><div class="seg" id="gpos" role="group" aria-label="메이저 스케일 폼"><button type="button" data-v="3">3번 폼</button><button type="button" data-v="5">5번 폼</button></div></div><div class="gcap" id="gfbCap"></div><div class="gfbwrap" id="gfbWrap"><svg id="gfb" role="img" aria-label="기타 지판"></svg></div><div class="gfbhint">← 지판을 옆으로 밀어서 보세요 →</div></div>
     <div class="actions">
       <button type="button" class="btn new" id="newBtn">새 멜로디</button>
@@ -625,7 +641,7 @@ function packSystems(natW,availFirst,availRest,maxPer,tol){
 let noteEls=[];
 function render(){
   const svg=$('score'); svg.innerHTML=''; noteEls=[];
-  const box=svg.parentElement.clientWidth-28;
+  const box=focusOn&&innerWidth>=720?1020:$('scorebox').clientWidth-28;   /* 크게 보기: 컴퓨터 화면 너비로 그려서 화면만큼 키움 */
   const narrow=box<520, maxPer=narrow?2:4, W=Math.max(box,300)/(narrow?0.84:1);   // 휴대폰은 조금 작게 그려 한 줄에 두 마디
   const M=song.M, key=song.key;
   const ks=Object.keys(key.acc), sharp=ks.length>0&&key.acc[ks[0]]>0;
@@ -639,7 +655,7 @@ function render(){
   // 줄 나누기: 빽빽한 마디는 넓게
   const systems=packSystems(natW,x1-(x0+headW+tsW+4),x1-(x0+headW+4),maxPer,narrow?1.2:1);
   const sysH=S*4+(showNames?104:88), top=34;
-  svg.setAttribute('viewBox',`0 0 ${W} ${top+systems.length*sysH}`);
+  svg.setAttribute('viewBox',`0 0 ${W} ${top+systems.length*sysH}`); fitFocus(W,top+systems.length*sysH);
   const sysInfo=[]; let prevF=1.6;
 
   systems.forEach((ms,li)=>{
@@ -954,6 +970,26 @@ function updateMeta(){
   const kn=Object.keys(song.key.acc).length, ksh=kn&&song.key.acc[Object.keys(song.key.acc)[0]]>0;
   $('meta').innerHTML=`<span>키 <b>${song.key.label}</b>${kn?' ('+(ksh?'♯':'♭')+kn+')':''}</span><span>박자 <b>${meter}</b></span><span>단계 <b>${sel===0?'랜덤':level}</b></span><span>모드 <b>${mode==='hard'?'Hard':'Easy'}</b></span>`;
 }
+/* 크게 보기 */
+let focusOn=false;
+function fitFocus(w,h){
+  const svg=$('score');
+  if(!focusOn){ svg.style.width=''; return; }
+  const b=$('scorebox'), k=Math.min(b.clientWidth/w,(b.clientHeight-10)/h);
+  svg.style.width=Math.floor(w*k)+'px';
+}
+function setFocus(on){
+  if(on===focusOn) return;
+  focusOn=on; document.documentElement.classList.toggle('focus',on);
+  $('focusBtn').setAttribute('aria-pressed',on); $('focusTxt').textContent=on?'닫기':'크게 보기';
+  $('focusIcon').innerHTML=on?'<path d="M6 6l12 12M18 6L6 18"/>':'<path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/>';
+  const fs=document.fullscreenElement;
+  try{
+    if(on&&!fs&&document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(()=>{});
+    if(!on&&fs) document.exitFullscreen().catch(()=>{});
+  }catch(e){}
+  render(); if(!on) renderGtr();
+}
 function fresh(){ stop(); if(sel===0) level=LEVELS.length; song=makeSong(); updateMeta(); render(); renderGtr(); updDesc(); }
 const STAR_AT=[0,5,20,50];
 const SYM=['♩','♫','♩.','♬','♩‿♩'], LV_NAME=['4분음표','8분음표','점음표','16분음표','이음줄'];
@@ -1041,6 +1077,9 @@ function buildUI(){
     resetT=setTimeout(()=>{ $('resetMsg').hidden=true; },2500);
   };
   $('resetAsk').addEventListener('keydown',e=>{ if(e.key==='Escape') $('resetNo').click(); });
+  $('focusBtn').onclick=()=>setFocus(!focusOn);
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&focusOn) setFocus(false); });
+  document.addEventListener('fullscreenchange',()=>{ if(!document.fullscreenElement&&focusOn) setFocus(false); });
   let rt; window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{stop();render();renderGtr()},150)});
   sync();
 }
