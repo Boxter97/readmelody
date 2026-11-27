@@ -246,6 +246,31 @@ html.focus .btn{min-height:64px;font-size:21px}   /* 글씨를 줄이지 않으�
 
 .stage .sym{font-family:var(--f-body);font-size:17px;font-weight:700;top:14px}
 #score .chord.on text{fill:var(--accent)}
+/* 코드 잡는 법 (K 요청 2026-11-27, 시안 2): 악보의 코드 이름을 누르면 아래에 그 코드의 모양 — 코드&스케일 코드 카드와 같은 모양 */
+#score .chord{cursor:pointer}
+#score .chord.sel text.cn{fill:var(--accent)}
+#score .chord .hit{fill:transparent}
+.cview{margin-top:16px;padding:16px 18px 6px;border:1.5px solid var(--line);border-radius:18px;background:var(--bg)}
+.cview .cvhead{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 12px;margin-bottom:12px}
+.cview .cvhead b{font-size:26px;line-height:1.2}
+.cview .cvhead span{font-size:16px;color:var(--muted);font-weight:700}
+.cview .cvhint{margin:0 0 10px;font-size:17px;color:var(--muted)}
+.cview .none{margin:4px 0 14px;padding:18px;border:1.5px dashed var(--line);border-radius:14px;text-align:center;font-size:18px;font-weight:700;color:var(--muted)}
+.minis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:0 0 12px}
+.mini{display:flex;flex-direction:column;gap:6px;padding:12px 14px 8px;border:2px solid var(--line);border-radius:16px;background:var(--bg);color:var(--ink);text-align:left;min-width:0}
+.mhead{display:flex;align-items:center;gap:10px}
+.mini .mname{font-weight:700;font-size:22px;line-height:1.2}
+.mini .mgrp{padding:1px 10px;border-radius:999px;background:var(--tile);color:var(--muted);font-size:14px;font-weight:700;line-height:1.6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.minisvg{display:block;width:100%;height:auto}
+.minisvg .fstr{stroke:var(--muted)} .minisvg .ffret{stroke:var(--line);stroke-width:2} .minisvg .fnut{stroke:var(--ink);stroke-width:5}
+.minisvg .fnum{fill:var(--muted);font-size:14px;font-weight:700;text-anchor:middle;font-family:var(--f-body)}
+.minisvg .fbarre{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5}
+.minisvg .fmute{stroke:var(--muted);stroke-width:2.4;stroke-linecap:round;fill:none}
+.minisvg .fdot .c{fill:var(--bg);stroke:var(--ink);stroke-width:1.6}
+.minisvg .fdot text{fill:var(--ink);font-size:13.5px;font-weight:700;text-anchor:middle;dominant-baseline:central;font-family:var(--f-body)}
+.minisvg .fdot.root .c{fill:var(--accent);stroke:var(--accent)} .minisvg .fdot.root text{fill:var(--bg)}
+@media (max-width:900px){ .minis{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@media (max-width:560px){ .minis{grid-template-columns:minmax(0,1fr);gap:10px} .cview{padding:14px 12px 4px} }
 /* 넓은 화면: 6칸 한 줄. 카드 글씨 크기·굵기는 멜로디 초견과 같게 (K 요청 2026-11-12 "모든 페이지 맞춰") */
 @media (min-width:1000px){
   #levels{grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
@@ -324,6 +349,8 @@ html.focus .btn{min-height:64px;font-size:21px}   /* 글씨를 줄이지 않으�
     </div>
   </section>
 
+  <section class="cview" id="cview" aria-label="코드 잡는 법"></section>
+
   <div class="status" id="status" aria-live="polite"></div>
   <aside class="ad ad-bottom" aria-label="광고">광고<small>320×100</small></aside>
 </div>
@@ -331,6 +358,7 @@ html.focus .btn{min-height:64px;font-size:21px}   /* 글씨를 줄이지 않으�
 </div>
 
 <script src="../piano.js"></script>
+<script src="../chorddata.js?v=1"></script>
 <script>
 
 const GLYPH={"whole":{"d":"M50 135Q50 172 77 200Q104 228 150.5 244Q197 260 253.5 260Q310 260 358 244.5Q406 229 435 201Q464 173 464 135Q464 96 436 67.5Q408 39 361.5 23.5Q315 8 259 8Q203 8 155.5 23Q108 38 79 66.5Q50 95 50 135ZM280 28Q314 28 326.5 53Q339 78 339 112Q339 147 324.5 176Q310 205 286 222.5Q262 240 232 240Q198 240 186.5 215Q175 190 175 156Q175 122 189 93Q203 64 226.5 46Q250 28 280 28Z","b":[50,8.0,464,260.0]},"r4":{"d":"M147 878 307 683Q257 624 230 581Q203 538 203 494Q203 457 227 416.5Q251 376 303 314L287 292Q243 320 205 320Q177 320 163 301.5Q149 283 149 257Q149 225 162.5 196.5Q176 168 199 142L186 123Q117 173 84 214Q51 255 51 303Q51 346 78 366Q105 386 143 386Q173 386 221 363V365L67 570Q168 659 168 736Q168 797 104 878Z","b":[51,123,307,878]},"r2":{"d":"M155 269 251 609Q230 590 203.5 582Q177 574 151 574Q108 574 79 597Q50 620 50 663Q50 691 70 710.5Q90 730 121 730Q150 730 168.5 711.5Q187 693 187 662Q187 640 177 623Q177 617 189 617Q244 617 294 703H312L191 269Z","b":[50,269,312,730]},"r1":{"d":"M155 147 251 487Q230 468 203.5 460Q177 452 151 452Q108 452 79 475Q50 498 50 541Q50 569 69.5 588.5Q89 608 121 608Q150 608 168.5 589.5Q187 571 187 540Q187 518 177 501Q177 495 189 495Q230 495 267 541L319 731Q298 712 271.5 704Q245 696 219 696Q176 696 147 719Q118 742 118 785Q118 813 138 832.5Q158 852 189 852Q219 852 237 833Q255 814 255 784Q255 774 252 763.5Q249 753 245 745Q245 739 257 739Q312 739 362 825H380L191 147Z","b":[50,147,380,852]}};
@@ -851,7 +879,7 @@ function render(){
   song.segs.forEach(sg=>{
     const e=sg.ev, inf=sysInfo[e.sys], g=el('g',{class:'chord'},svg); sg.ref=g;
     const x=e.x;
-    const t=el('text',{x,y:inf.y0-S*2.3,'font-size':S*(narrow?1.75:1.95),'font-weight':700,'font-family':'IBM Plex Sans KR, sans-serif',fill:'currentColor'},g);
+    const t=el('text',{class:'cn',x,y:inf.y0-S*2.3,'font-size':S*(narrow?1.75:1.95),'font-weight':700,'font-family':'IBM Plex Sans KR, sans-serif',fill:'currentColor'},g);
     let lift=0, prevFlat=false;                                     // ♯·♭은 글자 높이에 맞게 조금 올림 (다음 글자는 원래 줄로)
     chordParts(sg.chord,key).forEach(([txt,kind])=>{
       const up=kind==='acc'?(txt.includes('♯')?S*0.42:S*0.12):kind==='tacc'?(txt.includes('♯')?S*0.3:S*0.08):0, a=kind==='acc'?{'font-family':'Noto Music, serif','font-size':S*1.55}:kind==='tacc'?{'font-family':'Noto Music, serif','font-size':S*(narrow?1.05:1.15)}:kind==='q'?{'font-size':S*(narrow?1.3:1.45)}:{};
@@ -859,6 +887,8 @@ function render(){
       if(prevFlat) a.dx=-S*0.12;                                    // 괄호 안 ♭ 뒤 빈칸만 조금 줄이기 (앞은 그대로: 줄이면 괄호와 겹침)
       prevFlat=kind==='tacc'&&txt==='♭';
       el('tspan',a,t,txt); });
+    try{ const bb=t.getBBox(); const hr=el('rect',{class:'hit',x:bb.x-S*0.5,y:bb.y-S*0.4,width:bb.width+S,height:bb.height+S*0.8},null); g.insertBefore(hr,t); }catch(e){}   /* 누르기 쉽게 이름 둘레를 넓힘 */
+    g.dataset.i=song.segs.indexOf(sg); if(song.segs.indexOf(sg)===cvSel) g.classList.add('sel');
     let y=inf.y0+4*S+S*3.4;
     if(showDeg){ el('text',{x,y,'font-size':S*1.35,'font-weight':700,'font-family':'IBM Plex Sans KR, sans-serif',style:'fill:var(--muted)'},g,romanOf(sg.chord)); y+=S*2.2; }
     if(showTones){ const tn=toneNames(sg.chord,key);                  // 구성음: 근음부터 가로 한 줄
@@ -1045,7 +1075,59 @@ function setFocus(on){
   }catch(e){}
   render();
 }
-function fresh(){ stop(); if(sel===0) level=LEVELS.length; song=makeSong(); updateMeta(); render(); updDesc(); }
+/* ---------- 코드 잡는 법 (K 요청 2026-11-27, 시안 2) ----------
+   악보의 코드 이름을 누르면 아래 칸에 그 코드의 모양을 모두 보여 줌. 모양은 코드&스케일 코드 사전(../chorddata.js) 그대로 + 코드 찾기에서 저장한 모양(cs-user, 이 브라우저만).
+   사전에 없는 코드(텐션 · 분수코드 등)는 "데이터 없음". ♯ · ♭ 근음은 같은 글자 근음의 모양(개방현이 없는 것)을 한 프렛 옮김 (K 고름) */
+const CH=window.GM_CHORDS||null;
+const DQ={'maj7':'M7'};                          // 코드 초견 종류 이름 → 사전 종류 이름
+const DICT=(()=>{ if(!CH) return []; const out=CH.flatten(), seen=new Set(out.map(c=>c.r+c.q+'|'+c.frets.join(',')));
+  try{ const v=JSON.parse(localStorage.getItem('cs-user')||'[]');
+    (Array.isArray(v)?v:[]).forEach(c=>{ if(!c||!LETTERS.includes(c.r)||!CH.QUAL[c.q]||!Array.isArray(c.frets)||c.frets.length!==6) return;
+      const k=c.r+c.q+'|'+c.frets.join(','); if(seen.has(k)) return; seen.add(k); out.push(Object.assign(CH.C(c.r,c.q,c.frets.slice(),c.barre||undefined),{grp:c.grp})); }); }catch(e){}
+  return out; })();
+const OPENP=[40,45,50,55,59,64];
+let cvSel=-1;
+function dictQ(c){ if(c.inv) return null; const q=c.q in DQ?DQ[c.q]:c.q; return CH&&CH.QUAL[q]?q:null; }
+function shapesFor(c,key){
+  const q=dictQ(c); if(q==null) return [];
+  const r=rootOf(c,key), L=LETTERS[r.li];
+  let list=DICT.filter(x=>x.r===L&&x.q===q&&!x.inv).sort((a,b)=>CH.GRANK(a.grp)-CH.GRANK(b.grp));
+  if(r.acc){
+    const seen=new Set();
+    list=list.filter(x=>!x.frets.includes(0)).map(x=>{
+      let fr=x.frets.map(f=>f==='x'?'x':f+r.acc), bar=x.barre?[x.barre[0]+r.acc,x.barre[1],x.barre[2]]:undefined;
+      if(Math.min(...fr.filter(f=>f!=='x'))<1){ fr=fr.map(f=>f==='x'?'x':f+12); if(bar) bar[0]+=12; }
+      return {frets:fr,barre:bar,grp:x.grp};
+    }).filter(x=>{ const k=x.frets.join(','); if(seen.has(k)) return false; seen.add(k); return true; });
+  }
+  return list.map(x=>({frets:x.frets,barre:x.barre,grp:x.grp,q,r}));
+}
+function miniSVG(sh){
+  const iv=CH.QUAL[sh.q].iv, dots=[], mutes=[];
+  sh.frets.forEach((x,st)=>{ if(x==='x'){ mutes.push(st); return; }
+    const f=+x, s=((OPENP[st]+f-sh.r.pc)%12+12)%12, v=iv.find(v=>v[1]===s); dots.push({st,f,d:v?v[2]:'',root:s===0}); });
+  const W=50, G=32, X0=34, T=20, R=14, H=T+5*G+30, WD=X0+5*W+8;
+  const top=Math.max(...dots.map(d=>d.f)), fl=dots.filter(d=>d.f>0).map(d=>d.f), lo=fl.length?Math.min(...fl):1, s0=top>5?lo:1;
+  const fx=f=>f===0?15:X0+(f-s0+.5)*W, sy=st=>T+(5-st)*G;
+  let h='';
+  for(let i=1;i<=5;i++) h+=`<line class="ffret" x1="${X0+i*W}" y1="${T}" x2="${X0+i*W}" y2="${T+5*G}"/><text class="fnum" x="${X0+(i-.5)*W}" y="${T+5*G+25}">${s0+i-1}</text>`;
+  for(let st=0;st<6;st++) h+=`<line class="fstr" x1="${X0}" y1="${sy(st)}" x2="${WD-4}" y2="${sy(st)}" stroke-width="${(1+st*.3).toFixed(1)}"/>`;
+  h+=s0===1?`<line class="fnut" x1="${X0}" y1="${T-2}" x2="${X0}" y2="${T+5*G+2}"/>`:`<line class="ffret" x1="${X0}" y1="${T}" x2="${X0}" y2="${T+5*G}"/>`;
+  if(sh.barre){ const [f,a,b]=sh.barre; h+=`<rect class="fbarre" x="${fx(f)-R-3}" y="${sy(b)-R-3}" width="${2*R+6}" height="${sy(a)-sy(b)+2*R+6}" rx="${R+3}"/>`; }
+  mutes.forEach(st=>{ h+=`<path class="fmute" d="M${fx(0)-6} ${sy(st)-6}l12 12M${fx(0)+6} ${sy(st)-6}l-12 12"/>`; });
+  dots.forEach(n=>{ h+=`<g class="fdot${n.root?' root':''}" transform="translate(${fx(n.f)} ${sy(n.st)})"><circle class="c" r="${R}"/><text>${n.d}</text></g>`; });
+  return `<svg class="minisvg" viewBox="0 0 ${WD} ${H}" aria-hidden="true">${h}</svg>`;
+}
+function drawCV(){
+  const box=$('cview'); if(!box) return;
+  const sg=song&&song.segs[cvSel];
+  if(!sg){ box.innerHTML='<p class="cvhint">악보의 코드 이름을 누르면 잡는 법이 여기에 나와요</p>'; return; }
+  const c=sg.chord, key=song.key, name=chordName(c,key), q=dictQ(c), list=shapesFor(c,key);
+  const head=`<div class="cvhead"><b>${name}</b><span>${q!=null?CH.QUAL[q].kr+' · ':''}${list.length?'잡는 법 '+list.length+'개':''}</span></div>`;
+  box.innerHTML=head+(list.length?`<div class="minis">${list.map(sh=>`<div class="mini"><div class="mhead"><span class="mname">${name}</span><span class="mgrp">${sh.grp||''}</span></div>${miniSVG(sh)}</div>`).join('')}</div>`
+    :'<div class="none">데이터 없음</div>');
+}
+function fresh(){ stop(); if(sel===0) level=LEVELS.length; song=makeSong(); cvSel=-1; updateMeta(); render(); updDesc(); drawCV(); }
 const STAR3=LEVELS.map(()=>'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.2 6.6.7-5 4.5 1.4 6.6L12 17.3 6.1 20.5l1.4-6.6-5-4.5 6.6-.7z"/></svg>').join('');
 function updDesc(){ const L=LEVELS[level-1]; $('lvdesc').textContent=(sel===0?'1~'+LEVELS.length+'단계 코드가 한 곡에 섞여 나와요':L.chords)+(mode==='hard'?' · 부속화음·차용화음 추가':''); }
 window.addEventListener('storage',e=>{ if(e.key!=='ch-done2') return; try{ const v=JSON.parse(e.newValue); if(v&&typeof v==='object'&&v.easy){ done=v; syncCards(); } }catch(_){} });   // 다른 창에서 기록이 바뀌면 카드도 바로 맞춤
@@ -1080,6 +1162,8 @@ function segButtons(id,items,label){
   items.forEach(v=>{ const b=document.createElement('button'); b.type='button'; b.dataset.v=v; b.textContent=label(v); box.appendChild(b); });
 }
 function buildUI(){
+  $('score').addEventListener('click',e=>{ const g=e.target.closest('.chord'); if(!g||g.dataset.i==null) return; const i=+g.dataset.i;
+    cvSel=cvSel===i?-1:i; document.querySelectorAll('#score .chord').forEach(x=>x.classList.toggle('sel',+x.dataset.i===cvSel)); drawCV(); });   /* 같은 코드를 다시 누르면 닫힘 */
   buildCards();
   segButtons('modes',['easy','hard'],v=>v==='easy'?'Easy':'Hard');
   segButtons('meters',METER_ORDER,v=>v);
